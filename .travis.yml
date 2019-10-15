@@ -1,0 +1,14 @@
+language: python
+
+
+python:
+  - "3.7"
+
+
+install:
+  - pip install gemprospector/[interactive,documentation]
+
+
+script:
+  - pytest --nbsmoke-lint examples/*ipyn
+  - pytest --nbsmoke-run examples/*ipynb

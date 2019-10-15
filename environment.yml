@@ -1,0 +1,25 @@
+name: GeneProspector
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - netcdf4
+  - hdf5
+  - xarray
+  - networkx
+  - holoviews
+  - joypy
+  - numpy
+  - pandas
+  - param
+  - panel
+  - bokeh
+  - matplotlib
+  - boruta_py
+  - jupyter
+  - pip
+  - pip:
+      - umap_learn
+      - methodtools
+      - sklearn
+      - xgboost

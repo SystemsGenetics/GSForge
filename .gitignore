@@ -1,0 +1,89 @@
+__pycache__
+.nextflow*
+output
+work
+docs/_build/
+nextflow
+.idea/
+.ipynb_checkpoints
+.csv
+.nc
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# PyBuilder
+target/
+
+
+# Repo scratch directory
+scratch/
+
+# Misc
+.DS_Store
+
+src/dev_notebooks/lentil_boruta_runs/
+
+*.gz
+*.soft.gz
+*.nc
+
+# nbsite
+# these files normally shouldn't be checked in as they should be
+# dynamically built from notebooks
+#doc/**/*.rst
+doc/**/*.ipynb
+doc/**/*.json
+# this dir contains the whole website and should not be checked in on master
+builtdocs/
+
+
+*.gff
+*.gtf
+*.gff3
+*.db
