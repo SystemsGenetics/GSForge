@@ -45,8 +45,8 @@ html_theme_options = {
 
 _NAV = (
     # ('Getting Started', 'getting_started/Index'),
-    ('Feature Tour', 'Feature_Tour'),
-    ('User Guide', 'user_guide/Index'),
+    # ('Feature Tour', 'Feature_Tour'),
+    # ('User Guide', 'user_guide/Index'),
     # ('Gallery', 'gallery/index'),
     ('API', 'Reference_Manual/Index'),
     ('Developer Guide', 'Development'),
