@@ -44,11 +44,11 @@ html_theme_options = {
 }
 
 _NAV = (
-    # ('Getting Started', 'getting_started/Index'),
+    # ('Getting Started', 'getting_started/index'),
     # ('Feature Tour', 'Feature_Tour'),
-    # ('User Guide', 'user_guide/Index'),
+    # ('User Guide', 'user_guide/index'),
     # ('Gallery', 'gallery/index'),
-    ('API', 'Reference_Manual/Index'),
+    ('API', 'Reference_Manual/index'),
     ('Developer Guide', 'Development'),
     ('About', 'About')
 )
