@@ -6,7 +6,7 @@ python:
 
 
 install:
-  - pip install gemprospector/[interactive,documentation]
+  - pip install gemprospector[interactive,documentation]
 
 
 script:
