@@ -6,7 +6,7 @@ GemProspector
 Welcome to the GemProspector documentation!
 
 
-.. notebook:: GeneSelector ../examples/welcome.ipynb
+.. notebook:: GemProspector ../examples/welcome.ipynb
     :offset: 0
 
 
