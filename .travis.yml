@@ -7,9 +7,10 @@ python:
 
 install:
   - pip install -r requirements.txt
+  - pip install -r doc/requirements.txt
   - pip install .
 
 
 script:
-  - pytest --nbsmoke-lint examples/*ipyn
-  - pytest --nbsmoke-run examples/*ipynb
+  - pytest --nbsmoke-lint examples/*.ipynb
+  - pytest --nbsmoke-run examples/*.ipynb
