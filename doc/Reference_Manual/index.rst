@@ -10,5 +10,5 @@ API reference manual...
    :maxdepth: 2
    :hidden:
 
-   models <GeneSelector.models>
-   util  <GeneSelector.util>
+   models <GemProspector.models>
+   util  <GemProspector.util>
