@@ -11,6 +11,13 @@ install:
   - pip install .
 
 
-script:
-  - pytest --nbsmoke-lint examples/*.ipynb
-  - pytest --nbsmoke-run examples/*.ipynb
+jobs:
+  include:
+    - stage: run_notebooks
+      script:
+        - pytest --nbsmoke-run examples/*.ipynb
+
+    - stage: build_docs
+      script:
+        - nbsite generate-rst --org SystemsGenetics --project-name GemProspector
+        - nbsite build --what=html --output=builtdocs
