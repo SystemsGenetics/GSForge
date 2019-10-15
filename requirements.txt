@@ -13,9 +13,9 @@ joypy
 Boruta
 umap_learn
 lightgbm
-matplotlib[interactive]
-bokeh[interactive]
-holoviews[interactive]
-datashader[interactive]
-jupyter[interactive]
-panel[interactive]
+matplotlib
+bokeh
+holoviews
+datashader
+jupyter
+panel
