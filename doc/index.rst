@@ -1,12 +1,12 @@
 *************
-GemProspector
+GEMprospector
 *************
 
 
-Welcome to the GemProspector documentation!
+Welcome to the GEMprospector documentation!
 
 
-.. notebook:: GemProspector ../examples/welcome.ipynb
+.. notebook:: GEMprospector ../examples/welcome.ipynb
     :offset: 0
 
 

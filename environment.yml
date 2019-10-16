@@ -1,4 +1,4 @@
-name: GeneProspector
+name: GEMprospector
 channels:
   - conda-forge
 dependencies:

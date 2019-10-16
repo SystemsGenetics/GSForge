@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='GemProspector',
+    name='GEMprospector',
     version='0.2',
     packages=find_packages(),
     url='',
