@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath('../../gemprospector'))
 #     'within_subsection_order': lambda key: key
 # }
 
-project = u'GemProspector'
+project = u'GEMprospector'
 authors = u'Tyler Biggs'
 copyright = u'2019 ' + authors
 description = 'Short description for html meta description.'

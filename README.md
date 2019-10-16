@@ -1,3 +1,3 @@
-# GemProspector
+# GEMprospector
 
-[Documentation](https://systemsgenetics.github.io/GemProspector/)
+[Documentation](https://systemsgenetics.github.io/GEMprospector/)
