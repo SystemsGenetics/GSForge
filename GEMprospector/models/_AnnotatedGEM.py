@@ -7,6 +7,8 @@ import xarray as xr
 
 from textwrap import dedent
 
+from .. import utils
+
 
 class AnnotatedGEM(param.Parameterized):
     """
@@ -139,9 +141,9 @@ class AnnotatedGEM(param.Parameterized):
                     self.sample_index_name,
                     self.gene_index_name]
 
-        return util.infer_xarray_variables(xr_dataset=self.data,
-                                           quantile_size=quantile_size,
-                                           skip=skip)
+        return utils.infer_xarray_variables(xr_dataset=self.data,
+                                            quantile_size=quantile_size,
+                                            skip=skip)
 
     # def plot_label_bars(self, max_=8, labels=None):
     #     return plots.plot_label_bars(self.label_dataframe(labels), max_)
@@ -175,7 +177,7 @@ class AnnotatedGEM(param.Parameterized):
 
         else:
             label_ds = label_df.to_xarray()
-            attrs = util.infer_xarray_variables(label_ds, skip=["counts", "Gene", "Sample"])
+            attrs = utils.infer_xarray_variables(label_ds, skip=["counts", "Gene", "Sample"])
             label_ds = label_ds.assign_attrs(attrs)
             return label_ds.merge(count_array).transpose()
 
@@ -227,12 +229,12 @@ class AnnotatedGEM(param.Parameterized):
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
 
-        count_df = util.load_count_df(count_path=count_path, **count_kwargs)
+        count_df = utils.load_count_df(count_path=count_path, **count_kwargs)
 
         if label_path:
             if label_kwargs is None:
                 label_kwargs = dict(index_col=0)
-            label_df = util.load_label_df(label_path=label_path, **label_kwargs)
+            label_df = utils.load_label_df(label_path=label_path, **label_kwargs)
         else:
             label_df = None
 
