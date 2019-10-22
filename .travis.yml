@@ -10,6 +10,8 @@ install:
   - pip install -r doc/requirements.txt
   - pip install .
 
+before_script:
+  - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5da74c9a26eb50000d827679?action=download&amp;version=1&amp;direct\" -H 'Authorization: Bearer ${OSF_TOKEN}' --output ~/data/osativa.nc"
 
 jobs:
   include:

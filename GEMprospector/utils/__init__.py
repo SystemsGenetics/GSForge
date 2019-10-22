@@ -15,6 +15,10 @@ import pandas as pd
 import inspect
 
 
+def download_demo_data():
+    pass
+
+
 def get_by_json_attr(xr_dataset, key_pair):
     main_key, json_key = key_pair
     json_str = xr_dataset.attrs[main_key]
