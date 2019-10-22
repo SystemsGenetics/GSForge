@@ -133,7 +133,7 @@ class LineamentCollection(param.Parameterized):
         """
         # TODO: Add a warning if the glob returns nothing.
         lineaments = dict()
-        for file in pathlib.Path(target_dir).glob(glob_filter):
+        for file in pathlib.Path(target_dir).expanduser().resolve().glob(glob_filter):
             # key = os.path.basename(file).rsplit(".nc")[0]
             data = xr.open_dataset(file)
 

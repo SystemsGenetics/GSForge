@@ -1,5 +1,7 @@
 language: python
 
+services:
+  - docker
 
 addons:
   apt:
