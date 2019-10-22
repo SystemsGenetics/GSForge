@@ -130,9 +130,9 @@ class Interface(param.Parameterized):
         if self.count_mask == "complete":
             pass
         elif self.count_mask == "masked":
-            counts = utils.zero_mask_counts(counts)
+            counts = counts.where(counts > 0.0)
         elif self.count_mask == "dropped":
-            counts = utils.zero_dropped_counts(counts, dim=self.gem.gene_index_name)
+            counts = counts.where(counts > 0.0).dropna(dim=self.gem.gene_index_name)
 
         return counts[self.gem.gene_index_name].values.copy()
 

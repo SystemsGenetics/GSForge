@@ -1,7 +1,5 @@
 """
-
-Author: Tyler D. Biggs
-
+Utility functions for GEMprospector.
 """
 
 # Standard library imports.
@@ -56,14 +54,6 @@ def clean_nans(scores):
     scores = scores.copy()
     scores[np.isnan(scores)] = np.finfo(scores.dtype).min
     return scores
-
-
-def zero_mask_counts(counts):
-    return counts.where(counts > 0.0)
-
-
-def zero_dropped_counts(counts, dim):
-    return zero_mask_counts(counts).dropna(dim=dim)
 
 
 def kwargs_overlap(paramaterized, func):

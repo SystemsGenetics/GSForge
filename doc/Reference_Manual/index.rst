@@ -15,6 +15,7 @@ Welcome to the API reference for GEMprospector.
    :hidden:
 
    models <GEMprospector.models>
+   operations <GEMprospector.operations>
    util  <GEMprospector.util>
 
 .. _models: GEMprospector.models.html

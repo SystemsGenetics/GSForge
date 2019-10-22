@@ -41,7 +41,7 @@ class LineamentCollection(param.Parameterized):
         return lin_counts
 
     def __repr__(self):
-        summary = [f"<GeneSelector.{type(self).__name__}>"]
+        summary = [f"<GEMprospector.{type(self).__name__}>"]
         summary += [indent(self.gem.__repr__(), "    ")]
         summary += ["Lineament Keys and # of Selected Genes"]
         summary += [f"    {k}: {v}" for k, v in self._summarize_lineaments().items()]
