@@ -3,12 +3,12 @@ language: python
 services:
   - docker
 
-addons:
-  apt:
-    packages:
-      - libhdf5-serial-dev
-      - netcdf-bin
-      - libnetcdf-dev
+#addons:
+#  apt:
+#    packages:
+#      - libhdf5-serial-dev
+#      - netcdf-bin
+#      - libnetcdf-dev
 
 
 python:
