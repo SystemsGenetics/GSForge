@@ -27,17 +27,16 @@ jobs:
       install: skip
       script:
         - docker build -t systemsgenetics/gemprospector_interactive:latest .
+        - docker build -t systemsgenetics/gemprospector_workflow:latest workflows/
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push systemsgenetics/gemprospector_interactive:latest
+        - docker push systemsgenetics/gemprospector_workflow:latest
 
-    - stage: run_notebooks
+    - stage: test_and_build_docs
       script:
         - mkdir ~/data
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5da74c9a26eb50000d827679?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/data/osativa.nc"
         - pytest --nbsmoke-run examples/*.ipynb
-
-    - stage: build_docs
-      script:
-        - mkdir ~/data
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5da74c9a26eb50000d827679?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/data/osativa.nc"
         - nbsite generate-rst --org SystemsGenetics --project-name GEMprospector
         - nbsite build --what=html --output=builtdocs
       deploy:
