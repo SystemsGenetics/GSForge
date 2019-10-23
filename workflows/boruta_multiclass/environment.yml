@@ -1,0 +1,16 @@
+name: GEMprospector_workflow
+channels:
+  - conda-forge
+dependencies:
+  - python=3.7
+  - netcdf4
+  - hdf5
+  - xarray
+  - networkx
+  - numpy
+  - pandas
+  - boruta_py
+  - pip
+  - pip:
+      - sklearn
+      - xgboost
