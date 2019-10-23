@@ -23,7 +23,7 @@ install:
 
 jobs:
   include:
-    - stage: build_docker_notebook
+    - stage: build_dockerfiles
       install: skip
       script:
         - docker build -t systemsgenetics/gemprospector_interactive:latest .
