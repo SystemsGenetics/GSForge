@@ -1,6 +1,7 @@
 FROM jupyter/datascience-notebook:latest
 
-COPY [^examples]* /opt/gemprospector \
+RUN mkdir /opt/gemprospector
+COPY . /opt/gemprospector/
     && pip install /opt/gemprospector
 
 COPY examples/ examples/
