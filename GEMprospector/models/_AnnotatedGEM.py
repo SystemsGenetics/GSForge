@@ -1,3 +1,4 @@
+import pathlib
 import json
 import param
 import functools
@@ -228,6 +229,10 @@ class AnnotatedGEM(param.Parameterized):
     def parse_files(cls, count_path, label_path, count_kwargs, label_kwargs, **params):
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
+
+        # Expand and resolve the given paths.
+        count_path = str(pathlib.Path(count_path).expanduser().resolve())
+        label_path = str(pathlib.Path(label_path).expanduser().resolve())
 
         count_df = utils.load_count_df(count_path=count_path, **count_kwargs)
 

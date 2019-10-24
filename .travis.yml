@@ -2,6 +2,10 @@ branches:
   only:
   - master
 
+cache:
+  directories:
+   - $HOME/GEMprospector_demo_data/
+
 language: python
 
 services:
@@ -28,14 +32,13 @@ jobs:
         - docker push systemsgenetics/gemprospector_interactive:latest
         - docker push systemsgenetics/gemprospector_workflow:latest
 
-    - stage: stage demo data
-      script: "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5da74c9a26eb50000d827679?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/data/osativa.nc"
-
-
     - stage: test_and_build_docs
       script:
         - mkdir ~/data
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5da74c9a26eb50000d827679?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/data/osativa.nc"
+        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1eba3365cb8000dd9d251\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/GEMprospector_demo_data/rice_heat_drought.GEM.raw.txt"
+        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebb6365cb8000ad9194e\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/GEMprospector_demo_data/srx_sample_annots.txt"
+        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebd0365cb8000dd9d28d\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/GEMprospector_demo_data/all.gff"
+        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1f74f0db187000c3ab77d\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ~/GEMprospector_demo_data/osativa.nc"
         - pytest --nbsmoke-run examples/*.ipynb
         - nbsite generate-rst --org SystemsGenetics --project-name GEMprospector
         - nbsite build --what=html --output=builtdocs

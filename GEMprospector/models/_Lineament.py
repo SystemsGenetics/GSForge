@@ -1,4 +1,5 @@
 import json
+import pathlib
 import param
 import os
 import functools
@@ -149,6 +150,7 @@ class Lineament(param.Parameterized):
     @classmethod
     def from_netcdf(cls, path, **params):
         """Construct a `Lineament` object from a `netcdf` file path."""
+        path = str(pathlib.Path(path).expanduser().resolve())
         params = cls.parse_xarray_dataset(xr.open_dataset(path), **params)
         return cls(**params)
 

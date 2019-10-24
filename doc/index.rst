@@ -15,6 +15,7 @@ Welcome to the GEMprospector documentation!
     :maxdepth: 2
 
     Introduction <self>
+    Feature Tour <feature_tour>
     API <Reference_Manual/Index>
     Development <Development>
     About <About>
