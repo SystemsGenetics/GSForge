@@ -1,0 +1,12 @@
+version: '3.3'
+
+services:
+  interactive:
+    build:
+      context: .
+      dockerfile: './docker/notebook/Dockerfile'
+
+  workflow:
+    build:
+      context: .
+      dockerfile: './docker/workflow/Dockerfile'
