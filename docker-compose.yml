@@ -2,11 +2,13 @@ version: '3.3'
 
 services:
   interactive:
+    image: systemsgenetics/gemprospector_interactive:latest
     build:
       context: .
       dockerfile: './docker/notebook/Dockerfile'
 
   workflow:
+    image: systemsgenetics/gemprospector_workflow:latest
     build:
       context: .
       dockerfile: './docker/workflow/Dockerfile'
