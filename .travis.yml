@@ -2,6 +2,12 @@ branches:
   only:
   - master
 
+addons:
+  apt:
+    packages:
+      - libhdf5-serial-dev
+      - netcdf-bin
+      - libnetcdf-dev
 
 env:
   - GEMPROSPECTOR_DATA="${HOME}/GEMprospector_demo_data/"
