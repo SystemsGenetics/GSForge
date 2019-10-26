@@ -28,6 +28,24 @@ from ..models import OperationInterface
 from ..utils import kwargs_overlap
 
 
+class ReadsPerKilobaseMillion:
+    """
+
+    ***Citation(s):***
+    +[**]()
+
+    """
+
+    length_variable = param.String(default="lengths")
+
+    @staticmethod
+    def reads_per_kilobase_million(counts, lengths, sample_dim="Sample"):
+        scaling_factor = counts.sum(dim=sample_dim) / 1e6
+        reads_per_million = counts / scaling_factor
+        normalized_counts = reads_per_million / lengths
+        return normalized_counts
+
+
 class NormalizationMethod(OperationInterface):
     """
     Some normalization method.
