@@ -41,6 +41,7 @@ jobs:
     - stage: test_and_build_docs
       script:
         - mkdir "${GEMPROSPECTOR_DATA}/lineaments/"
+        - echo $GEMPROSPECTOR_DATA
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1eba3365cb8000dd9d251\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/rice_heat_drought.GEM.raw.txt"
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebb6365cb8000ad9194e\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/srx_sample_annots.txt"
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebd0365cb8000dd9d28d\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/all.gff"
