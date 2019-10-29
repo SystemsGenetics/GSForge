@@ -21,14 +21,18 @@ FPKM / RPKM (reads/fragments per kilo-base per million mapped reads)
 
 """
 
-
 import param
 import numpy as np
 from ..models import OperationInterface
+from .analytics import get_data
 from ..utils import kwargs_overlap
 
+__all__ = [
+    "ReadsPerKilobaseMillion"
+]
 
-class ReadsPerKilobaseMillion:
+
+class ReadsPerKilobaseMillion(OperationInterface):
     """
 
     ***Citation(s):***
@@ -39,11 +43,42 @@ class ReadsPerKilobaseMillion:
     length_variable = param.String(default="lengths")
 
     @staticmethod
-    def reads_per_kilobase_million(counts, lengths, sample_dim="Sample"):
+    def xr_reads_per_kilobase_million(counts, lengths, sample_dim="Sample"):
         scaling_factor = counts.sum(dim=sample_dim) / 1e6
         reads_per_million = counts / scaling_factor
         normalized_counts = reads_per_million / lengths
         return normalized_counts
+
+    @staticmethod
+    def np_reads_per_kilobase_million(counts, lengths):
+        scaling_factor = counts.sum(axis=0) / 1e6
+        reads_per_million = counts / scaling_factor
+        normalized_counts = reads_per_million / lengths
+        return normalized_counts
+
+    def process(self):
+        counts = self.x_data
+        lengths = self.gem.data[self.length_variable].sel({self.gene_index_name: self.get_gene_index()}).copy()
+        return self.xr_reads_per_kilobase_million(counts=counts, lengths=lengths, sample_dim=self.sample_index_name)
+
+
+class QuantileNormalization(OperationInterface):
+
+    quantile = param.Magnitude(default=0.75)
+
+    @staticmethod
+    def np_quantile_normalization():
+        pass
+
+    @staticmethod
+    def xr_quantile_normalization():
+        pass
+
+    def process(self):
+        self.set_param(count_mask="dropped")
+        counts = self.x_data
+        sample_quantile = counts.quantile(q=self.quantile, dim=self.sample_index_name)
+        return counts / (sample_quantile / sample_quantile.mean())
 
 
 class NormalizationMethod(OperationInterface):
@@ -59,4 +94,3 @@ class NormalizationMethod(OperationInterface):
     def process(self):
         random_genes = np.random.choice(self.gene_index, self.k)
         return random_genes, {"random_size": self.k}
-

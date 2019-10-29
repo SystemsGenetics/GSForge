@@ -89,7 +89,6 @@ class UMAP_Panel(Interface):
         # Convert them to usable forms.
         umap_kwargs = dict(frozen_umap_kwargs)
         mapping_key = list(frozen_mapping_key)
-        print(mapping_key)
         if mapping_key == ["Complete"]:
             subset = self.gem.data
         else:
@@ -122,7 +121,8 @@ class UMAP_Panel(Interface):
         tooltips = [(name, "@" + f"{name}") for name in self.gem.data.attrs.get("all_labels")]
         hover = HoverTool(tooltips=tooltips)
 
-        plot = plot.opts(hv.opts.Points(tools=[hover]))
+        # plot = plot.opts(hv.opts.Points(tools=[hover]))
+        plot = plot.opts(tools=[hover])
         color = self.hue if self.hue else "#3288bd"
 
         return plot.options(color=color, cmap="Set1", legend_position='bottom', xaxis=None, yaxis=None,

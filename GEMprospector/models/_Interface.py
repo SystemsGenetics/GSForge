@@ -136,7 +136,15 @@ class Interface(param.Parameterized):
 
         return counts[self.gem.gene_index_name].values.copy()
 
-    def get_sample_index(self, sample_variable=None) -> np.array:
+    @property
+    def gene_index_name(self):
+        return self.gem.gene_index_name
+
+    @property
+    def sample_index_name(self):
+        return self.gem.sample_index_name
+
+    def get_sample_index(self) -> np.array:
         """Get the currently selected sample index as a numpy array.
 
         :param sample_variable: The variable to be retrieved, this should probably not be changed.
@@ -144,21 +152,18 @@ class Interface(param.Parameterized):
         :return: A numpy array of the currently selected samples.
         """
 
-        if sample_variable is None:
-            sample_variable = self.y_variables
-
         if self.sample_subset is not None:
             subset = self.gem.data.sel({self.gem.sample_index_name: self.sample_subset})
         else:
             subset = self.gem.data
 
-        if sample_variable is not None:
-            subset = subset[sample_variable]
+        if self.target_mask == "complete":
+            pass
+        elif self.target_mask == "dropped":
+            if self.y_variables is not None:
+                subset = subset[self.y_variables].dropna(dim=self.gem.sample_index_name)
 
-            if self.target_mask == "complete":
-                pass
-            elif self.target_mask == "dropped":
-                subset = subset.dropna(dim=self.gem.sample_index_name)
+            subset = subset.dropna(dim=self.gem.sample_index_name)
 
         return subset[self.gem.sample_index_name].values.copy()
 
@@ -183,8 +188,10 @@ class Interface(param.Parameterized):
         # TODO: Consider adding a copy option.
         gene_index = self.get_gene_index()
         sample_index = self.get_sample_index()
-        selection = self.gem.data.sel({self.gem.gene_index_name: gene_index,
-                                       self.gem.sample_index_name: sample_index})
+        selection_dict = {self.gem.gene_index_name: gene_index,
+                          self.gem.sample_index_name: sample_index}
+        selection_dict = {k: v for k, v in selection_dict.items() if v is not None}
+        selection = self.gem.data.sel(selection_dict)
 
         if self.count_mask == "masked":
             return selection[self.gem.count_array_name].where(selection[self.gem.count_array_name] > 0)

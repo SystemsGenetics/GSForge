@@ -11,5 +11,5 @@ GEMprospector operations can be broken down into three categories:
 """
 
 from .analytics import *
-# from .normalize import *
+from .normalizations import *
 from .prospectors import *
