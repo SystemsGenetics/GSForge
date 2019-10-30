@@ -8,6 +8,7 @@ pytest
 netcdf4
 xarray
 methodtools
+tqdm
 param
 joypy
 seaborn
