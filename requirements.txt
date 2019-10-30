@@ -10,6 +10,7 @@ xarray
 methodtools
 param
 joypy
+seaborn
 Boruta
 umap_learn
 lightgbm
