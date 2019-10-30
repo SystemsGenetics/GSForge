@@ -4,6 +4,7 @@ Plotting functions for GEMprospector.
 """
 
 # import pandas as pd
+import numpy as np
 import xarray as xr
 import itertools
 import networkx as nx
@@ -11,15 +12,52 @@ import holoviews as hv
 from holoviews.operation.stats import univariate_kde
 from holoviews.operation.datashader import datashade
 import joypy
+import seaborn as sns
+import matplotlib.pyplot as plt
+from tqdm.autonotebook import tqdm
+import matplotlib.patches as mpatches
 
-# from matplotlib import pyplot as plt
 
 __all__ = [
     "lineament_connection_network",
     "scatter_dist_by_mappings",
     "ridge_plot",
-    "mean_vs_variance"
+    "mean_vs_variance",
+    "np_sample_distributions",
 ]
+
+
+def np_sample_distributions(counts: np.ndarray, labels: np.ndarray = None):
+    """
+    Calculate and overlay kernel density estimates of the given count matrix on a per-sample basis.
+
+    :param numpy.ndarray counts:  The count matrix to be displayed.
+    :param numpy.ndarray labels: If provided the output density estimates will be colored by their
+        label membership.
+
+    :returns: matplotlib.axes with overlayed kernel density estimates.
+    """
+
+    fig, ax = plt.subplots(1, figsize=(15, 8))
+
+    if labels is not None:
+        label_set = list(np.unique(labels))
+        colors = {label: color for label, color in zip(label_set, sns.color_palette(n_colors=len(label_set)))}
+        patches = [mpatches.Patch(color=color, label=label)
+                   for label, color in colors.items()]
+        plt.legend(handles=patches)
+
+    for index, sample_row in tqdm(enumerate(counts), total=counts.shape[0]):
+
+        if labels is not None:
+            label = labels[index]
+            color = colors[label]
+            sns.kdeplot(sample_row, ax=ax, legend=True, shade=False, gridsize=250, color=color)
+
+        else:
+            sns.kdeplot(sample_row, ax=ax, legend=False, shade=False, gridsize=250)
+
+    return ax
 
 
 def lineament_connection_network(mappings):
@@ -110,6 +148,7 @@ def scatter_dist_by_mappings(data, xkdim, ykdim, mappings=None,
     return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
 
 
+# TODO: Add a numpy interface to this function.
 def mean_vs_variance(count_array: xr.DataArray,
                      mappings=None,
                      use_datashade=False,
