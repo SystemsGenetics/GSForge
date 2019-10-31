@@ -1,6 +1,6 @@
 branches:
   only:
-  - master
+    - master
 
 addons:
   apt:
@@ -15,7 +15,7 @@ env:
 
 cache:
   directories:
-   - $GEMPROSPECTOR_DATA
+    - $GEMPROSPECTOR_DATA
 
 language: python
 
@@ -26,6 +26,11 @@ python:
   - "3.7"
 
 
+stages:
+  - name: Update OSF files
+    if: commit_message =~ \bupdate_osf\b
+  - test_notebooks
+  - test_and_build_docs
 
 
 install:
@@ -36,13 +41,6 @@ install:
 
 jobs:
   include:
-    - stage: build_dockerfiles
-      install: skip
-      script:
-        - docker-compose build
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker push systemsgenetics/gemprospector_interactive:latest
-        - docker push systemsgenetics/gemprospector_workflow:latest
 
     - stage: test_and_build_docs
       script:
@@ -53,6 +51,17 @@ jobs:
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db37d30af84c3000ee17d09?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/lineaments/Genotype.nc"
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db37d30f3bb87000d82888a?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/lineaments/Subspecies.nc"
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db37d2ecfc96c000ebb6b20?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/lineaments/Treatment.nc"
+
+    - stage: build_dockerfiles
+      install: skip
+      script:
+        - docker-compose build
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push systemsgenetics/gemprospector_interactive:latest
+        - docker push systemsgenetics/gemprospector_workflow:latest
+
+    - stage: test_and_build_docs
+      script:
         - pytest --nbsmoke-run examples/*.ipynb
         - nbsite generate-rst --org SystemsGenetics --project-name GEMprospector
         - nbsite build --what=html --output=builtdocs
