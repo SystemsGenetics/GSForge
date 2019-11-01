@@ -18,12 +18,16 @@ from tqdm.autonotebook import tqdm
 import matplotlib.patches as mpatches
 
 
+from ._gene_mass import plot_count_sum_mass, plot_sample_mass
+
 __all__ = [
     "lineament_connection_network",
     "scatter_dist_by_mappings",
     "ridge_plot",
     "mean_vs_variance",
     "np_sample_distributions",
+    "plot_count_sum_mass",
+    "plot_sample_mass",
 ]
 
 

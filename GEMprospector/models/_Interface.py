@@ -193,10 +193,15 @@ class Interface(param.Parameterized):
         selection_dict = {k: v for k, v in selection_dict.items() if v is not None}
         selection = self.gem.data.sel(selection_dict)
 
-        if self.count_mask == "masked":
-            return selection[self.gem.count_array_name].where(selection[self.gem.count_array_name] > 0)
+        if self.x_variable is not None:
+            count_variable = self.x_variable
         else:
-            return selection[self.gem.count_array_name].copy(deep=True)
+            count_variable = self.gem.count_array_name
+
+        if self.count_mask == "masked":
+            return selection[count_variable].where(selection[self.gem.count_array_name] > 0)
+        else:
+            return selection[count_variable].copy(deep=True)
 
     @property
     def y_data(self):
