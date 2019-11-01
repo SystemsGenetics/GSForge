@@ -1,3 +1,10 @@
+#
+# This file triggers a travis-ci build upon a commit to the master branch.
+#
+# The travis.yml file (in that branch) controls how travis will handle builds.
+#
+#
+
 branches:
   only:
     - master
