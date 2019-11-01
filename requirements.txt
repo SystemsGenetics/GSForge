@@ -21,3 +21,4 @@ holoviews
 datashader
 jupyter
 panel
+statsmodels

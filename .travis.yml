@@ -29,7 +29,7 @@ python:
 stages:
   - name: Update OSF files
     if: commit_message =~ \bupdate_osf\b
-  - test_notebooks
+  - build_dockerfiles
   - test_and_build_docs
 
 
