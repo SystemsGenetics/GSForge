@@ -19,6 +19,10 @@ import matplotlib.patches as mpatches
 
 
 from ._gene_mass import plot_count_sum_mass, plot_sample_mass
+from ._scatter_distributions import ScatterDistributionBase
+
+# hv.extension("bokeh", "matplotlib")
+
 
 __all__ = [
     "lineament_connection_network",
@@ -28,6 +32,7 @@ __all__ = [
     "np_sample_distributions",
     "plot_count_sum_mass",
     "plot_sample_mass",
+    "ScatterDistributionBase",
 ]
 
 
