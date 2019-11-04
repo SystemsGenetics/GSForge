@@ -53,7 +53,7 @@ jobs:
     - stage: Update OSF files
       install: skip
       script:
-        - mkdir ${GEMPROSPECTOR_DATA}/lineaments/
+#        - mkdir ${GEMPROSPECTOR_DATA}/lineaments/
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1eba3365cb8000dd9d251?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/rice_heat_drought.GEM.raw.txt"
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebb6365cb8000ad9194e?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/srx_sample_annots.txt"
         - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebd0365cb8000dd9d28d?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/all.gff3"
