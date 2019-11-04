@@ -4,7 +4,8 @@ import numpy as np
 import holoviews as hv
 from ..models import OperationInterface
 from holoviews.operation.stats import univariate_kde
-from holoviews.operation.datashader import datashade
+from holoviews.operation.datashader import datashade, dynspread
+import warnings
 
 # hv.extension("bokeh", "matplotlib")
 
@@ -24,8 +25,8 @@ default_hv_opts = {
 
 
 class ScatterDistributionBase(OperationInterface):
-    # x_kdims = param.Parameter(default="mean")
-    # y_kdims = param.Parameter(default="variance")
+
+    # transform = param.Callable(default=None)
 
     hv_point_options = param.Dict(default=default_hv_opts["points"])
     hv_dist_opts = param.Dict(default=default_hv_opts["dists"])
@@ -33,6 +34,7 @@ class ScatterDistributionBase(OperationInterface):
     hv_y_dist_opts = param.Dict(default=default_hv_opts["y_dist"])
 
     datashade_ = param.Boolean(default=False)
+    dynspread_ = param.Boolean(default=False)
 
     x_axis_selector = param.ObjectSelector(default="mean")
     y_axis_selector = param.ObjectSelector(default="variance")
@@ -55,7 +57,12 @@ class ScatterDistributionBase(OperationInterface):
                         dist_x_opts=None,
                         dist_y_opts=None,
                         datashade_=False,
+                        dynspread_=False,
                         shaded_opts=None):
+
+        if dynspread_ and not datashade_:
+            warnings.warn("Dynspread can only be used with datashade, setting both to true.")
+            datashade_= True
 
         df = dataset[[x_kdims, y_kdims]].to_dataframe()
         points = hv.Points(df, kdims=[x_kdims, y_kdims]).opts(**points_opts)
@@ -65,6 +72,8 @@ class ScatterDistributionBase(OperationInterface):
 
         if datashade_:
             points = datashade(points).opts(**shaded_opts)
+            if dynspread_:
+                points = dynspread(points)
 
         return points << dist_x.opts(**dist_x_opts) << dist_y.opts(**dist_y_opts)
 
@@ -87,6 +96,7 @@ class ScatterDistributionBase(OperationInterface):
             dist_x_opts={**self.hv_dist_opts, **self.hv_x_dist_opts},
             dist_y_opts={**self.hv_dist_opts, **self.hv_y_dist_opts},
             datashade_=self.datashade_,
+            dynspread_=self.dynspread_,
         )
 
         return plot

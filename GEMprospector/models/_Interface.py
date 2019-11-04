@@ -16,6 +16,8 @@ from ._LineamentCollection import LineamentCollection
 from .. import utils
 
 
+# TODO: Consider adding a 'transform' parameter that would call some function on the
+#       resultant `x_data`.
 # TODO: Consider `gene_subset` parameter.
 # TODO: Consider generalizing some LineamentCollection-specific functions
 #       as found in the Lineament_Connectivity_Panel.
@@ -36,10 +38,6 @@ class Interface(param.Parameterized):
                                                precedence=-1.0)
 
     lineament_keys = param.List(default=None, precedence=-1.0)
-
-    # gene_subset = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
-    # A list of genes to use in a given operation. These can be supplied
-    # directly as a list of genes, or can be drawn from a given Lineament."""))
 
     sample_subset = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
     A list of samples to use in a given operation. These can be supplied
