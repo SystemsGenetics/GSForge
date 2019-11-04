@@ -17,7 +17,7 @@ addons:
       - libnetcdf-dev
 
 env:
-  - GEMPROSPECTOR_DATA="${HOME}/GEMprospector_demo_data/"
+  - GEMPROSPECTOR_DATA="${HOME}/GEMprospector_demo_data"
 
 
 cache:
