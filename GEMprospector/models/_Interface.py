@@ -67,7 +67,9 @@ class Interface(param.Parameterized):
         + 'dropped' returns the target array without samples that have zero or missing values.
     """), default='complete', objects=["complete", "dropped"], precedence=-1.0)
 
-    count_transform = param.Callable(default=None)
+    count_transform = param.Callable(default=None, precedence=-1.0, doc=dedent("""\
+    A transform that will be run on the x_data that is supplied by this Interface. The transform
+    runs on the subset of the matrix that has been selected."""))
 
     def __init__(self, *args, **params):
         if args:

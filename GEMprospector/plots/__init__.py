@@ -3,7 +3,7 @@ Plotting functions for GEMprospector.
 
 """
 
-# import pandas as pd
+import pandas as pd
 import numpy as np
 import xarray as xr
 import itertools
@@ -34,6 +34,8 @@ __all__ = [
     "plot_sample_mass",
     "ScatterDistributionBase",
     "plot_sample",
+    "datashade_gem",
+    "colorized_raster",
 ]
 
 
@@ -264,8 +266,26 @@ def gene_vs_gene_scatter(counts, dim="Gene"):
     return dmap.redim.values(alpha=genes, beta=genes)
 
 
-def gem_raster(counts):
-    return datashade(hv.Image(counts.values)).options(width=600, height=400)
+def datashade_gem(counts):
+    return datashade(hv.Image(counts.values)).options(width=600, height=400, xaxis=None, yaxis=None)
+
+
+def colorized_raster(counts, labels, colors=None):
+    if colors is None:
+        colors = ["Blues", "Greens", "Greys", "Oranges", "Purples", "Reds"]
+
+    label_series = pd.Series(labels)
+    groups = pd.DataFrame({"label": label_series}).groupby("label").groups
+
+    colors = {name: color for name, color in zip(groups.keys(), itertools.cycle(colors))}
+
+    data_groups = {name: counts.where(labels == name)
+                   for name in groups.keys()}
+
+    images = {name: hv.Image(values.values).opts(cmap=colors[name])
+              for name, values in data_groups.items()}
+
+    return hv.NdOverlay(images).options(width=600, height=400, xaxis=None, yaxis=None)
 
 
 def plot_label_bars(label_df, max_x=10):

@@ -126,7 +126,7 @@ class UMAP_Panel(Interface):
         color = self.hue if self.hue else "#3288bd"
 
         return plot.options(color=color, cmap="Set1", legend_position='bottom', xaxis=None, yaxis=None,
-                            padding=0.2, show_grid=True, bgcolor="lightgrey", width=500, height=500)
+                            padding=0.1, show_grid=True, bgcolor="lightgrey", width=500, height=500)
 
     def panel(self):
         controls = pn.Param(self.param, widgets={
