@@ -6,4 +6,4 @@ User Guide
     :titlesonly:
     :maxdepth: 2
 
-    Creating an AnnotatedGEM <creating_an_AnnotatedGEM>
+    Creating an AnnotatedGEM <Creating_an_AnnotatedGEM>
