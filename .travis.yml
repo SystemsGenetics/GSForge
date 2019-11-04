@@ -23,6 +23,7 @@ env:
 cache:
   directories:
     - $GEMPROSPECTOR_DATA
+    - $GEMPROSPECTOR_DATA/lineaments/
 
 language: python
 
