@@ -18,7 +18,7 @@ from tqdm.autonotebook import tqdm
 import matplotlib.patches as mpatches
 
 
-from ._gene_mass import plot_count_sum_mass, plot_sample_mass
+from ._gene_mass import plot_count_sum_mass, plot_sample_mass, plot_sample
 from ._scatter_distributions import ScatterDistributionBase
 
 # hv.extension("bokeh", "matplotlib")
@@ -33,6 +33,7 @@ __all__ = [
     "plot_count_sum_mass",
     "plot_sample_mass",
     "ScatterDistributionBase",
+    "plot_sample",
 ]
 
 

@@ -67,6 +67,8 @@ class Interface(param.Parameterized):
         + 'dropped' returns the target array without samples that have zero or missing values.
     """), default='complete', objects=["complete", "dropped"], precedence=-1.0)
 
+    count_transform = param.Callable(default=None)
+
     def __init__(self, *args, **params):
         if args:
             params = _interface_dispatch(*args, **params)
@@ -197,9 +199,14 @@ class Interface(param.Parameterized):
             count_variable = self.gem.count_array_name
 
         if self.count_mask == "masked":
-            return selection[count_variable].where(selection[self.gem.count_array_name] > 0)
+            data = selection[count_variable].where(selection[self.gem.count_array_name] > 0).copy(deep=True)
         else:
-            return selection[count_variable].copy(deep=True)
+            data = selection[count_variable].copy(deep=True)
+
+        if self.count_transform is not None:
+            data = self.count_transform(data)
+
+        return data
 
     @property
     def y_data(self):

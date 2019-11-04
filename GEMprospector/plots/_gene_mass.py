@@ -22,6 +22,19 @@ def _create_paths(count_array: np.ndarray):
     return itertools.chain.from_iterable(zip(starting_coords, ending_coords, starting_coords))
 
 
+def plot_sample(sample: np.ndarray):
+    """
+    Plots the gene counts for the given sample array as a bar-plot like single-path element.
+
+    :param np.ndarray sample: An array containing the count values.
+
+    :return:
+    """
+    paths = _create_paths(sample)
+    plot = hv.Path(paths)
+    return plot.opts(width=400, height=400, padding=0.05)
+
+
 def plot_sample_mass(sample: np.ndarray, lengths: np.ndarray):
     """
     Plots gene masses (counts * lengths) for the given sample array.
