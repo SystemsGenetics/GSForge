@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/SystemsGenetics/GEMprospector.svg?branch=master)](https://travis-ci.com/SystemsGenetics/GEMprospector)
+
 # GEMprospector
 
 *This project will probably have its named changed (again).*

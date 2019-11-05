@@ -36,7 +36,7 @@ python:
 
 stages:
   - name: Update OSF files
-    if: commit_message =~ \bupdate_osf\b
+#    if: commit_message =~ \bupdate_osf\b
   - build_dockerfiles
   - test_and_build_docs
 
