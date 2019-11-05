@@ -26,9 +26,9 @@ from ._scatter_distributions import ScatterDistributionBase
 
 __all__ = [
     "lineament_connection_network",
-    "scatter_dist_by_mappings",
+    # "scatter_dist_by_mappings",
     "ridge_plot",
-    "mean_vs_variance",
+    # "mean_vs_variance",
     "np_sample_distributions",
     "plot_count_sum_mass",
     "plot_sample_mass",
@@ -96,90 +96,90 @@ def lineament_connection_network(mappings):
                       color_index="node_type", node_size=5, edge_line_width=.5,
                       xaxis=None, yaxis=None)
 
-
-def _freq_vs_means(counts: xr.DataArray, dim="Sample"):
-    return xr.Dataset({'Mean': counts.mean(dim=dim),
-                       'Frequency': ((counts > 0).sum(dim=dim) / counts[dim].shape)})
-
-
-def _mean_vs_var(values, dim="Sample"):
-    """Returns a dataframe of means and variances from the given values."""
-    return xr.Dataset({'Mean': values.mean(dim=dim), 'Variance': values.var(dim=dim)})
-
-
-def scatter_dist_by_mappings(data, xkdim, ykdim, mappings=None,
-                             selection_dim="Gene",
-                             use_datashade=False,
-                             backend="bokeh"):
-    # Setup backend-specific plotting options.
-    # These options are specific to the backend -- i.e. matplotlib or bokeh.
-    # We also need to create options for the optional datashader output.
-    # Note that 'Area' is used instead of 'Distribution' as that is what the
-    # 'univariate_kde' function returns.
-    if backend == "bokeh":
-        hv.output(backend='bokeh')
-        points_opts = hv.opts.Points(width=500, height=500, bgcolor="lightgrey",
-                                     size=1.2, muted_alpha=0.05, show_grid=True)
-        dist_x_opts = hv.opts.Area(width=150, bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
-        dist_y_opts = hv.opts.Area(height=150, bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
-        shaded_opts = hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True)
-    elif backend == "matplotlib":
-        hv.output(backend='matplotlib')
-        points_opts = hv.opts.Points(s=1, aspect=1.75, fig_size=300, show_grid=True,
-                                     bgcolor="#eeeeee")
-        dist_x_opts = hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
-        dist_y_opts = hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
-        shaded_opts = hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True)
-    else:
-        raise ValueError(f"{backend} is not a valid backend. Select from 'bokeh', or 'matplotlib'")
-
-    # If no mappings are provided then the task is simplified.
-    if mappings is None:
-        df = data[[xkdim, ykdim]].to_dataframe()
-        points = hv.Points(df, kdims=[xkdim, ykdim]).opts(points_opts)
-        dist_x = univariate_kde(hv.Distribution(points, kdims=[ykdim]), n_samples=1000)
-        dist_y = univariate_kde(hv.Distribution(points, kdims=[xkdim]), n_samples=1000)
-        if use_datashade:
-            points = datashade(points).opts(shaded_opts)
-        return points << dist_x.opts(dist_x_opts) << dist_y.opts(dist_y_opts)
-
-    # TODO: Repair options usage as done in the above if-block.
-    # Otherwise we must create dictionaries of our mappings and overlay them.
-    data_groups = {name: data.sel({selection_dim: genes}) for name, genes in mappings.items()}
-    data_group_dfs = {k: v[[xkdim, ykdim]].to_dataframe() for k, v in data_groups.items()}
-
-    points = {k: hv.Points(val, kdims=[xkdim, ykdim]) for k, val in data_group_dfs.items()}
-
-    dist_x = {k: univariate_kde(hv.Distribution(p, kdims=[ykdim]), n_samples=1000).opts(dist_x_opts)
-              for k, p in points.items()}
-    dist_y = {k: univariate_kde(hv.Distribution(p, kdims=[xkdim]), n_samples=1000).opts(dist_y_opts)
-              for k, p in points.items()}
-
-    if use_datashade:
-        points_overlay = datashade(hv.NdOverlay(points)).opts(shaded_opts)
-    else:
-        points_overlay = hv.NdOverlay(points).opts(points_opts)
-
-    return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
-
-
-# TODO: Add a numpy interface to this function.
-def mean_vs_variance(count_array: xr.DataArray,
-                     mappings=None,
-                     use_datashade=False,
-                     calc_dim="Sample",
-                     mapping_dim="Gene",
-                     backend="bokeh") -> hv.NdOverlay:
-    """Plots the mean vs the variance of the given count array."""
-    ds = xr.Dataset({'Mean': count_array.mean(dim=calc_dim),
-                     'Variance': count_array.var(dim=calc_dim)})
-    return scatter_dist_by_mappings(data=ds,
-                                    xkdim="Mean",
-                                    ykdim="Variance",
-                                    mappings=mappings,
-                                    selection_dim=mapping_dim,
-                                    use_datashade=use_datashade,
-                                    backend=backend)
+#
+# def _freq_vs_means(counts: xr.DataArray, dim="Sample"):
+#     return xr.Dataset({'Mean': counts.mean(dim=dim),
+#                        'Frequency': ((counts > 0).sum(dim=dim) / counts[dim].shape)})
+#
+#
+# def _mean_vs_var(values, dim="Sample"):
+#     """Returns a dataframe of means and variances from the given values."""
+#     return xr.Dataset({'Mean': values.mean(dim=dim), 'Variance': values.var(dim=dim)})
+#
+#
+# def scatter_dist_by_mappings(data, xkdim, ykdim, mappings=None,
+#                              selection_dim="Gene",
+#                              use_datashade=False,
+#                              backend="bokeh"):
+#     # Setup backend-specific plotting options.
+#     # These options are specific to the backend -- i.e. matplotlib or bokeh.
+#     # We also need to create options for the optional datashader output.
+#     # Note that 'Area' is used instead of 'Distribution' as that is what the
+#     # 'univariate_kde' function returns.
+#     if backend == "bokeh":
+#         hv.output(backend='bokeh')
+#         points_opts = hv.opts.Points(width=500, height=500, bgcolor="lightgrey",
+#                                      size=1.2, muted_alpha=0.05, show_grid=True)
+#         dist_x_opts = hv.opts.Area(width=150, bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
+#         dist_y_opts = hv.opts.Area(height=150, bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
+#         shaded_opts = hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True)
+#     elif backend == "matplotlib":
+#         hv.output(backend='matplotlib')
+#         points_opts = hv.opts.Points(s=1, aspect=1.75, fig_size=300, show_grid=True,
+#                                      bgcolor="#eeeeee")
+#         dist_x_opts = hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
+#         dist_y_opts = hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25)
+#         shaded_opts = hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True)
+#     else:
+#         raise ValueError(f"{backend} is not a valid backend. Select from 'bokeh', or 'matplotlib'")
+#
+#     # If no mappings are provided then the task is simplified.
+#     if mappings is None:
+#         df = data[[xkdim, ykdim]].to_dataframe()
+#         points = hv.Points(df, kdims=[xkdim, ykdim]).opts(points_opts)
+#         dist_x = univariate_kde(hv.Distribution(points, kdims=[ykdim]), n_samples=1000)
+#         dist_y = univariate_kde(hv.Distribution(points, kdims=[xkdim]), n_samples=1000)
+#         if use_datashade:
+#             points = datashade(points).opts(shaded_opts)
+#         return points << dist_x.opts(dist_x_opts) << dist_y.opts(dist_y_opts)
+#
+#     # TODO: Repair options usage as done in the above if-block.
+#     # Otherwise we must create dictionaries of our mappings and overlay them.
+#     data_groups = {name: data.sel({selection_dim: genes}) for name, genes in mappings.items()}
+#     data_group_dfs = {k: v[[xkdim, ykdim]].to_dataframe() for k, v in data_groups.items()}
+#
+#     points = {k: hv.Points(val, kdims=[xkdim, ykdim]) for k, val in data_group_dfs.items()}
+#
+#     dist_x = {k: univariate_kde(hv.Distribution(p, kdims=[ykdim]), n_samples=1000).opts(dist_x_opts)
+#               for k, p in points.items()}
+#     dist_y = {k: univariate_kde(hv.Distribution(p, kdims=[xkdim]), n_samples=1000).opts(dist_y_opts)
+#               for k, p in points.items()}
+#
+#     if use_datashade:
+#         points_overlay = datashade(hv.NdOverlay(points)).opts(shaded_opts)
+#     else:
+#         points_overlay = hv.NdOverlay(points).opts(points_opts)
+#
+#     return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
+#
+#
+# # TODO: Add a numpy interface to this function.
+# def mean_vs_variance(count_array: xr.DataArray,
+#                      mappings=None,
+#                      use_datashade=False,
+#                      calc_dim="Sample",
+#                      mapping_dim="Gene",
+#                      backend="bokeh") -> hv.NdOverlay:
+#     """Plots the mean vs the variance of the given count array."""
+#     ds = xr.Dataset({'Mean': count_array.mean(dim=calc_dim),
+#                      'Variance': count_array.var(dim=calc_dim)})
+#     return scatter_dist_by_mappings(data=ds,
+#                                     xkdim="Mean",
+#                                     ykdim="Variance",
+#                                     mappings=mappings,
+#                                     selection_dim=mapping_dim,
+#                                     use_datashade=use_datashade,
+#                                     backend=backend)
 
 
 def ridge_plot(counts, **kwargs):
