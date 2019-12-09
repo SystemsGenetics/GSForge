@@ -1,17 +1,19 @@
+import param
 import numpy as np
 import holoviews as hv
 import matplotlib.pyplot as plt
-from tqdm.autonotebook import tqdm
 import seaborn as sns
 import matplotlib.patches as mpatches
 
 from ..models import OperationInterface
 
 
-class SampleDistribution(OperationInterface):
+class SampleWiseDistribution(OperationInterface):
+
+    ax = param.Parameter()
 
     @staticmethod
-    def np_sample_distributions(counts: np.ndarray, labels: np.ndarray = None):
+    def np_sample_distributions(counts: np.ndarray, labels: np.ndarray = None, ax=None):
         """
         Calculate and overlay kernel density estimates of the given count matrix on a per-sample basis.
 
@@ -24,13 +26,14 @@ class SampleDistribution(OperationInterface):
         :returns: matplotlib.axes with overlayed kernel density estimates.
         """
 
-        fig, ax = plt.subplots(1, figsize=(15, 8))
+        if ax is None:
+            ax = plt.gca()
 
         if labels is not None:
             label_set = list(np.unique(labels))
             colors = {label: color for label, color in zip(label_set, sns.color_palette(n_colors=len(label_set)))}
 
-        for index, sample_row in tqdm(enumerate(counts), total=counts.shape[0]):
+        for index, sample_row in enumerate(counts):
 
             if labels is not None:
                 label = labels[index]
@@ -43,5 +46,17 @@ class SampleDistribution(OperationInterface):
             patches = [mpatches.Patch(color=color, label=label)
                        for label, color in colors.items()]
             plt.legend(handles=patches)
+
+        return ax
+
+    def process(self):
+        """
+
+        :return:
+        """
+        counts = self.x_data.values.copy()
+        labels = self.y_data.values.copy() if self.y_data is not None else None
+        ax = self.np_sample_distributions(counts, labels, ax=self.ax)
+        ax.set_title(f"{self.active_count_variable} value distribution per-sample.");
 
         return ax

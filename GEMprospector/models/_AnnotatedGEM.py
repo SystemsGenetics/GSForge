@@ -11,6 +11,7 @@ from textwrap import dedent
 from .. import utils
 
 
+# TODO: Track and infer the 'count' matrix variables, versus sample and gene annotations.
 class AnnotatedGEM(param.Parameterized):
     """
     A wrapper class for a gene expression matrix and any associated phenotype
@@ -28,6 +29,7 @@ class AnnotatedGEM(param.Parameterized):
     needed annotations. This `Xarray.Dataset` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample')."""))
 
+    # TODO: This may not be needed, a select_count_array should be in the Interface class.
     count_array_name = param.String(default="counts", doc=dedent("""\
     This parameter controls which variable from the `Xarray.Dataset` should be
     considered to be the 'count' variable.
@@ -76,6 +78,17 @@ class AnnotatedGEM(param.Parameterized):
         """
         return self.data[self.sample_index_name].copy(deep=True)
 
+    @property
+    def count_array_names(self) -> list:
+        """Returns a list of all available count arrays contained within this AnnotatedGEM object.
+
+        This is done simply by returning all data variables that have the same dimension set
+        as the default count array.
+        """
+        default_dims = set(self.data[self.count_array_name].dims)
+        return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
+
+    # TODO: Remove from this class, move to interface.
     def zero_mask_counts(self, count_name: str = None) -> xr.DataArray:
         """Returns the count matrix as an `Xarray.DataArray` with any zero values masked as NaN.
 
@@ -88,6 +101,7 @@ class AnnotatedGEM(param.Parameterized):
             count_name = self.count_array_name
         return self.data[count_name].where(self.data[count_name] > 0.0)
 
+    # TODO: Remove from this class, move to interface.
     def zero_dropped_counts(self, count_name: str = None) -> xr.DataArray:
         """Returns the count matrix as an `Xarray.DataArray` with any zero values dropped
         along the 'gene' axis.
@@ -102,6 +116,7 @@ class AnnotatedGEM(param.Parameterized):
         zero_masked_counts = self.zero_mask_counts(count_name=count_name)
         return zero_masked_counts.dropna(dim=self.gene_index_name)
 
+    # TODO: Remove from this class, move to interface.
     def zero_dropped_gene_index(self, count_name: str = None) -> xr.DataArray:
         """Returns the count matrix gene index as an `Xarray.DataArray` with any genes containing
         zeros having been dropped.
@@ -114,6 +129,7 @@ class AnnotatedGEM(param.Parameterized):
         """
         return self.zero_dropped_counts(count_name=count_name)[self.gene_index_name]
 
+    # TODO: Remove from this class, move to interface.
     def label_dataframe(self, labels: list = None) -> pd.DataFrame:
         """Returns the supplied list of labels as a `pandas.DataFrame` object.
 
@@ -126,6 +142,7 @@ class AnnotatedGEM(param.Parameterized):
             labels = self.data.attrs["all_labels"]
         return self.data[labels].to_dataframe()
 
+    # TODO: Remove from this class, move to interface?
     def infer_variables(self, quantile_size=10, skip=None) -> dict:
         """Infer categories for the variables in the AnnotatedGEM's labels.
 
@@ -149,6 +166,7 @@ class AnnotatedGEM(param.Parameterized):
     # def plot_label_bars(self, max_=8, labels=None):
     #     return plots.plot_label_bars(self.label_dataframe(labels), max_)
 
+    # TODO: Consider adding an option for transposing.
     @staticmethod
     def xrarray_gem_from_pandas(count_df: pd.DataFrame,
                                 label_df: pd.DataFrame = None) -> xr.Dataset:
@@ -161,23 +179,20 @@ class AnnotatedGEM(param.Parameterized):
         :return: An `xarray.Dataset` containing the gene expression matrix and
             the gene annotation data.
         """
-        # TODO: Consider options for variable parsing.
-
-        # Stacking the count data lets the gene names be a coordinate array, rather
-        # than a long list of variables. It seems to be faster to call stack on the
-        # `pandas.DataFrame`.
-        count_df = pd.DataFrame(count_df.stack())
-
-        count_df.columns = ["counts"]
-        count_df.index.names = ["Gene", "Sample"]
-
-        count_array = count_df.to_xarray()
+        count_array = xr.Dataset(
+            {"counts": (("Gene", "Sample"), count_df.values)},
+            coords={
+                "Sample": count_df.columns.values,
+                "Gene": count_df.index.values
+            }
+        )
 
         if label_df is None:
-            return count_array.transpose()
+            return count_array.transpose().to_dataset()
 
         else:
             label_ds = label_df.to_xarray()
+            # TODO: Update `skip` parameter.
             attrs = utils.infer_xarray_variables(label_ds, skip=["counts", "Gene", "Sample"])
             label_ds = label_ds.assign_attrs(attrs)
             return label_ds.merge(count_array).transpose()
@@ -226,13 +241,15 @@ class AnnotatedGEM(param.Parameterized):
         return instance
 
     @classmethod
-    def parse_files(cls, count_path, label_path, count_kwargs, label_kwargs, **params):
+    def parse_files(cls, count_path, label_path=None, count_kwargs=None, label_kwargs=None, **params):
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
 
         # Expand and resolve the given paths.
         count_path = str(pathlib.Path(count_path).expanduser().resolve())
-        label_path = str(pathlib.Path(label_path).expanduser().resolve())
+
+        if label_path:
+            label_path = str(pathlib.Path(label_path).expanduser().resolve())
 
         count_df = utils.load_count_df(count_path=count_path, **count_kwargs)
 

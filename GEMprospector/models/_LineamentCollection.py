@@ -82,6 +82,8 @@ class LineamentCollection(param.Parameterized):
             # xds.to_netcdf(os.path.join(target_dir, key + ".nc"))
 
     def as_dict(self, keys=None, exclude=None):
+        """Returns a dictionary of {name: supported_genes} for each lineament, or those specified
+        by the `keys` argument."""""
         if keys is None:
             keys = self.lineaments.keys()
 

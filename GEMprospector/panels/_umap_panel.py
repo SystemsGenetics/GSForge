@@ -23,7 +23,7 @@ class UMAP_Panel(Interface):
     mapping_index_name = param.String(default="Gene", precedence=-1.0, doc=dedent("""\
     The index name to which the Genes in the `mappings` parameter refer."""))
 
-    mapping_selector = param.ListSelector(default=["Complete"], doc=dedent("""\
+    mapping_selector = param.ListSelector(default=["Complete", ], objects=["Complete"], doc=dedent("""\
     The active mapping to be used to subset the data."""))
 
     # UMAP model parameters.
@@ -69,11 +69,25 @@ class UMAP_Panel(Interface):
         # UMAP n_neighbors is limited by the number of samples.
         self.param["n_neighbors"].bounds = [1, len(self.gem.data[self.gem.sample_index_name]) - 1]
 
-        avail_hues = sorted(list(set(self.gem.data.attrs.get('quantile')
-                                     + self.gem.data.attrs.get('discrete'))))
-        self.param["hue"].objects = [None] + avail_hues
-        if self.hue is None:
-            self.set_param(hue=avail_hues[0])
+        # Netcdf doesn't save single items as lists, we need to ensure they are lists.
+        for metadata in ["all_labels",
+                         "discrete",
+                         "continuous",
+                         "quantile",
+                         "incomplete", ]:
+            items = self.gem.data.attrs.get(metadata)
+            if items is not None and isinstance(items, str):
+                self.gem.data.attrs[metadata] = [items]
+
+        # TODO: Clean this up.
+        try:
+            avail_hues = sorted(list(set(self.gem.data.attrs.get('quantile')
+                                         + self.gem.data.attrs.get('discrete'))))
+            self.param["hue"].objects = [None] + avail_hues
+            if self.hue is None:
+                self.set_param(hue=avail_hues[0])
+        except TypeError:
+            pass
 
     def _get_umap_kwargs(self):
         """Returns the arguments needed for the UMAP reduction."""
@@ -89,14 +103,17 @@ class UMAP_Panel(Interface):
         # Convert them to usable forms.
         umap_kwargs = dict(frozen_umap_kwargs)
         mapping_key = list(frozen_mapping_key)
-        if mapping_key == ["Complete"]:
-            subset = self.gem.data
-        else:
-            gene_selection = list(self.lineament_collection.union(mapping_key))
-            subset = self.gem.data.sel({self.mapping_index_name: gene_selection})
 
-        zero_filled_data = subset[self.gem.count_array_name].fillna(0).values
+#         if "Complete" in mapping_key:
+#             subset = self.gem.data
+#         else:
+#             gene_selection = list(self.lineament_collection.union(mapping_key))
+#             subset = self.gem.data.sel({self.mapping_index_name: gene_selection})
 
+#         zero_filled_data = subset[self.active_count_variable].fillna(0).values
+        subset = self.selection.copy()
+        zero_filled_data = subset[self.active_count_variable].fillna(0).values
+    
         transform = umap.UMAP(**umap_kwargs).fit_transform(zero_filled_data)
 
         subset["x"] = ((self.gem.sample_index_name,), transform[:, 0])
@@ -111,14 +128,21 @@ class UMAP_Panel(Interface):
         frozen_map_selector = frozenset(self.mapping_selector)
         umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
 
-        plotting_dims = ['x', 'y'] + self.gem.data.attrs.get("all_labels")
-        df = umap_ds[plotting_dims].to_dataframe()
+        plotting_dims = ['x', 'y'] + self.gem.data.attrs.get("all_labels") + [self.sample_index_name]
+
+        df = umap_ds[plotting_dims].to_dataframe().reindex()
+
+        # Set quantileable or group categories to the 'string' datatype.
+        to_cat = self.gem.data.attrs.get("discrete") + self.gem.data.attrs.get("quantile")
+        df[to_cat] = df[to_cat].astype("str")
 
         vdims = [item for item in self.gem.data.attrs.get("all_labels")]
 
         plot = hv.Points(df, kdims=["x", "y"], vdims=vdims)
 
-        tooltips = [(name, "@" + f"{name}") for name in self.gem.data.attrs.get("all_labels")]
+        tooltips = [(name, "@" + f"{name}") for name in self.gem.data.attrs.get("all_labels")
+                    if name in list(df.columns)]
+
         hover = HoverTool(tooltips=tooltips)
 
         # plot = plot.opts(hv.opts.Points(tools=[hover]))

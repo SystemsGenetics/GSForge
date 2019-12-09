@@ -16,11 +16,10 @@ from ._LineamentCollection import LineamentCollection
 from .. import utils
 
 
-# TODO: Consider adding a 'transform' parameter that would call some function on the
-#       resultant `x_data`.
 # TODO: Consider `gene_subset` parameter.
 # TODO: Consider generalizing some LineamentCollection-specific functions
 #       as found in the Lineament_Connectivity_Panel.
+# TODO: Add Lineament data access.
 class Interface(param.Parameterized):
     """
     The Interface provides common API access for interacting with the `AnnotatedGEM` and
@@ -139,6 +138,14 @@ class Interface(param.Parameterized):
         return counts[self.gem.gene_index_name].values.copy()
 
     @property
+    def active_count_variable(self):
+        if self.x_variable is not None:
+            count_variable = self.x_variable
+        else:
+            count_variable = self.gem.count_array_name
+        return count_variable
+            
+    @property
     def gene_index_name(self):
         return self.gem.gene_index_name
 
@@ -170,15 +177,15 @@ class Interface(param.Parameterized):
         return subset[self.gem.sample_index_name].values.copy()
 
     @property
-    def selection(self) -> dict:
+    def selection(self) -> xr.Dataset:
         """Returns the currently selected gene and sample indexes as a dictionary.
 
         This is usefull for selecting data from `xarray` objects.
 
         :return: A dictionary {index_name: active_genes}.
         """
-        return {self.gem.gene_index_name: self.get_gene_index(),
-                self.gem.sample_index_name: self.get_sample_index()}
+        return self.gem.data.sel({self.gem.gene_index_name: self.get_gene_index(),
+                                  self.gem.sample_index_name: self.get_sample_index()})
 
     @property
     def x_data(self) -> xr.Dataset:

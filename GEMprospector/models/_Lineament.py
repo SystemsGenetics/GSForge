@@ -14,6 +14,10 @@ from textwrap import dedent
 from .. import utils
 
 
+# TODO: Feature: Automatic lineament replicate combination?
+#       + From name or some hash, and by:
+#       + By membership
+#       + By filter_function(variables)
 # TODO: Add support inference?
 #       Create the boolean support array from a variable in the given data parameter.
 class Lineament(param.Parameterized):
@@ -34,6 +38,11 @@ class Lineament(param.Parameterized):
     support_index_name = param.String(default="support", doc=dedent("""\
     This parameter controls which variable should be considered to be the
     (boolean) variable indicating membership in this Lineament."""))
+    
+    gene_index_name = param.String(default="Gene", doc=dedent("""\
+    This parameter controls which variable from the `Xarray.Dataset` should be 
+    considered to be the 'gene index' coordinate.
+    Consider using this if you require different coordinate names."""))
 
     target = param.Parameter(default=None, doc=dedent("""\
     Optional. List of which target or targets this lineament describes. These values
@@ -62,7 +71,7 @@ class Lineament(param.Parameterized):
         summary = [f"<GEMprospector.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"    Lineament Target: '{self.target}'"]
-        summary += [f"    Supported Genes:  {support_size}, {percent_support:.2%} of {self.data['Gene'].shape[0]}"]
+        summary += [f"    Supported Genes:  {support_size}, {percent_support:.2%} of {self.data[self.gene_index_name].shape[0]}"]
         return "\n".join(summary)
 
     def gene_support(self) -> np.array:
@@ -75,23 +84,35 @@ class Lineament(param.Parameterized):
         """
         # TODO: Consider implementing an override for the target variable.
         if self.support_index_name in self.data:
-            supported_genes = self.data["Gene"].sel(
-                {"Gene": (self.data[self.support_index_name] == True)}).values.copy()
-            return self.data.Gene.sel(Gene=supported_genes).values.copy()
+            supported_genes = self.data[self.gene_index_name].sel(
+                {self.gene_index_name: (self.data[self.support_index_name] == True)}).values.copy()
+            return self.data[self.gene_index_name].sel({self.gene_index_name: supported_genes}).values.copy()
         else:
             # TODO: Implement proper warnings.
             Warning("Warning, no boolean support array found. Returning the complete "
                     "set of genes in this Lineament.")
-            return self.data.Gene.values.copy()
+            return self.data[self.gene_index_name].values.copy()
 
     def set_gene_support(self, genes):
         """Set this lineaments support to the given genes."""
-        self.data[self.support_index_name] = (("Gene",), np.isin(self.data.Gene.values, genes))
+        self.data[self.support_index_name] = ((self.gene_index_name,), np.isin(self.data.Gene.values, genes))
 
     def set_boolean_support(self, variable):
         support = np.array(self.data[variable], dtype=bool)
-        self.data[self.support_index_name] = (("Gene",), support)
+        self.data[self.support_index_name] = ((self.gene_index_name,), support)
 
+    # TODO: Combine with k_best_genes as a mode or option.
+    def k_abs_best_genes(self, k=100, score_name=None):
+
+        #     Fixes Issue #1240: NaNs can't be properly compared, so change them to the
+        #     smallest value of scores's dtype. -inf seems to be unreliable.
+        scores = self.data[score_name].values.copy()
+        scores[np.isnan(scores)] = np.finfo(scores.dtype).min
+
+        top_k_indexes = np.argsort(np.abs(scores))[-k:]
+        top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes})[self.gene_index_name].values.copy()
+        return top_k_genes
+        
     def k_best_genes(self, k=100, score_name=None) -> np.array:
         """Select the highest scoring genes from the 'score_name' variable.
 
@@ -110,7 +131,7 @@ class Lineament(param.Parameterized):
 
         scores = utils.clean_nans(self.data[score_name].values)
         top_k_indexes = np.argsort(scores)[-k:]
-        top_k_genes = self.data.isel({"Gene": top_k_indexes}).Gene.values.copy()
+        top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes}).Gene.values.copy()
         return top_k_genes
 
     def q_best_genes(self, q=0.999, score_name=None) -> np.array:
@@ -134,6 +155,7 @@ class Lineament(param.Parameterized):
         top_q_genes = self.data.sel({"Gene": quantile_selection}).Gene.values.copy()
         return top_q_genes
 
+    # TODO: Ensure 'attrs' get added to the dataset if they are found in params.
     @staticmethod
     def parse_xarray_dataset(data, **params):
         existing_params = data.attrs.get("__GEMprospector.Lineament.params")
@@ -141,6 +163,11 @@ class Lineament(param.Parameterized):
             existing_params = json.loads(existing_params)
             params = {**existing_params, **params}
         return {"data": data, **params}
+
+    @classmethod
+    def parse_netcdf_path(cls, netcdf_path, **params):
+        params = cls.parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
+        return {"data": xr.open_dataset(netcdf_path), **params}
 
     @classmethod
     def from_xarray_dataset(cls, data, **params):
@@ -156,10 +183,17 @@ class Lineament(param.Parameterized):
 
     @staticmethod
     def parse_pandas(dataframe, genes=None, attrs=None, **params):
+        """Parse a `pandas.DataFrame` for use in a Lineament.
+        """
 
         if genes is not None:
             dataframe["Gene"] = genes
             dataframe = dataframe.set_index("Gene")
+        
+        if dataframe.index.name is None:
+            dataframe.index.name = "Gene"
+        else:
+            params = {"gene_index_name": dataframe.index.name, **params}
 
         data = dataframe.to_xarray()
 
@@ -257,8 +291,8 @@ def _lineament_dispatch(*args, **params):
     raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
 
-_lineament_dispatch.register(str, Lineament.from_netcdf)
-_lineament_dispatch.register(xr.Dataset, Lineament.from_xarray_dataset)
-_lineament_dispatch.register(pd.DataFrame, Lineament.from_pandas)
-_lineament_dispatch.register(np.ndarray, Lineament.from_gene_array)
-_lineament_dispatch.register(list, Lineament.from_gene_array)
+_lineament_dispatch.register(str, Lineament.parse_netcdf_path)
+_lineament_dispatch.register(xr.Dataset, Lineament.parse_xarray_dataset)
+_lineament_dispatch.register(pd.DataFrame, Lineament.parse_pandas)
+_lineament_dispatch.register(np.ndarray, Lineament.parse_gene_array)
+_lineament_dispatch.register(list, Lineament.parse_gene_array)
