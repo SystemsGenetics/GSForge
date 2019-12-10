@@ -1,6 +1,6 @@
 """
 GEMprospector Panel applications provide interactive visualizations for `AnnotatedGEM`
-or `LineamentCollection` objects (or saved .netcdf files).
+or `GeneSetCollection` objects (or saved .netcdf files).
 """
 
 from ._umap_panel import UMAP_Panel

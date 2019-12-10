@@ -1,6 +1,6 @@
 """
 The GEMprospector interface model forms a basis for interacting with data
-stored in the `AnnotatedGEM` and `LineamentCollection` objects.
+stored in the `AnnotatedGEM` and `GeneSetCollection` objects.
 """
 
 import param
@@ -10,37 +10,37 @@ import xarray as xr
 import functools
 
 from ._AnnotatedGEM import AnnotatedGEM
-from ._Lineament import Lineament
-from ._LineamentCollection import LineamentCollection
+from ._GeneSet import GeneSet
+from ._GeneSetCollection import GeneSetCollection
 
 from .. import utils
 
 
 # TODO: Consider `gene_subset` parameter.
-# TODO: Consider generalizing some LineamentCollection-specific functions
+# TODO: Consider generalizing some GeneSetCollection-specific functions
 #       as found in the Lineament_Connectivity_Panel.
-# TODO: Add Lineament data access.
+# TODO: Add GeneSet data access.
 class Interface(param.Parameterized):
     """
     The Interface provides common API access for interacting with the `AnnotatedGEM` and
-    `LineamentCollection` objects. It also accepts an `AnnotatedGEM` and a single `Lineament`
+    `GeneSetCollection` objects. It also accepts an `AnnotatedGEM` and a single `GeneSet`
     for subset selection.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
     An AnnotatedGEM object."""), default=None, precedence=-1.0)
 
-    lineament = param.ClassSelector(class_=Lineament, doc=dedent("""\
-    A Lineament object which provides a gene subset."""), default=None, precedence=-1.0)
+    lineament = param.ClassSelector(class_=GeneSet, doc=dedent("""\
+    A GeneSet object which provides a gene subset."""), default=None, precedence=-1.0)
 
-    lineament_collection = param.ClassSelector(class_=LineamentCollection, default=None,
+    lineament_collection = param.ClassSelector(class_=GeneSetCollection, default=None,
                                                precedence=-1.0)
 
     lineament_keys = param.List(default=None, precedence=-1.0)
 
     sample_subset = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
     A list of samples to use in a given operation. These can be supplied
-    directly as a list of genes, or can be drawn from a given Lineament."""))
+    directly as a list of genes, or can be drawn from a given GeneSet."""))
 
     x_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
     The name of the count matrix used."""))
@@ -242,5 +242,5 @@ def _interface_dispatch(*args, **params):
 
 
 _interface_dispatch.register(AnnotatedGEM, Interface.parse_annotated_gem)
-_interface_dispatch.register(LineamentCollection, Interface.parse_lineament_collection)
-_interface_dispatch.register(Lineament, Interface.parse_lineament)
+_interface_dispatch.register(GeneSetCollection, Interface.parse_lineament_collection)
+_interface_dispatch.register(GeneSet, Interface.parse_lineament)

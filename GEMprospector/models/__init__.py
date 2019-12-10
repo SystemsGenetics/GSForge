@@ -1,9 +1,9 @@
 """
-There are two 'core' data models in *GEMprospector*, both of which
+There are two 'core' data models in *GSForge*, both of which
 store their associated data in `xarray.Dataset` object under a `data`
 attribute. You are encouraged to consult the xarray documentation:
 http://xarray.pydata.org/en/stable/ for how to perform any transform
-or selection not provided by *GEMprospector*. The two 'core' data
+or selection not provided by *GSForge*. The two 'core' data
 classes are:
 
 **AnnotatedGEM**
@@ -11,23 +11,23 @@ classes are:
     and 'Sample' coordinates. This `xarray.Dataset` object also contains
     (but is not limited to) phenotype information as well.
 
-**Lineament**
-    A lineament is a set of genes and any associated values. A lineament
+**GeneSet**
+    A GeneSet is a set of genes and any associated values. A GeneSet
     can a set of 'supported' genes, *i.e.* genes that are 'within' a
-    given lineament.
+    given GeneSet.
 
 The `interface` classes provide patterns of data access and common
 transformations that researchers may need from the `core` classes. They are:
 
-**LineamentCollection**
+**GeneSetCollection**
     The work-horse of the *GEMprospector* package. This object contains an
-    *AnnotatedGEM* and a python dictionary of {name: Lineament} objects.
-    This class contains functions for comparing and analyzing *Lineaments*,
-    as well as tools to pass of *Lineament*-derived subsets to other functions.
+    *AnnotatedGEM* and a python dictionary of {name: GeneSet} objects.
+    This class contains functions for comparing and analyzing *GeneSet*,
+    as well as tools to pass of *GeneSet*-derived subsets to other functions.
 
 **Interface**
     The *Interface* object provides a common API to interacting with *AnnotatedGEM*
-    or *LineamentCollection*. It provides functions that facilitate pulling gene
+    or *GeneSetCollection*. It provides functions that facilitate pulling gene
     or sample subsets and access to any transforms of the count matrix.
 
 **OperationInterface**
@@ -36,16 +36,16 @@ transformations that researchers may need from the `core` classes. They are:
 """
 
 from ._AnnotatedGEM import AnnotatedGEM
-from ._Lineament import Lineament
-from ._LineamentCollection import LineamentCollection
+from ._GeneSet import GeneSet
+from ._GeneSetCollection import GeneSetCollection
 from ._Interface import Interface
 from ._OperationInterface import OperationInterface
 
 
 __all__ = [
     "AnnotatedGEM",
-    "Lineament",
-    "LineamentCollection",
+    "GeneSet",
+    "GeneSetCollection",
     "Interface",
     "OperationInterface"
 ]

@@ -22,6 +22,18 @@ class AnnotatedGEM(param.Parameterized):
     By default this dataset will be expected to have its indexes named "Gene"
     and "Sample", although there are parameters to override those arrays and
     index names used.
+
+    An AnnotatedGEM object can be created with one of the class methods:
+    + from_files()
+        A helper function for loading disparate GEM and annotation files through
+        pandas.read_csv().
+    + from_pandas()
+        Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
+        must share the same sample index.
+    + from_netcdf()
+        Reads in from a .nc filepath. Usually this means loading a previously
+        created AnnotatedGEM.
+
     """
 
     data = param.ClassSelector(class_=xr.Dataset, doc=dedent("""\
@@ -29,7 +41,6 @@ class AnnotatedGEM(param.Parameterized):
     needed annotations. This `Xarray.Dataset` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample')."""))
 
-    # TODO: This may not be needed, a select_count_array should be in the Interface class.
     count_array_name = param.String(default="counts", doc=dedent("""\
     This parameter controls which variable from the `Xarray.Dataset` should be
     considered to be the 'count' variable.
@@ -88,60 +99,6 @@ class AnnotatedGEM(param.Parameterized):
         default_dims = set(self.data[self.count_array_name].dims)
         return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
 
-    # TODO: Remove from this class, move to interface.
-    def zero_mask_counts(self, count_name: str = None) -> xr.DataArray:
-        """Returns the count matrix as an `Xarray.DataArray` with any zero values masked as NaN.
-
-        :param count_name: [Optional] Name of the variable to pull from the data. For use if there
-            are multiple versions of the count data present (i.e. normalizations).
-
-        :return: An `Xarray.DataArray` of counts with any zero values masked as NaN.
-        """
-        if count_name is None:
-            count_name = self.count_array_name
-        return self.data[count_name].where(self.data[count_name] > 0.0)
-
-    # TODO: Remove from this class, move to interface.
-    def zero_dropped_counts(self, count_name: str = None) -> xr.DataArray:
-        """Returns the count matrix as an `Xarray.DataArray` with any zero values dropped
-        along the 'gene' axis.
-
-        :param count_name: [Optional] Name of the variable to pull from the data. For use if there
-            are multiple versions of the count data present (i.e. normalizations).
-
-        :return: An `Xarray.DataArray` of counts with any zero values dropped along the gene axis.
-        """
-        if count_name is None:
-            count_name = self.count_array_name
-        zero_masked_counts = self.zero_mask_counts(count_name=count_name)
-        return zero_masked_counts.dropna(dim=self.gene_index_name)
-
-    # TODO: Remove from this class, move to interface.
-    def zero_dropped_gene_index(self, count_name: str = None) -> xr.DataArray:
-        """Returns the count matrix gene index as an `Xarray.DataArray` with any genes containing
-        zeros having been dropped.
-
-        :param count_name: [Optional] Name of the variable to pull from the data. For use if there
-            are multiple versions of the count data present (i.e. normalizations).
-
-        :return: An `Xarray.DataArray` of the counts gene index with any zero values dropped along
-            the gene axis.
-        """
-        return self.zero_dropped_counts(count_name=count_name)[self.gene_index_name]
-
-    # TODO: Remove from this class, move to interface.
-    def label_dataframe(self, labels: list = None) -> pd.DataFrame:
-        """Returns the supplied list of labels as a `pandas.DataFrame` object.
-
-        :param labels: [Optional] the list of variables to be included as columns
-            in the output.
-
-        :return: A `pandas.DataFrame` object.
-        """
-        if labels is None:
-            labels = self.data.attrs["all_labels"]
-        return self.data[labels].to_dataframe()
-
     # TODO: Remove from this class, move to interface?
     def infer_variables(self, quantile_size=10, skip=None) -> dict:
         """Infer categories for the variables in the AnnotatedGEM's labels.
@@ -163,10 +120,6 @@ class AnnotatedGEM(param.Parameterized):
                                             quantile_size=quantile_size,
                                             skip=skip)
 
-    # def plot_label_bars(self, max_=8, labels=None):
-    #     return plots.plot_label_bars(self.label_dataframe(labels), max_)
-
-    # TODO: Consider adding an option for transposing.
     @staticmethod
     def xrarray_gem_from_pandas(count_df: pd.DataFrame,
                                 label_df: pd.DataFrame = None) -> xr.Dataset:
@@ -179,6 +132,7 @@ class AnnotatedGEM(param.Parameterized):
         :return: An `xarray.Dataset` containing the gene expression matrix and
             the gene annotation data.
         """
+        # TODO: Consider adding an option for transposing.
         count_array = xr.Dataset(
             {"counts": (("Gene", "Sample"), count_df.values)},
             coords={
@@ -198,7 +152,7 @@ class AnnotatedGEM(param.Parameterized):
             return label_ds.merge(count_array).transpose()
 
     @staticmethod
-    def parse_xarray_dataset(data, **params):
+    def _parse_xarray_dataset(data, **params):
         existing_params = data.attrs.get("__GEMprospector.AnnotatedGEM.params")
         if existing_params:
             existing_params = json.loads(existing_params)
@@ -206,18 +160,18 @@ class AnnotatedGEM(param.Parameterized):
         return {"data": data, **params}
 
     @classmethod
-    def parse_netcdf_path(cls, netcdf_path, **params):
-        params = cls.parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
+    def _parse_netcdf_path(cls, netcdf_path, **params):
+        params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return {"data": xr.open_dataset(netcdf_path), **params}
 
     @classmethod
     def from_netcdf(cls, netcdf_path, **params):
         """Construct a `GEM` object from a `netcdf` file path."""
-        params = cls.parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
+        params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return cls(**params)
 
     @classmethod
-    def parse_pandas(cls, count_df, label_df, **params):
+    def _parse_pandas(cls, count_df, label_df, **params):
         data = cls.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         return {"data": data, **params}
 
@@ -241,7 +195,7 @@ class AnnotatedGEM(param.Parameterized):
         return instance
 
     @classmethod
-    def parse_files(cls, count_path, label_path=None, count_kwargs=None, label_kwargs=None, **params):
+    def _parse_files(cls, count_path, label_path=None, count_kwargs=None, label_kwargs=None, **params):
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
 
@@ -290,8 +244,8 @@ class AnnotatedGEM(param.Parameterized):
 
         :return: An instance of the `GEM` class.
         """
-        params = cls.parse_files(count_path=count_path, label_path=label_path,
-                                 count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
+        params = cls._parse_files(count_path=count_path, label_path=label_path,
+                                  count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
         return cls(**params)
 
     def save(self, path):
@@ -320,6 +274,6 @@ def _annotated_gem_dispatch(*args, **params):
     raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
 
-_annotated_gem_dispatch.register(xr.Dataset, AnnotatedGEM.parse_xarray_dataset)
-_annotated_gem_dispatch.register(str, AnnotatedGEM.parse_netcdf_path)
-_annotated_gem_dispatch.register(pd.DataFrame, AnnotatedGEM.parse_pandas)
+_annotated_gem_dispatch.register(xr.Dataset, AnnotatedGEM._parse_xarray_dataset)
+_annotated_gem_dispatch.register(str, AnnotatedGEM._parse_netcdf_path)
+_annotated_gem_dispatch.register(pd.DataFrame, AnnotatedGEM._parse_pandas)

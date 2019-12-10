@@ -8,7 +8,7 @@ import numpy as np
 from textwrap import dedent, indent
 
 from ._AnnotatedGEM import AnnotatedGEM
-from ._Lineament import Lineament
+from ._GeneSet import GeneSet
 
 
 # TODO:
@@ -16,35 +16,35 @@ from ._Lineament import Lineament
 #       probably not be saved). "total" and "zero_dropped".
 #       Consider a `basic_lineaments` function.
 #     + Add a `get_support(key)` function.
-class LineamentCollection(param.Parameterized):
+class GeneSetCollection(param.Parameterized):
     """
-    Contains both an `AnnotatedGEM` and a dictionary of `Lineament` objects, as well
+    Contains both an `AnnotatedGEM` and a dictionary of `GeneSet` objects, as well
     as functions for comparing and analyzing those objects.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
     A Gene Expression Matrix (GEM) object."""))
 
-    lineaments = param.Dict(doc=dedent("""\
+    gene_sets = param.Dict(doc=dedent("""\
     A dictionary of {key: xarray.DataArray}, boolean arrays indicating
     support for a given gene."""))
 
     def __init__(self, **params):
         super().__init__(**params)
-        if self.lineaments is None:
-            self.lineaments = dict()
+        if self.gene_sets is None:
+            self.set_param(gene_sets=dict())
 
-    def _summarize_lineaments(self):
-        """Summarize this LineamentCollection."""
-        lin_counts = {key: len(lin.gene_support()) for key, lin in self.lineaments.items()}
-        lin_counts = {key: lin_counts[key] for key in sorted(lin_counts, key=lin_counts.get, reverse=True)}
-        return lin_counts
+    def _summarize_gene_sets(self):
+        """Summarize this GeneSetCollection."""
+        counts = {key: len(gs.gene_support()) for key, gs in self.gene_sets.items()}
+        counts = {key: counts[key] for key in sorted(counts, key=counts.get, reverse=True)}
+        return counts
 
     def __repr__(self):
         summary = [f"<GEMprospector.{type(self).__name__}>"]
         summary += [indent(self.gem.__repr__(), "    ")]
-        summary += ["Lineament Keys and # of Selected Genes"]
-        summary += [f"    {k}: {v}" for k, v in self._summarize_lineaments().items()]
+        summary += ["GeneSet Keys and # of Selected Genes"]
+        summary += [f"    {k}: {v}" for k, v in self._summarize_gene_sets().items()]
         return "\n".join(summary)
 
     def get_support(self, key) -> np.array:
@@ -52,18 +52,18 @@ class LineamentCollection(param.Parameterized):
 
         :param key: The lineament from which to get the gene support.
 
-        :return: A `numpy` array of the genes that make up the support of this `Lineament`.
+        :return: A `numpy` array of the genes that make up the support of this `GeneSet`.
         """
         return self.lineaments[key].gene_support()
 
     def save(self, target_dir, keys=None):
-        """Save  this collection to `target_dir`. Each `Lineament` will be saved as a separate
+        """Save  this collection to `target_dir`. Each `GeneSet` will be saved as a separate
         .netcdf file within this directory.
 
-        :param target_dir: The path to which the 'Lineament' `xarray.Dataset` .netcdf files will be written.
+        :param target_dir: The path to which the 'GeneSet' `xarray.Dataset` .netcdf files will be written.
 
-        :param keys: The list of `Lineament` keys that should be saved. If this is not provided, all
-            `Lineament` objects are saved.
+        :param keys: The list of `GeneSet` keys that should be saved. If this is not provided, all
+            `GeneSet` objects are saved.
 
         :return:
         """
@@ -146,7 +146,7 @@ class LineamentCollection(param.Parameterized):
                     continue
 
             data = xr.align(data, gem.gene_index, join="outer")[0]
-            new_lineament = Lineament.from_xarray_dataset(data=data)
+            new_lineament = GeneSet.from_xarray_dataset(data=data)
             lineaments[new_lineament.name] = new_lineament
 
         return cls(gem=gem, lineaments=lineaments, **params)
@@ -158,5 +158,5 @@ class LineamentCollection(param.Parameterized):
 #     raise TypeError(f"Source of type: {type(source)} not supported.")
 #
 #
-# _lineament_collection_dispatch.register(str, LineamentCollection.from_folder)
-# _lineament_collection_dispatch.register(pd.DataFrame, LineamentCollection.from_pandas)
+# _lineament_collection_dispatch.register(str, GeneSetCollection.from_folder)
+# _lineament_collection_dispatch.register(pd.DataFrame, GeneSetCollection.from_pandas)

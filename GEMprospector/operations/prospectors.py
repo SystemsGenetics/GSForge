@@ -78,13 +78,13 @@ def parse_boruta_model(boruta_model, gene_coords, attrs=None, dim="Gene") -> xr.
     return xr.Dataset(model_data, coords={dim: gene_coords}, attrs=attrs)
 
 
-# TODO: Consider a direct to Lineament object option.
+# TODO: Consider a direct to GeneSet object option.
 class boruta_prospector(OperationInterface):
     """Runs a single instance of BorutaPy feature selection.
 
     This is just a simple wrapper for a boruta model that produces an
     `xarray.Dataset` object suitable for use in the creation of a
-    `GEMprospector.Lineament` object."""
+    `GEMprospector.GeneSet` object."""
 
     estimator = param.Parameter(doc=dedent("""\
     A supervised learning estimator, with a 'fit' method that returns the

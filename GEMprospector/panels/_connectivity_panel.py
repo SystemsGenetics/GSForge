@@ -14,7 +14,7 @@ class Connectivity_Panel(Interface):
     """
     Display lineament collection membership via a network graph.
 
-    This panel requires a LineamentCollection as input.
+    This panel requires a GeneSetCollection as input.
     """
     mapping_selector = param.ListSelector(default=None)
     mapping_index_name = param.String(default="Gene", precedence=-1.0)
@@ -24,7 +24,7 @@ class Connectivity_Panel(Interface):
     def __init__(self, *args, **params):
         super().__init__(*args, **params)
         if self.lineament_collection is None:
-            raise Warning("Requires a `LineamentCollection` input to function.")
+            raise Warning("Requires a `GeneSetCollection` input to function.")
         if self.mapping_selector is None:
             avail_mappings = list(self.lineament_collection.lineaments.keys())
             self.param["mapping_selector"].objects = avail_mappings
@@ -101,7 +101,7 @@ class Connectivity_Panel(Interface):
 
     def panel(self):
         controls = pn.Param(self.param)
-        main_layout = pn.Column("### Lineament Connectivity Graph",
+        main_layout = pn.Column("### GeneSet Connectivity Graph",
                                 pn.Row(self.view, controls))
         help_layout = generate_help_pane(self)
         return pn.Tabs(("UMAP", main_layout), ("Documentation", help_layout))
