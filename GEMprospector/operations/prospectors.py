@@ -130,7 +130,7 @@ class boruta_prospector(OperationInterface):
     - 2: which features have been selected already"""))
 
     def process(self):
-        x_data, y_data = self.x_data, self.y_data
+        x_data, y_data = self.x_count_data, self.y_annotation_data
         boruta_kwargs = kwargs_overlap(self, boruta_py.BorutaPy)
         boruta_model = boruta_py.BorutaPy(**boruta_kwargs)
         boruta_model.fit(x_data, y_data)

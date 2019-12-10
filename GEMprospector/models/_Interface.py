@@ -13,8 +13,6 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from ._GeneSetCollection import GeneSetCollection
 
-from .. import utils
-
 
 # TODO: Consider `gene_subset` parameter.
 # TODO: Consider generalizing some GeneSetCollection-specific functions
@@ -30,27 +28,37 @@ class Interface(param.Parameterized):
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
     An AnnotatedGEM object."""), default=None, precedence=-1.0)
 
-    lineament = param.ClassSelector(class_=GeneSet, doc=dedent("""\
-    A GeneSet object which provides a gene subset."""), default=None, precedence=-1.0)
+    # gene_set = param.ClassSelector(class_=GeneSet, doc=dedent("""\
+    # A GeneSet object which provides a gene subset."""), default=None, precedence=-1.0)
 
-    lineament_collection = param.ClassSelector(class_=GeneSetCollection, default=None,
-                                               precedence=-1.0)
+    gene_set_collection = param.ClassSelector(class_=GeneSetCollection, default=None,
+                                              precedence=-1.0)
 
-    lineament_keys = param.List(default=None, precedence=-1.0)
+    selected_gene_sets = param.ListSelector(default=[None])
 
-    sample_subset = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
+    gene_set_mode = param.ObjectSelector(
+        default="union",
+        objects=["complete", "union", "intersection"],
+        doc=dedent("""\
+        Controls how any selected gene sets are returned by the interface.
+        + complete
+            Returns the entire gene set of the AnnotatedGEM.
+        + union
+            Returns the union of the selected gene sets support.
+        + intersection
+            Returns the intersection of the selected gene sets support.
+        """)
+    )
+
+    selected_samples = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
     A list of samples to use in a given operation. These can be supplied
     directly as a list of genes, or can be drawn from a given GeneSet."""))
 
-    x_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
+    selected_count_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
     The name of the count matrix used."""))
 
-    y_variables = param.Parameter(doc=dedent("""\
-    The name of the variable(s) with which the `x_variable` will be fitted.\n
-    If these must be modified (binarized, normalized, etc.) this should be done
-    prior to calling a GEMOperation. Passing a list of variables causes the
-    interface to return an `Xarray.Dataset` object when `Interface.y_data` is
-    called."""), precedence=-1.0, default=None)
+    selected_annotation_variables = param.Parameter(doc=dedent("""\
+    The name of the active annotation variable(s)."""), precedence=-1.0, default=None)
 
     count_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the count matrix.
@@ -67,48 +75,48 @@ class Interface(param.Parameterized):
     """), default='complete', objects=["complete", "dropped"], precedence=-1.0)
 
     count_transform = param.Callable(default=None, precedence=-1.0, doc=dedent("""\
-    A transform that will be run on the x_data that is supplied by this Interface. The transform
-    runs on the subset of the matrix that has been selected."""))
+    A transform that will be run on the x_data that is supplied by this Interface. 
+    The transform runs on the subset of the matrix that has been selected."""))
 
     def __init__(self, *args, **params):
         if args:
             params = _interface_dispatch(*args, **params)
-
         super().__init__(**params)
 
-    #         if self.x_variable is None:
-    #             self.set_param(x_variable=self.gem.count_array_name)
+        if self.gene_set_collection is not None:
+            avail_mappings = list(self.gene_set_collection.gene_sets.keys())
+            self.param["selected_gene_sets"].objects = avail_mappings
 
     @staticmethod
-    def parse_annotated_gem(annotated_gem, *args, **params):
+    def _parse_annotated_gem(annotated_gem, *args, **params):
         params = {"gem": annotated_gem,
-                  "x_variable": annotated_gem.count_array_name,
+                  "selected_count_variable": annotated_gem.count_array_name,
                   **params}
         if args:
             params = _interface_dispatch(*args, **params)
         return params
 
     @staticmethod
-    def parse_lineament_collection(lineament_collection, *args, **params):
-        if lineament_collection.gem is not None:
-            params = {"gem": lineament_collection.gem,
-                      "x_variable": lineament_collection.gem.count_array_name,
+    def _parse_gene_set_collection(gene_set_collection, *args, **params):
+        if gene_set_collection.gem is not None:
+            params = {"gem": gene_set_collection.gem,
+                      "selected_count_variable": gene_set_collection.gem.count_array_name,
                       **params}
-        params = {"lineament_collection": lineament_collection, **params}
+        params = {"gene_set_collection": gene_set_collection, **params}
 
         if args:
             params = _interface_dispatch(*args, **params)
 
         return params
 
-    @staticmethod
-    def parse_lineament(lineament, *args, **params):
-        params = {"lineament": lineament, **params}
-
-        if args:
-            params = _interface_dispatch(*args, **params)
-
-        return params
+    # @staticmethod
+    # def _parse_gene_set(gene_set, *args, **params):
+    #     params = {"lineament": gene_set, **params}
+    #
+    #     if args:
+    #         params = _interface_dispatch(*args, **params)
+    #
+    #     return params
 
     def get_gene_index(self, count_variable=None) -> np.array:
         """Get the currently selected gene index as a numpy array.
@@ -118,15 +126,23 @@ class Interface(param.Parameterized):
         :return: A numpy array of the currently selected genes.
         """
 
-        # Check if an explicit variable has been requested. Otherwise use the default x_variable.
         if count_variable is None:
-            count_variable = self.x_variable
+            count_variable = self.selected_count_variable
 
-        if self.lineament_keys is not None:
-            support = np.array(list(self.lineament_collection.union(self.lineament_keys)))
-            counts = self.gem.data.sel({self.gem.gene_index_name: support})[count_variable]
+        if self.selected_gene_sets == [None] or not self.gene_set_collection:
+            support = self.gem.gene_index
+
         else:
-            counts = self.gem.data[count_variable]
+            if self.gene_set_mode == "union":
+                support = np.array(list(self.gene_set_collection.union(self.selected_gene_sets)))
+
+            elif self.gene_set_mode == "intersection":
+                support = np.array(list(self.intersection.union(self.selected_gene_sets)))
+
+            elif self.gene_set_mode == "complete":
+                support = self.gem.gene_index
+
+        counts = self.gem.data.sel({self.gem.gene_index_name: support})[count_variable]
 
         if self.count_mask == "complete":
             pass
@@ -139,8 +155,8 @@ class Interface(param.Parameterized):
 
     @property
     def active_count_variable(self):
-        if self.x_variable is not None:
-            count_variable = self.x_variable
+        if self.selected_count_variable is not None:
+            count_variable = self.selected_count_variable
         else:
             count_variable = self.gem.count_array_name
         return count_variable
@@ -156,12 +172,10 @@ class Interface(param.Parameterized):
     def get_sample_index(self) -> np.array:
         """Get the currently selected sample index as a numpy array.
 
-        :param sample_variable: The variable to be retrieved, this should probably not be changed.
-
         :return: A numpy array of the currently selected samples.
         """
 
-        if self.sample_subset is not None:
+        if self.selected_samples is not None:
             subset = self.gem.data.sel({self.gem.sample_index_name: self.sample_subset})
         else:
             subset = self.gem.data
@@ -169,8 +183,8 @@ class Interface(param.Parameterized):
         if self.target_mask == "complete":
             pass
         elif self.target_mask == "dropped":
-            if self.y_variables is not None:
-                subset = subset[self.y_variables].dropna(dim=self.gem.sample_index_name)
+            if self.selected_annotation_variables is not None:
+                subset = subset[self.selected_annotation_variables].dropna(dim=self.gem.sample_index_name)
 
             subset = subset.dropna(dim=self.gem.sample_index_name)
 
@@ -178,17 +192,12 @@ class Interface(param.Parameterized):
 
     @property
     def selection(self) -> xr.Dataset:
-        """Returns the currently selected gene and sample indexes as a dictionary.
-
-        This is usefull for selecting data from `xarray` objects.
-
-        :return: A dictionary {index_name: active_genes}.
-        """
+        """Returns the currently selected data."""
         return self.gem.data.sel({self.gem.gene_index_name: self.get_gene_index(),
                                   self.gem.sample_index_name: self.get_sample_index()})
 
     @property
-    def x_data(self) -> xr.Dataset:
+    def x_count_data(self) -> xr.Dataset:
         """Returns the currently selected 'x_data'. Usually this will be a subset of the
         active count array.
 
@@ -202,8 +211,8 @@ class Interface(param.Parameterized):
         selection_dict = {k: v for k, v in selection_dict.items() if v is not None}
         selection = self.gem.data.sel(selection_dict)
 
-        if self.x_variable is not None:
-            count_variable = self.x_variable
+        if self.selected_count_variable is not None:
+            count_variable = self.selected_count_variable
         else:
             count_variable = self.gem.count_array_name
 
@@ -218,18 +227,19 @@ class Interface(param.Parameterized):
         return data
 
     @property
-    def y_data(self):
-        """Returns the currently selected 'y_data', or None, based on the `y_variables` parameter.
+    def y_annotation_data(self):
+        """Returns the currently selected 'y_data', or None, based on the
+        `selected_annotation_variables` parameter.
 
         :return: An Xarray.Dataset or Xarray.DataArray object of the currently selected y_data.
         """
         # TODO: Consider adding a copy option.
-        if self.y_variables is None:
+        if self.selected_annotation_variables is None:
             return None
 
         sample_index = self.get_sample_index()
         subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
-        return subset[self.y_variables].copy(deep=True)
+        return subset[self.selected_annotation_variables].copy(deep=True)
 
 
 # Python 3.8 will let us move this code into the class body, and add
@@ -241,6 +251,6 @@ def _interface_dispatch(*args, **params):
     raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
 
-_interface_dispatch.register(AnnotatedGEM, Interface.parse_annotated_gem)
-_interface_dispatch.register(GeneSetCollection, Interface.parse_lineament_collection)
-_interface_dispatch.register(GeneSet, Interface.parse_lineament)
+_interface_dispatch.register(AnnotatedGEM, Interface._parse_annotated_gem)
+_interface_dispatch.register(GeneSetCollection, Interface._parse_gene_set_collection)
+# _interface_dispatch.register(GeneSet, Interface._parse_gene_set)

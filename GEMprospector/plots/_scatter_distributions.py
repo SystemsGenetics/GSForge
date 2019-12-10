@@ -137,7 +137,7 @@ class ScatterDistributionBase(OperationInterface):
         return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
 
     def process(self):
-        counts = self.x_data
+        counts = self.x_count_data
         dataset = xr.Dataset({
             self.x_axis_selector: self.axis_functions[self.x_axis_selector](counts, self.sample_index_name),
             self.y_axis_selector: self.axis_functions[self.y_axis_selector](counts, self.sample_index_name),

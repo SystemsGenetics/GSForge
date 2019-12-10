@@ -33,7 +33,7 @@ class get_data(OperationInterface):
     """
 
     def process(self):
-        return self.x_data, self.y_data
+        return self.x_count_data, self.y_annotation_data
 
 
 class gs_train_test_split(OperationInterface):
@@ -45,16 +45,16 @@ class gs_train_test_split(OperationInterface):
 
     def process(self):
         # Get the subset of data selected by this operation.
-        y_index = self.y_data[self.gem.sample_index_name].copy(deep=True)
+        y_index = self.y_annotation_data[self.gem.sample_index_name].copy(deep=True)
 
         # Get the sample index and make the train and test indexes.
         train_idx, test_idx = train_test_split(y_index, **self.train_test_split_options)
 
-        x_train = self.x_data.sel({self.gem.sample_index_name: train_idx})
-        x_test = self.x_data.sel({self.gem.sample_index_name: test_idx})
+        x_train = self.x_count_data.sel({self.gem.sample_index_name: train_idx})
+        x_test = self.x_count_data.sel({self.gem.sample_index_name: test_idx})
 
-        y_train = self.y_data.sel({self.gem.sample_index_name: train_idx})
-        y_test = self.y_data.sel({self.gem.sample_index_name: test_idx})
+        y_train = self.y_annotation_data.sel({self.gem.sample_index_name: train_idx})
+        y_test = self.y_annotation_data.sel({self.gem.sample_index_name: test_idx})
 
         return x_train, x_test, y_train, y_test
 
@@ -66,7 +66,7 @@ class chi_squared_test(OperationInterface):
     """
 
     def process(self):
-        x_data, y_data = self.x_data, self.y_data
+        x_data, y_data = self.x_count_data, self.y_annotation_data
 
         chi2_scores, chi2_pvals = chi2(np.nan_to_num(x_data), y_data)
         attrs = {"Method": "Chi-Squared",
@@ -86,7 +86,7 @@ class f_classification_test(OperationInterface):
     """
 
     def process(self):
-        x_data, y_data = self.x_data, self.y_data
+        x_data, y_data = self.x_count_data, self.y_annotation_data
 
         f_scores, f_pvals = f_classif(np.nan_to_num(x_data), y_data)
         attrs = {"Method": "ANOVA F-value",
@@ -118,8 +118,8 @@ class rank_genes_by_model(OperationInterface):
             return ranking_ds.to_dataset()
 
     def _rank_genes_by_model(self):
-        x_data = self.x_data
-        y_data = self.y_data
+        x_data = self.x_count_data
+        y_data = self.y_annotation_data
 
         if isinstance(self.y_variables, list):
             y_data = y_data.to_dataframe().values
@@ -216,17 +216,17 @@ class calculate_family_wise_error_rates(OperationInterface):
             return ranking_ds.to_dataset()
 
     def _calculate_family_wise_error_rates(self):
-        random_values = np.random.randn(*self.x_data.shape)
-        shadowed_values = np.hstack([self.x_data, random_values])
+        random_values = np.random.randn(*self.x_count_data.shape)
+        shadowed_values = np.hstack([self.x_count_data, random_values])
 
-        y_values = self.y_data
+        y_values = self.y_annotation_data
 
         if isinstance(self.y_variables, list):
             y_values = y_values.to_dataframe().values
 
         model = self.model.fit(shadowed_values, y_values)
         ranks = model.feature_importances_
-        real, shadow = ranks.reshape((2, self.x_data.shape[1]))
+        real, shadow = ranks.reshape((2, self.x_count_data.shape[1]))
 
         null_rank_dist = _null_rank_distribution(real, shadow)
 
@@ -247,7 +247,7 @@ class cv_score_model(OperationInterface):
     cv = param.Parameter()
 
     def process(self):
-        return cross_val_score(self.model, self.x_data, self.y_data, cv=self.cv)
+        return cross_val_score(self.model, self.x_count_data, self.y_annotation_data, cv=self.cv)
 
 
 # TODO: Cite original gist. Consider moving entirely to R for brevity.
@@ -282,7 +282,7 @@ class basic_DESeq2_test(OperationInterface):
         pandas2ri.activate()
 
         # Ready the count matrix for R / DESeq2.
-        x_data, y_data = self.x_data, self.y_data
+        x_data, y_data = self.x_count_data, self.y_annotation_data
 
         # Convert to a pandas dataframe and transpose.
         count_df = x_data.to_pandas().copy().transpose()

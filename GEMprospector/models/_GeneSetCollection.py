@@ -12,9 +12,9 @@ from ._GeneSet import GeneSet
 
 
 # TODO:
-#     + Create default lineaments on initialization (These should
+#     + Create default GeneSets on initialization (These should
 #       probably not be saved). "total" and "zero_dropped".
-#       Consider a `basic_lineaments` function.
+#       Consider a `basic_GeneSets` function.
 #     + Add a `get_support(key)` function.
 class GeneSetCollection(param.Parameterized):
     """
@@ -42,6 +42,7 @@ class GeneSetCollection(param.Parameterized):
 
     def __repr__(self):
         summary = [f"<GEMprospector.{type(self).__name__}>"]
+        summary += [self.name]
         summary += [indent(self.gem.__repr__(), "    ")]
         summary += ["GeneSet Keys and # of Selected Genes"]
         summary += [f"    {k}: {v}" for k, v in self._summarize_gene_sets().items()]
@@ -50,11 +51,11 @@ class GeneSetCollection(param.Parameterized):
     def get_support(self, key) -> np.array:
         """Get the support array for a given key.
 
-        :param key: The lineament from which to get the gene support.
+        :param key: The GeneSet from which to get the gene support.
 
         :return: A `numpy` array of the genes that make up the support of this `GeneSet`.
         """
-        return self.lineaments[key].gene_support()
+        return self.gene_sets[key].gene_support()
 
     def save(self, target_dir, keys=None):
         """Save  this collection to `target_dir`. Each `GeneSet` will be saved as a separate
@@ -67,62 +68,65 @@ class GeneSetCollection(param.Parameterized):
 
         :return:
         """
-        # Save all the lineaments in this collection in the target_dir path.
+        # Save all the gene sets in this collection in the target_dir path.
         if keys is None:
-            keys = self.lineaments.keys()
+            keys = self.gene_sets.keys()
 
         # Create any needed intermediate directories.
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
 
         for key in keys:
-            save_path = self.lineaments[key].save_as_netcdf(target_dir)
-            print(save_path)
-            # xds = self.lineaments[key].data
-            # xds.to_netcdf(os.path.join(target_dir, key + ".nc"))
+            save_path = self.gene_sets[key].save_as_netcdf(target_dir)
+            # yield save_path
 
     def as_dict(self, keys=None, exclude=None):
-        """Returns a dictionary of {name: supported_genes} for each lineament, or those specified
-        by the `keys` argument."""""
-        if keys is None:
-            keys = self.lineaments.keys()
+        """Returns a dictionary of {name: supported_genes} for each gene set, or those specified
+        by the `keys` argument.
 
-        keys = [key for key in keys if "support" in self.lineaments[key].data]
+        :param keys: The list of `GeneSet` keys to be included in the returned dictionary.
+
+        :param exclude: A list of `GeneSet` keys to exclude from the returned dictionary.
+        """
+        if keys is None:
+            keys = self.gene_sets.keys()
+
+        keys = [key for key in keys if "support" in self.gene_sets[key].data]
         if exclude is not None:
             keys = [key for key in keys if key not in exclude]
-        lineaments = {k: self.lineaments[k] for k in keys}
-        return {k: v.gene_support() for k, v in lineaments.items()}
+        gene_sets = {k: self.gene_sets[k] for k in keys}
+        return {k: v.gene_support() for k, v in gene_sets.items()}
 
     def intersection(self, keys=None, exclude=None):
-        """Get the intersection of supported genes in this lineament collection."""
-        lineament_dict = self.as_dict(keys, exclude)
-        return set.intersection(*[set(x) for x in lineament_dict.values()])
+        """Get the intersection of supported genes in this GeneSet collection."""
+        gene_set_dict = self.as_dict(keys, exclude)
+        return set.intersection(*[set(x) for x in gene_set_dict.values()])
 
     def union(self, keys=None, exclude=None):
-        """Get the union of supported genes in this lineament collection."""
-        lineament_dict = self.as_dict(keys, exclude)
-        return set(itertools.chain.from_iterable(lineament_dict.values()))
+        """Get the union of supported genes in this GeneSet collection."""
+        gene_set_dict = self.as_dict(keys, exclude)
+        return set(itertools.chain.from_iterable(gene_set_dict.values()))
 
     def difference(self, keys=None, exclude=None):
-        lineament_dict = self.as_dict(keys, exclude)
-        return set.difference(*[set(x) for x in lineament_dict.values()])
+        gene_set_dict = self.as_dict(keys, exclude)
+        return set.difference(*[set(x) for x in gene_set_dict.values()])
 
-    def union_combinations(self, keys=None, exclude=None, size=2):
-        lineament_dict = self.as_dict(keys, exclude)
+    def pairwise_unions(self, keys=None, exclude=None, size=2):
+        gene_set_dict = self.as_dict(keys, exclude)
         return {(ak, bk): set.union(set(av), set(bv))
-                for (ak, av), (bk, bv) in itertools.permutations(lineament_dict.items(), size)
+                for (ak, av), (bk, bv) in itertools.permutations(gene_set_dict.items(), size)
                 if ak != bk}
 
     def pairwise_intersection(self, keys=None):
-        lineament_dict = self.as_dict(keys)
+        gene_set_dict = self.as_dict(keys)
         return {(ak, bk): set.intersection(set(av), set(bv))
-                for (ak, av), (bk, bv) in itertools.combinations(lineament_dict.items(), 2)
+                for (ak, av), (bk, bv) in itertools.combinations(gene_set_dict.items(), 2)
                 if ak != bk}
 
     def pairwise_percent_intersection(self, keys=None):
         """Get the normalized intersection length of each facet combination."""
-        lineament_dict = self.as_dict(keys)
-        zero_filtered_dict = {k: v for k, v in lineament_dict.items()
+        gene_set_dict = self.as_dict(keys)
+        zero_filtered_dict = {k: v for k, v in gene_set_dict.items()
                               if len(v) > 0}
         return [(ak, bk, len(set.intersection(set(av), set(bv))) / len(set(av)))
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
@@ -134,9 +138,8 @@ class GeneSetCollection(param.Parameterized):
         will be used as the key values.
         """
         # TODO: Add a warning if the glob returns nothing.
-        lineaments = dict()
+        gene_sets = dict()
         for file in pathlib.Path(target_dir).expanduser().resolve().glob(glob_filter):
-            # key = os.path.basename(file).rsplit(".nc")[0]
             data = xr.open_dataset(file)
 
             if filter_func is not None:
@@ -146,10 +149,16 @@ class GeneSetCollection(param.Parameterized):
                     continue
 
             data = xr.align(data, gem.gene_index, join="outer")[0]
-            new_lineament = GeneSet.from_xarray_dataset(data=data)
-            lineaments[new_lineament.name] = new_lineament
+            new_gene_set = GeneSet.from_xarray_dataset(data=data)
 
-        return cls(gem=gem, lineaments=lineaments, **params)
+            if data.attrs.get("__GSForge.GeneSet.params.name") is None:
+                name = key = os.path.basename(str(file)).rsplit(".nc")[0]
+            else:
+                name = new_gene_set.name
+
+            gene_sets[name] = new_gene_set
+
+        return cls(gem=gem, gene_sets=gene_sets, **params)
 
 # # Python 3.8 will let us move this code into the class body, and add
 # # add register the @classmethod functions.

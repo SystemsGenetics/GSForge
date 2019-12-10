@@ -153,7 +153,7 @@ class AnnotatedGEM(param.Parameterized):
 
     @staticmethod
     def _parse_xarray_dataset(data, **params):
-        existing_params = data.attrs.get("__GEMprospector.AnnotatedGEM.params")
+        existing_params = data.attrs.get("__GSForge.AnnotatedGEM.params")
         if existing_params:
             existing_params = json.loads(existing_params)
             params = {**existing_params, **params}

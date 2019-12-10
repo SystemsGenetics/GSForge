@@ -108,7 +108,7 @@ class UpperQuartile(OperationInterface):
 
         :return: The upper quartile normalized count matrix.
         """
-        counts = self.x_data
+        counts = self.x_count_data
         return self.xr_upper_quartile(counts)
 
 
@@ -137,7 +137,7 @@ class ReadsPerKilobaseMillion(OperationInterface):
         return normalized_counts
 
     def process(self):
-        counts = self.x_data
+        counts = self.x_count_data
         lengths = self.gem.data[self.length_variable].sel({self.gene_index_name: self.get_gene_index()}).copy()
         return self.xr_reads_per_kilobase_million(counts=counts, lengths=lengths, sample_dim=self.sample_index_name)
 

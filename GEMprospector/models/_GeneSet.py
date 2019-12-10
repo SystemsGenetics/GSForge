@@ -142,7 +142,7 @@ class GeneSet(param.Parameterized):
     # TODO: Ensure 'attrs' get added to the dataset if they are found in params.
     @staticmethod
     def parse_xarray_dataset(data, **params):
-        existing_params = data.attrs.get("__GEMprospector.GeneSet.params")
+        existing_params = data.attrs.get("__GSForge.GeneSet.params")
         if existing_params:
             existing_params = json.loads(existing_params)
             params = {**existing_params, **params}
@@ -167,8 +167,7 @@ class GeneSet(param.Parameterized):
 
     @staticmethod
     def parse_pandas(dataframe, genes=None, attrs=None, **params):
-        """Parse a `pandas.DataFrame` for use in a GeneSet.
-        """
+        """Parse a `pandas.DataFrame` for use in a GeneSet."""
 
         if genes is not None:
             dataframe["Gene"] = genes
@@ -261,7 +260,7 @@ class GeneSet(param.Parameterized):
         params_to_save = {key: value for key, value in self.get_param_values()
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
-        self.data.attrs.update({"__GEMprospector.GeneSet.params": params_str})
+        self.data.attrs.update({"__GSForge.GeneSet.params": params_str})
 
         self.data.to_netcdf(output_path)
 

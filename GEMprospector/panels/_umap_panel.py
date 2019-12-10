@@ -9,6 +9,7 @@ from methodtools import lru_cache
 import umap
 
 from ..models import Interface
+from ..utils import infer_xarray_variables
 from .helpers import generate_help_pane
 
 
@@ -16,15 +17,6 @@ class UMAP_Panel(Interface):
     """
     UMAP Panel short description.
     """
-
-    # mappings = param.Dict(precedence=-1.0, doc=dedent("""\
-    # A dictionary of Genes to be used in subseting the data."""))
-
-    mapping_index_name = param.String(default="Gene", precedence=-1.0, doc=dedent("""\
-    The index name to which the Genes in the `mappings` parameter refer."""))
-
-    mapping_selector = param.ListSelector(default=["Complete", ], objects=["Complete"], doc=dedent("""\
-    The active mapping to be used to subset the data."""))
 
     # UMAP model parameters.
     n_neighbors = param.Integer(default=15, doc=dedent("""\
@@ -55,6 +47,8 @@ class UMAP_Panel(Interface):
     hue = param.ObjectSelector(doc=dedent("""\
     Select the column by which the points drawn should be colored by."""), default=None)
 
+    variable_categories = param.Dict(default=None, precedence=-2)
+
     # Use a secret, undocumented, method to update the view with a button.
     # https://github.com/pyviz/panel/issues/389
     update_umap = param.Action(lambda self: self.param.trigger('update_umap'),
@@ -62,32 +56,24 @@ class UMAP_Panel(Interface):
 
     def __init__(self, *args, **params):
         super().__init__(*args, **params)
-        if self.lineament_collection is not None:
-            avail_mappings = list(self.lineament_collection.lineaments.keys())
-            self.param["mapping_selector"].objects = avail_mappings + ["Complete"]
 
         # UMAP n_neighbors is limited by the number of samples.
         self.param["n_neighbors"].bounds = [1, len(self.gem.data[self.gem.sample_index_name]) - 1]
 
-        # Netcdf doesn't save single items as lists, we need to ensure they are lists.
-        for metadata in ["all_labels",
-                         "discrete",
-                         "continuous",
-                         "quantile",
-                         "incomplete", ]:
-            items = self.gem.data.attrs.get(metadata)
-            if items is not None and isinstance(items, str):
-                self.gem.data.attrs[metadata] = [items]
+        # Try to infer the variables of the data.
+        if self.variable_categories is None:
+            inferred_variables = infer_xarray_variables(self.gem.data)
+            self.set_param(variable_categories=inferred_variables)
 
-        # TODO: Clean this up.
-        try:
-            avail_hues = sorted(list(set(self.gem.data.attrs.get('quantile')
-                                         + self.gem.data.attrs.get('discrete'))))
-            self.param["hue"].objects = [None] + avail_hues
-            if self.hue is None:
-                self.set_param(hue=avail_hues[0])
-        except TypeError:
-            pass
+        avail_hues = []
+        if self.variable_categories.get("discrete") is not None:
+            avail_hues += self.variable_categories.get("discrete")
+        if self.variable_categories.get("quantile") is not None:
+            avail_hues += self.variable_categories.get("quantile")
+
+        avail_hues = list(set(avail_hues))
+        if avail_hues:
+            self.param["hue"].objects = [None] + sorted(avail_hues)
 
     def _get_umap_kwargs(self):
         """Returns the arguments needed for the UMAP reduction."""
@@ -102,18 +88,11 @@ class UMAP_Panel(Interface):
         # The arguments come in as frozen sets so that the lru_cache works correctly.
         # Convert them to usable forms.
         umap_kwargs = dict(frozen_umap_kwargs)
-        mapping_key = list(frozen_mapping_key)
+        mapping_key = list(frozen_mapping_key)  # Just used to implicitly hash the result of
+                                                # the call to self.selection below.
+        subset = self.selection
 
-#         if "Complete" in mapping_key:
-#             subset = self.gem.data
-#         else:
-#             gene_selection = list(self.lineament_collection.union(mapping_key))
-#             subset = self.gem.data.sel({self.mapping_index_name: gene_selection})
-
-#         zero_filled_data = subset[self.active_count_variable].fillna(0).values
-        subset = self.selection.copy()
         zero_filled_data = subset[self.active_count_variable].fillna(0).values
-    
         transform = umap.UMAP(**umap_kwargs).fit_transform(zero_filled_data)
 
         subset["x"] = ((self.gem.sample_index_name,), transform[:, 0])
@@ -125,7 +104,7 @@ class UMAP_Panel(Interface):
     def view(self):
         """Draw a 2d umap embedding."""
         frozen_umap_kwargs = frozenset(self._get_umap_kwargs().items())
-        frozen_map_selector = frozenset(self.mapping_selector)
+        frozen_map_selector = frozenset((self.selected_gene_sets + [self.gene_set_mode]))
         umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
 
         plotting_dims = ['x', 'y'] + self.gem.data.attrs.get("all_labels") + [self.sample_index_name]

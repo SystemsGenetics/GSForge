@@ -54,8 +54,8 @@ class SampleWiseDistribution(OperationInterface):
 
         :return:
         """
-        counts = self.x_data.values.copy()
-        labels = self.y_data.values.copy() if self.y_data is not None else None
+        counts = self.x_count_data.values.copy()
+        labels = self.y_annotation_data.values.copy() if self.y_annotation_data is not None else None
         ax = self.np_sample_distributions(counts, labels, ax=self.ax)
         ax.set_title(f"{self.active_count_variable} value distribution per-sample.");
 

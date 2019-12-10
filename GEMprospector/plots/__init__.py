@@ -9,6 +9,7 @@ from ._gene_mass import plot_count_sum_mass, plot_sample_mass, plot_sample
 from ._scatter_distributions import ScatterDistributionBase
 from ._distributions import SampleWiseDistribution
 from ._lineament_heatmap import lineament_overlap_heatmap
+from ._raster_gem import RasterGEM
 
 # hv.extension("bokeh", "matplotlib")
 
@@ -18,8 +19,8 @@ __all__ = [
     "plot_sample_mass",
     "ScatterDistributionBase",
     "plot_sample",
-    # "datashade_gem",
-    # "colorized_raster",
+    "SampleWiseDistribution",
+    "RasterGEM",
     "lineament_overlap_heatmap",
 ]
 
