@@ -137,7 +137,7 @@ class Interface(param.Parameterized):
                 support = np.array(list(self.gene_set_collection.union(self.selected_gene_sets)))
 
             elif self.gene_set_mode == "intersection":
-                support = np.array(list(self.intersection.union(self.selected_gene_sets)))
+                support = np.array(list(self.gene_set_collection.intersection(self.selected_gene_sets)))
 
             elif self.gene_set_mode == "complete":
                 support = self.gem.gene_index

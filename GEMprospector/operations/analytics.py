@@ -23,7 +23,6 @@ __all__ = [
     "calculate_null_rank_distribution",
     "chi_squared_test",
     "f_classification_test",
-    "basic_DESeq2_test"
 ]
 
 
@@ -100,6 +99,9 @@ class f_classification_test(OperationInterface):
 
 
 class rank_genes_by_model(OperationInterface):
+    """Given some machine learning model, this operation runs n_iterations
+    and returns a summary dataset of the ranking results."""
+
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
@@ -109,7 +111,7 @@ class rank_genes_by_model(OperationInterface):
         else:
             rankings = [self._rank_genes_by_model() for _ in range(self.n_iterations)]
             ranking_ds = xr.concat(rankings, "feature_importance_iter")
-            ranking_ds.name = "feature_importances"
+            # ranking_ds.name = "feature_importances"
             ranking_ds["feature_importance_iter"] = (["feature_importance_iter", ], np.arange(self.n_iterations))
             ranking_ds["feature_importance_mean"] = ([self.gem.gene_index_name],
                                                      ranking_ds.mean(dim="feature_importance_iter"))
@@ -121,18 +123,19 @@ class rank_genes_by_model(OperationInterface):
         x_data = self.x_count_data
         y_data = self.y_annotation_data
 
-        if isinstance(self.y_variables, list):
+        if isinstance(self.selected_annotation_variables, list):
             y_data = y_data.to_dataframe().values
 
         model = self.model.fit(x_data, y_data)
 
         attrs = {'Ranking Model': str(model),
-                 "x_variable": self.x_variable,
-                 "y_variables": self.y_variables}
+                 "selected_count_variable": self.selected_count_variable,
+                 "selected_annotation_variables": self.selected_annotation_variables}
 
         data = xr.DataArray(data=model.feature_importances_,
                             dims=[self.gem.gene_index_name],
                             coords=[self.get_gene_index()],
+                            name="feature_importances",
                             attrs=attrs)
         return data
 
@@ -176,10 +179,10 @@ class calculate_null_rank_distribution(OperationInterface):
         # Construct the shadowed subset.
         shadowed_subset = self.gem.data.sel({self.gem.gene_index_name: shadowed_gene_index,
                                              self.gem.sample_index_name: self.get_sample_index()})
-        x_values = shadowed_subset[self.x_variable].values
-        y_values = shadowed_subset[self.y_variables].values
+        x_values = shadowed_subset[self.selected_count_variable].values
+        y_values = shadowed_subset[self.selected_annotation_variables].values
 
-        if isinstance(self.y_variables, list):
+        if isinstance(self.selected_annotation_variables, list):
             y_values = y_values.to_dataframe().values
 
         model = self.model.fit(x_values, y_values)
@@ -188,8 +191,8 @@ class calculate_null_rank_distribution(OperationInterface):
         null_rank_dist = _null_rank_distribution(real, shadow)
 
         attrs = {'Ranking Model': str(model),
-                 "x_variable": self.x_variable,
-                 "y_variables": self.y_variables}
+                 "selected_count_variable": self.selected_count_variable,
+                 "selected_annotation_variables": self.selected_annotation_variables}
 
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,
@@ -221,7 +224,7 @@ class calculate_family_wise_error_rates(OperationInterface):
 
         y_values = self.y_annotation_data
 
-        if isinstance(self.y_variables, list):
+        if isinstance(self.selected_annotation_variables, list):
             y_values = y_values.to_dataframe().values
 
         model = self.model.fit(shadowed_values, y_values)
@@ -231,8 +234,8 @@ class calculate_family_wise_error_rates(OperationInterface):
         null_rank_dist = _null_rank_distribution(real, shadow)
 
         attrs = {'Ranking Model': str(model),
-                 "x_variable": self.x_variable,
-                 "y_variables": self.y_variables}
+                 "selected_count_variable": self.selected_count_variable,
+                 "selected_annotation_variables": self.selected_annotation_variables}
 
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,
@@ -248,74 +251,3 @@ class cv_score_model(OperationInterface):
 
     def process(self):
         return cross_val_score(self.model, self.x_count_data, self.y_annotation_data, cv=self.cv)
-
-
-# TODO: Cite original gist. Consider moving entirely to R for brevity.
-#       Leave this implementation or a reference to it for scripting
-#       purposes.
-# TODO: Add support or a way to get more than one formula output.
-class basic_DESeq2_test(OperationInterface):
-    """
-    Just a simple API to a standard DESeq2 run.
-
-    Modified from this gist:
-    https://gist.github.com/wckdouglas/3f8fb27a3d7a1eb24c598aa04f70fb25
-    """
-
-    formula = param.Parameter()
-
-    def process(self):
-        # Import R packages.
-        try:
-            import rpy2.robjects as robjects
-            from rpy2.robjects import pandas2ri, Formula
-            from rpy2.robjects.packages import importr
-
-        except ImportError:
-            # TODO: Expand upon packages required.
-            warnings.warn("You must install 'rpy2' and other R packages for this"
-                          "analytic to function.")
-
-        # Setup parameters for DESeq2.
-        self.set_param(count_mask="dropped")
-        deseq = importr('DESeq2')
-        pandas2ri.activate()
-
-        # Ready the count matrix for R / DESeq2.
-        x_data, y_data = self.x_count_data, self.y_annotation_data
-
-        # Convert to a pandas dataframe and transpose.
-        count_df = x_data.to_pandas().copy().transpose()
-
-        # Ensure the counts are integers.
-        count_df = count_df.astype(dtype='int32')
-        r_count_matrix = pandas2ri.py2rpy(count_df)
-
-        # Ready the design matrix for R / DESeq2.
-        label_df = self.gem.data[self.y_variables].to_dataframe().copy()
-        r_design_matrix = pandas2ri.py2rpy(label_df)
-
-        r_design_formula = Formula(self.formula)
-
-        dds = deseq.DESeqDataSetFromMatrix(countData=r_count_matrix,
-                                           colData=r_design_matrix,
-                                           design=r_design_formula)
-
-        dds = deseq.DESeq(dds)
-        deseq_result = deseq.results(dds)
-        to_dataframe = robjects.r('function(x) data.frame(x)')
-        deseq_result = to_dataframe(deseq_result)
-
-        # Convert the output to an Xarray.Dataset object.
-        deseq_result["Gene"] = x_data["Gene"].values
-        deseq_result = deseq_result.set_index("Gene")
-
-        data = deseq_result.to_xarray()
-
-        attrs = {'model': "deseq2",
-                 'formula': str(self.formula),
-                 "x_variable": self.x_variable,
-                 "y_variables": self.y_variables}
-
-        data = data.assign_attrs(attrs)
-        return data
