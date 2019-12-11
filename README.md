@@ -6,7 +6,6 @@
 
 [Documentation](https://systemsgenetics.github.io/GEMprospector/)
 
-
 ## Installation
 
 ***Clone the repository.***

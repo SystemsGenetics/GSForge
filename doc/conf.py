@@ -44,8 +44,7 @@ html_theme_options = {
 }
 
 _NAV = (
-    # ('Getting Started', 'getting_started/index'),
-    # ('Feature Tour', 'Feature_Tour'),
+    ('Welcome', 'Welcome'),
     ('User Guide', 'user_guide/index'),
     # ('Gallery', 'gallery/index'),
     ('API', 'Reference_Manual/index'),
@@ -57,15 +56,11 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    # will work without this - for canonical (so can ignore when building locally or test deploying)
-    # 'WEBSITE_SERVER': 'https://ceball.github.io',
     'VERSION': version,
     'NAV': _NAV,
     # by default, footer links are same as those in header
     'LINKS': _NAV,
-    # 'SOCIAL': (
-    #     ('Gitter', '//gitter.im/ioam/holoviews'),
-    #     ('Twitter', '//twitter.com/holoviews'),
-    #     ('Github', '//github.com/ioam/holoviews'),
-    # )
+    'SOCIAL': (
+        ('Github', '//systemsgenetics.github.io/GEMprospector/index.html'),
+    )
 })

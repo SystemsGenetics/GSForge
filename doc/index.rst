@@ -1,10 +1,6 @@
-*************
-GEMprospector
-*************
-
-
-Welcome to the GEMprospector documentation!
-
+*******
+GSForge
+*******
 
 .. notebook:: GEMprospector ../examples/Welcome.ipynb
     :offset: 0
