@@ -38,7 +38,7 @@ class RasterGEM(OperationInterface):
         return hv.NdOverlay(images)  #.options(width=600, height=400, xaxis=None, yaxis=None)
 
     def process(self):
-        if self.selected_annotation_variables is None:
+        if self.annotation_variables is None:
             raster = self.gem_raster(self.x_count_data)
         else:
             raster = self.colorized_raster(self.x_count_data, self.y_annotation_data)

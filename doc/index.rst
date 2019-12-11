@@ -21,6 +21,7 @@ Welcome to the GEMprospector documentation!
     Introduction <self>
     Feature Tour <Feature_Tour>
     User Guide <user_guide/index>
+    Plotting Guide <user_guide/plotting_guide/index>
     API <Reference_Manual/index>
     Development <Development>
     About <About>

@@ -10,7 +10,7 @@ import xarray as xr
 import functools
 
 from ._AnnotatedGEM import AnnotatedGEM
-from ._GeneSet import GeneSet
+# from ._GeneSet import GeneSet
 from ._GeneSetCollection import GeneSetCollection
 
 
@@ -27,9 +27,6 @@ class Interface(param.Parameterized):
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
     An AnnotatedGEM object."""), default=None, precedence=-1.0)
-
-    # gene_set = param.ClassSelector(class_=GeneSet, doc=dedent("""\
-    # A GeneSet object which provides a gene subset."""), default=None, precedence=-1.0)
 
     gene_set_collection = param.ClassSelector(class_=GeneSetCollection, default=None,
                                               precedence=-1.0)
@@ -50,14 +47,14 @@ class Interface(param.Parameterized):
         """)
     )
 
-    selected_samples = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
+    sample_subset = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
     A list of samples to use in a given operation. These can be supplied
     directly as a list of genes, or can be drawn from a given GeneSet."""))
 
-    selected_count_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
+    count_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
     The name of the count matrix used."""))
 
-    selected_annotation_variables = param.Parameter(doc=dedent("""\
+    annotation_variables = param.Parameter(doc=dedent("""\
     The name of the active annotation variable(s)."""), precedence=-1.0, default=None)
 
     count_mask = param.ObjectSelector(doc=dedent("""\
@@ -67,7 +64,7 @@ class Interface(param.Parameterized):
         + 'dropped' returns the count matrix without genes that have zero or missing values.
     """), default='complete', objects=["complete", "masked", "dropped"], precedence=-1.0)
 
-    target_mask = param.ObjectSelector(doc=dedent("""\
+    annotation_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the target array.
         + 'complete' returns the entire target array.
         + 'masked' returns the entire target array with zero or missing as NaN values.
@@ -109,15 +106,6 @@ class Interface(param.Parameterized):
 
         return params
 
-    # @staticmethod
-    # def _parse_gene_set(gene_set, *args, **params):
-    #     params = {"lineament": gene_set, **params}
-    #
-    #     if args:
-    #         params = _interface_dispatch(*args, **params)
-    #
-    #     return params
-
     def get_gene_index(self, count_variable=None) -> np.array:
         """Get the currently selected gene index as a numpy array.
 
@@ -127,7 +115,7 @@ class Interface(param.Parameterized):
         """
 
         if count_variable is None:
-            count_variable = self.selected_count_variable
+            count_variable = self.count_variable
 
         if self.selected_gene_sets == [None] or not self.gene_set_collection:
             support = self.gem.gene_index
@@ -155,8 +143,8 @@ class Interface(param.Parameterized):
 
     @property
     def active_count_variable(self):
-        if self.selected_count_variable is not None:
-            count_variable = self.selected_count_variable
+        if self.count_variable is not None:
+            count_variable = self.count_variable
         else:
             count_variable = self.gem.count_array_name
         return count_variable
@@ -175,16 +163,16 @@ class Interface(param.Parameterized):
         :return: A numpy array of the currently selected samples.
         """
 
-        if self.selected_samples is not None:
+        if self.sample_subset is not None:
             subset = self.gem.data.sel({self.gem.sample_index_name: self.sample_subset})
         else:
             subset = self.gem.data
 
-        if self.target_mask == "complete":
+        if self.annotation_mask == "complete":
             pass
-        elif self.target_mask == "dropped":
-            if self.selected_annotation_variables is not None:
-                subset = subset[self.selected_annotation_variables].dropna(dim=self.gem.sample_index_name)
+        elif self.annotation_mask == "dropped":
+            if self.annotation_variables is not None:
+                subset = subset[self.annotation_variables].dropna(dim=self.gem.sample_index_name)
 
             subset = subset.dropna(dim=self.gem.sample_index_name)
 
@@ -211,8 +199,8 @@ class Interface(param.Parameterized):
         selection_dict = {k: v for k, v in selection_dict.items() if v is not None}
         selection = self.gem.data.sel(selection_dict)
 
-        if self.selected_count_variable is not None:
-            count_variable = self.selected_count_variable
+        if self.count_variable is not None:
+            count_variable = self.count_variable
         else:
             count_variable = self.gem.count_array_name
 
@@ -234,12 +222,12 @@ class Interface(param.Parameterized):
         :return: An Xarray.Dataset or Xarray.DataArray object of the currently selected y_data.
         """
         # TODO: Consider adding a copy option.
-        if self.selected_annotation_variables is None:
+        if self.annotation_variables is None:
             return None
 
         sample_index = self.get_sample_index()
         subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
-        return subset[self.selected_annotation_variables].copy(deep=True)
+        return subset[self.annotation_variables].copy(deep=True)
 
 
 # Python 3.8 will let us move this code into the class body, and add

@@ -142,8 +142,8 @@ class boruta_prospector(OperationInterface):
 
         attrs = {'boruta_model': boruta_json_attrs,
                  'ranking_model': ranking_model_json_attrs,
-                 "selected_count_variable": self.selected_count_variable,
-                 "selected_annotation_variables": self.selected_annotation_variables}
+                 "selected_count_variable": self.count_variable,
+                 "selected_annotation_variables": self.annotation_variables}
 
         return parse_boruta_model(boruta_model, attrs=attrs, gene_coords=self.get_gene_index(),
                                   dim=self.gem.gene_index_name)

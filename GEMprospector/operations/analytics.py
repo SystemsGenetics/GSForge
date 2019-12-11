@@ -123,14 +123,14 @@ class rank_genes_by_model(OperationInterface):
         x_data = self.x_count_data
         y_data = self.y_annotation_data
 
-        if isinstance(self.selected_annotation_variables, list):
+        if isinstance(self.annotation_variables, list):
             y_data = y_data.to_dataframe().values
 
         model = self.model.fit(x_data, y_data)
 
         attrs = {'Ranking Model': str(model),
-                 "selected_count_variable": self.selected_count_variable,
-                 "selected_annotation_variables": self.selected_annotation_variables}
+                 "selected_count_variable": self.count_variable,
+                 "selected_annotation_variables": self.annotation_variables}
 
         data = xr.DataArray(data=model.feature_importances_,
                             dims=[self.gem.gene_index_name],
@@ -179,10 +179,10 @@ class calculate_null_rank_distribution(OperationInterface):
         # Construct the shadowed subset.
         shadowed_subset = self.gem.data.sel({self.gem.gene_index_name: shadowed_gene_index,
                                              self.gem.sample_index_name: self.get_sample_index()})
-        x_values = shadowed_subset[self.selected_count_variable].values
-        y_values = shadowed_subset[self.selected_annotation_variables].values
+        x_values = shadowed_subset[self.count_variable].values
+        y_values = shadowed_subset[self.annotation_variables].values
 
-        if isinstance(self.selected_annotation_variables, list):
+        if isinstance(self.annotation_variables, list):
             y_values = y_values.to_dataframe().values
 
         model = self.model.fit(x_values, y_values)
@@ -191,8 +191,8 @@ class calculate_null_rank_distribution(OperationInterface):
         null_rank_dist = _null_rank_distribution(real, shadow)
 
         attrs = {'Ranking Model': str(model),
-                 "selected_count_variable": self.selected_count_variable,
-                 "selected_annotation_variables": self.selected_annotation_variables}
+                 "selected_count_variable": self.count_variable,
+                 "selected_annotation_variables": self.annotation_variables}
 
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,
@@ -224,7 +224,7 @@ class calculate_family_wise_error_rates(OperationInterface):
 
         y_values = self.y_annotation_data
 
-        if isinstance(self.selected_annotation_variables, list):
+        if isinstance(self.annotation_variables, list):
             y_values = y_values.to_dataframe().values
 
         model = self.model.fit(shadowed_values, y_values)
@@ -234,8 +234,8 @@ class calculate_family_wise_error_rates(OperationInterface):
         null_rank_dist = _null_rank_distribution(real, shadow)
 
         attrs = {'Ranking Model': str(model),
-                 "selected_count_variable": self.selected_count_variable,
-                 "selected_annotation_variables": self.selected_annotation_variables}
+                 "selected_count_variable": self.count_variable,
+                 "selected_annotation_variables": self.annotation_variables}
 
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,
