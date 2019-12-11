@@ -32,7 +32,7 @@ class RasterGEM(OperationInterface):
         data_groups = {name: counts.where(labels == name)
                        for name in groups.keys()}
 
-        images = {name: hv.Image(values.values).opts(cmap=colors[name], logz=True)
+        images = {name: hv.Image(values.values).opts(cmap=colors[name])
                   for name, values in data_groups.items()}
 
         return hv.NdOverlay(images)
