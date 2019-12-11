@@ -87,7 +87,7 @@ class Interface(param.Parameterized):
     @staticmethod
     def _parse_annotated_gem(annotated_gem, *args, **params):
         params = {"gem": annotated_gem,
-                  "selected_count_variable": annotated_gem.count_array_name,
+                  "count_variable": annotated_gem.count_array_name,
                   **params}
         if args:
             params = _interface_dispatch(*args, **params)
@@ -97,7 +97,7 @@ class Interface(param.Parameterized):
     def _parse_gene_set_collection(gene_set_collection, *args, **params):
         if gene_set_collection.gem is not None:
             params = {"gem": gene_set_collection.gem,
-                      "selected_count_variable": gene_set_collection.gem.count_array_name,
+                      "count_variable": gene_set_collection.gem.count_array_name,
                       **params}
         params = {"gene_set_collection": gene_set_collection, **params}
 

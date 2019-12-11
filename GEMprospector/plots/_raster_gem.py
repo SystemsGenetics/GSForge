@@ -3,7 +3,7 @@ from holoviews.operation.datashader import datashade
 import pandas as pd
 
 import itertools
-import param
+# import param
 
 from ..models import OperationInterface
 
@@ -32,10 +32,10 @@ class RasterGEM(OperationInterface):
         data_groups = {name: counts.where(labels == name)
                        for name in groups.keys()}
 
-        images = {name: hv.Image(values.values).opts(cmap=colors[name])
+        images = {name: hv.Image(values.values).opts(cmap=colors[name], logz=True)
                   for name, values in data_groups.items()}
 
-        return hv.NdOverlay(images)  #.options(width=600, height=400, xaxis=None, yaxis=None)
+        return hv.NdOverlay(images)
 
     def process(self):
         if self.annotation_variables is None:

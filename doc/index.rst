@@ -19,7 +19,6 @@ Welcome to the GEMprospector documentation!
     :maxdepth: 2
 
     Introduction <self>
-    Feature Tour <Feature_Tour>
     User Guide <user_guide/index>
     Plotting Guide <user_guide/plotting_guide/index>
     API <Reference_Manual/index>
