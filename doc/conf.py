@@ -36,7 +36,7 @@ release = '0.0.1'
 
 html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
-# logo file etc should be in html_static_path, e.g. _static
+# logo file etc should be in html_static_path, e.g. assets
 html_theme_options = {
     #    'custom_css':'bettercolors.css',
     #    'logo':'amazinglogo.png',

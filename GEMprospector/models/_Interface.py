@@ -28,10 +28,12 @@ class Interface(param.Parameterized):
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
     An AnnotatedGEM object."""), default=None, precedence=-1.0)
 
-    gene_set_collection = param.ClassSelector(class_=GeneSetCollection, default=None,
-                                              precedence=-1.0)
+    gene_set_collection = param.ClassSelector(class_=GeneSetCollection, doc=dedent("""\
+    A GeneSetCollection object."""), default=None, precedence=-1.0)
 
-    selected_gene_sets = param.ListSelector(default=[None])
+    selected_gene_sets = param.ListSelector(default=[None], doc=dedent("""\
+    A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
+    that are to be used for selecting sets of genes from the count matrix."""))
 
     gene_set_mode = param.ObjectSelector(
         default="union",
@@ -55,7 +57,8 @@ class Interface(param.Parameterized):
     The name of the count matrix used."""))
 
     annotation_variables = param.Parameter(doc=dedent("""\
-    The name of the active annotation variable(s)."""), precedence=-1.0, default=None)
+    The name of the active annotation variable(s). These are the annotation columns that will
+    be control the subset returned by `y_annotation_data`."""), precedence=-1.0, default=None)
 
     count_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the count matrix.
@@ -142,7 +145,8 @@ class Interface(param.Parameterized):
         return counts[self.gem.gene_index_name].values.copy()
 
     @property
-    def active_count_variable(self):
+    def active_count_variable(self) -> str:
+        """Returns the name of the currently active count matrix."""
         if self.count_variable is not None:
             count_variable = self.count_variable
         else:
@@ -150,11 +154,13 @@ class Interface(param.Parameterized):
         return count_variable
             
     @property
-    def gene_index_name(self):
+    def gene_index_name(self) -> str:
+        """Returns the name of the gene index."""
         return self.gem.gene_index_name
 
     @property
-    def sample_index_name(self):
+    def sample_index_name(self) -> str:
+        """Returns the name of the sample index."""
         return self.gem.sample_index_name
 
     def get_sample_index(self) -> np.array:
@@ -221,6 +227,7 @@ class Interface(param.Parameterized):
 
         :return: An Xarray.Dataset or Xarray.DataArray object of the currently selected y_data.
         """
+        # TODO: Consider enforcing list input for standardizing outputs to datasets.
         # TODO: Consider adding a copy option.
         if self.annotation_variables is None:
             return None

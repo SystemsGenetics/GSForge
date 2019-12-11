@@ -127,7 +127,11 @@ class AnnotatedGEM(param.Parameterized):
         a single `xarray.Dataset` object.
 
         :param count_df: The gene expression matrix as a `pandas.DataFrame`.
+            This file is assumed to have genes as rows and samples as columns.
+
         :param label_df: The gene annotation data as a `pandas.DataFrame`.
+            This file is assumed to have samples as rows and annotation observations
+            as columns.
 
         :return: An `xarray.Dataset` containing the gene expression matrix and
             the gene annotation data.
@@ -183,8 +187,11 @@ class AnnotatedGEM(param.Parameterized):
         """Construct a `GEM` object from `pandas.DataFrame` objects.
 
         :param count_df: The gene expression matrix as a `pandas.DataFrame`.
+            This file is assumed to have genes as rows and samples as columns.
 
         :param label_df: The gene annotation data as a `pandas.DataFrame`.
+            This file is assumed to have samples as rows and annotation observations
+            as columns.
 
         :return: An instance of the `GEM` class.
         """
