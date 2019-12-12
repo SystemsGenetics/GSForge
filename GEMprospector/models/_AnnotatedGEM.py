@@ -122,7 +122,8 @@ class AnnotatedGEM(param.Parameterized):
 
     @staticmethod
     def xrarray_gem_from_pandas(count_df: pd.DataFrame,
-                                label_df: pd.DataFrame = None) -> xr.Dataset:
+                                label_df: pd.DataFrame = None,
+                                transpose_count_df: bool = True) -> xr.Dataset:
         """Stitch together a gene expression and annotation DataFrames into
         a single `xarray.Dataset` object.
 
@@ -132,6 +133,10 @@ class AnnotatedGEM(param.Parameterized):
         :param label_df: The gene annotation data as a `pandas.DataFrame`.
             This file is assumed to have samples as rows and annotation observations
             as columns.
+
+        :param transpose_count_df: Whether to transpose the count matrix from the typical creation
+            format (genes as rows, samples as columns) to the more standard (samples as rows,
+            observations as columns).
 
         :return: An `xarray.Dataset` containing the gene expression matrix and
             the gene annotation data.
@@ -143,17 +148,14 @@ class AnnotatedGEM(param.Parameterized):
                 "Sample": count_df.columns.values,
                 "Gene": count_df.index.values
             }
-        )
+        ).transpose()
 
         if label_df is None:
-            return count_array.transpose().to_dataset()
+            return count_array
 
         else:
             label_ds = label_df.to_xarray()
-            # TODO: Update `skip` parameter.
-            attrs = utils.infer_xarray_variables(label_ds, skip=["counts", "Gene", "Sample"])
-            label_ds = label_ds.assign_attrs(attrs)
-            return label_ds.merge(count_array).transpose()
+            return label_ds.merge(count_array)
 
     @staticmethod
     def _parse_xarray_dataset(data, **params):

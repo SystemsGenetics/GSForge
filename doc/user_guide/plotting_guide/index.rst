@@ -2,6 +2,9 @@
 Plotting Guide
 **************
 
+.. notebook:: GEMprospector ../examples/user_guide/plotting_guide/plotting_guide.ipynb
+    :offset: 0
+
 .. toctree::
     :titlesonly:
     :maxdepth: 2

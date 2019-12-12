@@ -2,19 +2,19 @@
 Reference Manual
 ****************
 
-Welcome to the API reference for GEMprospector.
+Welcome to the API reference for GSForge.
 
 
 `models`_
- Primary data models for GeneSelector.
+ Primary data models for GSForge.
 `operations`_
  Transforms and feature selection tools.
 `panels`_
  Interactive visualizations.
 `plots`_
- GeneSelector plotting tools.
+ Plotting tools.
 `utils`_
- GeneSelector utilities.
+ Utilities.
 
 
 .. toctree::
