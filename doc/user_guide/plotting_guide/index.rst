@@ -13,3 +13,4 @@ Plotting Guide
     GeneSet Overlap Heatmaps <GeneSet_Overlap_Heatmaps>
     Gene-wise Scatter and Distributions <Genewise_Scatter_and_Distributions>
     Sample-wise Distributions <Samplewise_Distributions>
+    Genes vs Count Scatters <Gene_vs_Counts>
