@@ -10,8 +10,7 @@ from ._scatter_distributions import ScatterDistributionBase
 from ._distributions import SampleWiseDistribution
 from ._lineament_heatmap import lineament_overlap_heatmap
 from ._raster_gem import RasterGEM
-
-# hv.extension("bokeh", "matplotlib")
+from ._compare_gene_counts import GenesVsCounts
 
 
 __all__ = [
@@ -22,6 +21,7 @@ __all__ = [
     "SampleWiseDistribution",
     "RasterGEM",
     "lineament_overlap_heatmap",
+    "GenesVsCounts"
 ]
 
 

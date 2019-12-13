@@ -4,6 +4,7 @@ import os
 import itertools
 import xarray as xr
 import numpy as np
+from functools import reduce
 
 from textwrap import dedent, indent
 
@@ -100,26 +101,26 @@ class GeneSetCollection(param.Parameterized):
     def intersection(self, keys=None, exclude=None):
         """Get the intersection of supported genes in this GeneSet collection."""
         gene_set_dict = self.as_dict(keys, exclude)
-        return set.intersection(*[set(x) for x in gene_set_dict.values()])
+        return reduce(np.intersect1d, gene_set_dict.values())
 
     def union(self, keys=None, exclude=None):
         """Get the union of supported genes in this GeneSet collection."""
         gene_set_dict = self.as_dict(keys, exclude)
-        return set(itertools.chain.from_iterable(gene_set_dict.values()))
+        return reduce(np.intersect1d, gene_set_dict.values())
 
     def difference(self, keys=None, exclude=None):
         gene_set_dict = self.as_dict(keys, exclude)
-        return set.difference(*[set(x) for x in gene_set_dict.values()])
+        return reduce(np.intersect1d, gene_set_dict.values())
 
     def pairwise_unions(self, keys=None, exclude=None, size=2):
         gene_set_dict = self.as_dict(keys, exclude)
-        return {(ak, bk): set.union(set(av), set(bv))
+        return {(ak, bk): np.intersect1d(av, bv)
                 for (ak, av), (bk, bv) in itertools.permutations(gene_set_dict.items(), size)
                 if ak != bk}
 
     def pairwise_intersection(self, keys=None):
         gene_set_dict = self.as_dict(keys)
-        return {(ak, bk): set.intersection(set(av), set(bv))
+        return {(ak, bk): np.intersect1d(av, bv)
                 for (ak, av), (bk, bv) in itertools.combinations(gene_set_dict.items(), 2)
                 if ak != bk}
 
@@ -128,7 +129,7 @@ class GeneSetCollection(param.Parameterized):
         gene_set_dict = self.as_dict(keys)
         zero_filtered_dict = {k: v for k, v in gene_set_dict.items()
                               if len(v) > 0}
-        return [(ak, bk, len(set.intersection(set(av), set(bv))) / len(set(av)))
+        return [(ak, bk, len(np.intersect1d(av, bv)) / len(av))
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
                 if ak != bk]
 
@@ -152,7 +153,7 @@ class GeneSetCollection(param.Parameterized):
             new_gene_set = GeneSet.from_xarray_dataset(data=data)
 
             if data.attrs.get("__GSForge.GeneSet.params.name") is None:
-                name = key = os.path.basename(str(file)).rsplit(".nc")[0]
+                name = os.path.basename(str(file)).rsplit(".nc")[0]
             else:
                 name = new_gene_set.name
 

@@ -23,6 +23,15 @@ class Interface(param.Parameterized):
     The Interface provides common API access for interacting with the `AnnotatedGEM` and
     `GeneSetCollection` objects. It also accepts an `AnnotatedGEM` and a single `GeneSet`
     for subset selection.
+
+    For updating default parameters within subclasses, use the following, although it may
+    cause 'watching' parameters to fire.
+
+    ```
+    self.set_param(key=value)
+    ```
+
+
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
@@ -34,6 +43,11 @@ class Interface(param.Parameterized):
     selected_gene_sets = param.ListSelector(default=[None], doc=dedent("""\
     A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
     that are to be used for selecting sets of genes from the count matrix."""))
+
+    selected_genes = param.Parameter(default=None, doc=dedent("""\
+    A list of genes to use in indexing from the count matrix. This parameter takes
+    priority over all other gene selecting methods. That means that selected
+    lineaments (or combinations thereof) will have no effect."""))
 
     gene_set_mode = param.ObjectSelector(
         default="union",
@@ -116,33 +130,43 @@ class Interface(param.Parameterized):
 
         :return: A numpy array of the currently selected genes.
         """
+        gene_set_combinations = {
+            "union": lambda sel_gs: self.gene_set_collection.union(sel_gs),
+            "intersection": lambda sel_gs: self.gene_set_collection.intersection(sel_gs),
+            "complete": lambda sel_gs: self.gem.gene_index,
+        }
 
-        if count_variable is None:
-            count_variable = self.count_variable
+        mask_modes = {
+            "complete": lambda counts: counts,
+            "masked": lambda counts: counts.where(counts > 0.0),
+            "dropped": lambda counts: counts.where(counts > 0.0).dropna(dim=self.gem.gene_index_name),
+        }
 
-        if self.selected_gene_sets == [None] or not self.gene_set_collection:
+        # Ensure the correct count array is selected.
+        count_variable = self.count_variable if count_variable is None else count_variable
+
+        # If an explicit list of genes is provided, use those and move on to masking.
+        if self.selected_genes is not None:
+            support = self.selected_genes
+
+        # Check if a collection was provided, if not: return the entire gene index for masking.
+        elif self.selected_gene_sets == [None] or not self.gene_set_collection:
             support = self.gem.gene_index
 
+        # Otherwise, use  some combination of GeneSet supports should be used.
         else:
-            if self.gene_set_mode == "union":
-                support = np.array(list(self.gene_set_collection.union(self.selected_gene_sets)))
+            support = gene_set_combinations[self.gene_set_mode](self.selected_gene_sets)
 
-            elif self.gene_set_mode == "intersection":
-                support = np.array(list(self.gene_set_collection.intersection(self.selected_gene_sets)))
-
-            elif self.gene_set_mode == "complete":
-                support = self.gem.gene_index
-
+        # Now the counts can be selected based on the gene support.
         counts = self.gem.data.sel({self.gem.gene_index_name: support})[count_variable]
 
-        if self.count_mask == "complete":
-            pass
-        elif self.count_mask == "masked":
-            counts = counts.where(counts > 0.0)
-        elif self.count_mask == "dropped":
-            counts = counts.where(counts > 0.0).dropna(dim=self.gem.gene_index_name)
+        # Mask the counts.
+        masked_counts = mask_modes[self.count_mask](counts)
 
-        return counts[self.gem.gene_index_name].values.copy()
+        # Get the gene index from this mask.
+        # A .copy() of the array values should be used to prevent strange index behavior.
+        genes = masked_counts[self.gem.gene_index_name].values.copy()
+        return genes
 
     @property
     def active_count_variable(self) -> str:
