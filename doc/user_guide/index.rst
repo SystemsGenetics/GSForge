@@ -3,7 +3,7 @@ User Guide
 **********
 
 
-.. notebook:: GEMprospector ../../examples/user_guide/user_guide.ipynb
+.. notebook:: GEMprospector ../../user_guide.ipynb
     :offset: 0
 
 
