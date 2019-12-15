@@ -16,7 +16,6 @@ GSForge
 
     Introduction <self>
     User Guide <user_guide/index>
-    Plotting Guide <user_guide/plotting_guide/index>
     API <Reference_Manual/index>
     Development <Development>
     About <About>

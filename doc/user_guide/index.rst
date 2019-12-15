@@ -3,7 +3,7 @@ User Guide
 **********
 
 
-.. notebook:: GEMprospector ../../user_guide.ipynb
+.. notebook:: GEMprospector ../../examples/user_guide/user_guide.ipynb
     :offset: 0
 
 
@@ -16,3 +16,4 @@ User Guide
     GeneSet Analysis <GeneSet_Analysis>
     Interface Guide <Interface_Guide>
     GEM Normalization <GEM_Normalization>
+    Plotting Guide <plotting_guide/index>
