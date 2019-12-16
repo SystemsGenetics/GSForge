@@ -141,19 +141,26 @@ class AnnotatedGEM(param.Parameterized):
         :return: An `xarray.Dataset` containing the gene expression matrix and
             the gene annotation data.
         """
-        # TODO: Consider adding an option for transposing.
+        # TODO: Add input validation.
+        # Shape validation.
+        # Index matching validation.
+        # Index name validation.
         count_array = xr.Dataset(
             {"counts": (("Gene", "Sample"), count_df.values)},
             coords={
                 "Sample": count_df.columns.values,
                 "Gene": count_df.index.values
             }
-        ).transpose()
+        )
+
+        if transpose_count_df is True:
+            count_array = count_array.transpose()
 
         if label_df is None:
             return count_array
 
         else:
+            label_df.index.name = "Sample"
             label_ds = label_df.to_xarray()
             return label_ds.merge(count_array)
 

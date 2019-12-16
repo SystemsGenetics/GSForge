@@ -62,7 +62,7 @@ class UMAP_Panel(Interface):
 
         # Try to infer the variables of the data.
         if self.variable_categories is None:
-            inferred_variables = infer_xarray_variables(self.gem.data)
+            inferred_variables = infer_xarray_variables(self.gem.data, skip=self.gem.gene_index_name)
             self.set_param(variable_categories=inferred_variables)
 
         avail_hues = []
@@ -107,19 +107,31 @@ class UMAP_Panel(Interface):
         frozen_map_selector = frozenset((self.selected_gene_sets + [self.gene_set_mode]))
         umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
 
-        plotting_dims = ['x', 'y'] + self.gem.data.attrs.get("all_labels") + [self.sample_index_name]
+        plotting_dims = ['x', 'y']
+
+        if self.variable_categories.get("all_labels") is not None:
+            plotting_dims += self.variable_categories.get("all_labels")
+
+        print(plotting_dims)
 
         df = umap_ds[plotting_dims].to_dataframe().reindex()
+        # print(df.head())
 
         # Set quantileable or group categories to the 'string' datatype.
-        to_cat = self.gem.data.attrs.get("discrete") + self.gem.data.attrs.get("quantile")
-        df[to_cat] = df[to_cat].astype("str")
+        # for var_type in ["discrete", "quantile"]:
+        #     if self.variable_categories.get(var_type) is not None:
+        #         to_categorize = list()
+        #         to_categorize += self.variable_categories.get(var_type)
+        #         df[to_categorize] = df[to_categorize].astype("str")
 
-        vdims = [item for item in self.gem.data.attrs.get("all_labels")]
+        # to_cat = self.gem.data.attrs.get("discrete") + self.gem.data.attrs.get("quantile")
+        # df[to_cat] = df[to_cat].astype("str")
+
+        vdims = [item for item in self.variable_categories.get("all_labels")]
 
         plot = hv.Points(df, kdims=["x", "y"], vdims=vdims)
 
-        tooltips = [(name, "@" + f"{name}") for name in self.gem.data.attrs.get("all_labels")
+        tooltips = [(name, "@" + f"{name}") for name in self.variable_categories.get("all_labels")
                     if name in list(df.columns)]
 
         hover = HoverTool(tooltips=tooltips)
