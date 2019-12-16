@@ -74,7 +74,7 @@ jobs:
     - stage: test_and_build_docs
       script:
         - pytest --nbsmoke-run examples/*.ipynb
-        - nbsite_generate_modules.py GEMprospector -d ./Reference_Manual -n GEMprospector
+        - nbsite_generate_modules.py GEMprospector -d ./doc/Reference_Manual -n GEMprospector
         - nbsite generate-rst --org SystemsGenetics --project-name GEMprospector
         - nbsite build --what=html --output=builtdocs
       deploy:
