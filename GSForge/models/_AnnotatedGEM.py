@@ -11,7 +11,6 @@ from textwrap import dedent
 from .. import utils
 
 
-# TODO: Track and infer the 'count' matrix variables, versus sample and gene annotations.
 class AnnotatedGEM(param.Parameterized):
     """
     A wrapper class for a gene expression matrix and any associated phenotype
@@ -99,7 +98,6 @@ class AnnotatedGEM(param.Parameterized):
         default_dims = set(self.data[self.count_array_name].dims)
         return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
 
-    # TODO: Remove from this class, move to interface?
     def infer_variables(self, quantile_size=10, skip=None) -> dict:
         """Infer categories for the variables in the AnnotatedGEM's labels.
 
@@ -111,11 +109,7 @@ class AnnotatedGEM(param.Parameterized):
         :return: A dictionary of the inferred value types.
         """
         if skip is None:
-            # TODO: Ensure that other potential count arrays end up here.
-            skip = [self.count_array_name,
-                    self.sample_index_name,
-                    self.gene_index_name]
-
+            skip = self.count_array_names + [self.sample_index_name, self.gene_index_name]
         return utils.infer_xarray_variables(xr_dataset=self.data,
                                             quantile_size=quantile_size,
                                             skip=skip)

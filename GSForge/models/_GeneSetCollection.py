@@ -161,12 +161,3 @@ class GeneSetCollection(param.Parameterized):
 
         return cls(gem=gem, gene_sets=gene_sets, **params)
 
-# # Python 3.8 will let us move this code into the class body, and add
-# # add register the @classmethod functions.
-# @functools.singledispatch
-# def _lineament_collection_dispatch(source, *args, **params):
-#     raise TypeError(f"Source of type: {type(source)} not supported.")
-#
-#
-# _lineament_collection_dispatch.register(str, GeneSetCollection.from_folder)
-# _lineament_collection_dispatch.register(pd.DataFrame, GeneSetCollection.from_pandas)
