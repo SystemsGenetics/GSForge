@@ -62,7 +62,9 @@ class UMAP_Panel(Interface):
 
         # Try to infer the variables of the data.
         if self.variable_categories is None:
-            inferred_variables = infer_xarray_variables(self.gem.data, skip=self.gem.gene_index_name)
+            inferred_variables = infer_xarray_variables(self.gem.data,
+                                                        skip=[self.gem.gene_index_name,
+                                                              self.active_count_variable])
             self.set_param(variable_categories=inferred_variables)
 
         avail_hues = []
@@ -88,8 +90,7 @@ class UMAP_Panel(Interface):
         # The arguments come in as frozen sets so that the lru_cache works correctly.
         # Convert them to usable forms.
         umap_kwargs = dict(frozen_umap_kwargs)
-        mapping_key = list(frozen_mapping_key)  # Just used to implicitly hash the result of
-                                                # the call to self.selection below.
+        _ = list(frozen_mapping_key)  # Just used to hash the result of the data key.
         subset = self.selection
 
         zero_filled_data = subset[self.active_count_variable].fillna(0).values
@@ -106,32 +107,29 @@ class UMAP_Panel(Interface):
         frozen_umap_kwargs = frozenset(self._get_umap_kwargs().items())
         frozen_map_selector = frozenset((self.selected_gene_sets + [self.gene_set_mode]))
         umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
-
+        # return umap_ds
         plotting_dims = ['x', 'y']
 
         if self.variable_categories.get("all_labels") is not None:
             plotting_dims += self.variable_categories.get("all_labels")
 
-        print(plotting_dims)
+        # print(plotting_dims)
 
         df = umap_ds[plotting_dims].to_dataframe().reindex()
-        # print(df.head())
+
+        # print(df.head(2))
 
         # Set quantileable or group categories to the 'string' datatype.
         # for var_type in ["discrete", "quantile"]:
         #     if self.variable_categories.get(var_type) is not None:
-        #         to_categorize = list()
-        #         to_categorize += self.variable_categories.get(var_type)
-        #         df[to_categorize] = df[to_categorize].astype("str")
+        #         df[self.variable_categories.get(var_type)] = df[self.variable_categories.get(var_type)].astype("str")
 
-        # to_cat = self.gem.data.attrs.get("discrete") + self.gem.data.attrs.get("quantile")
-        # df[to_cat] = df[to_cat].astype("str")
-
-        vdims = [item for item in self.variable_categories.get("all_labels")]
+        vdims = [item for item in self.variable_categories.get("all_labels")
+                 if item in list(df.columns)]
 
         plot = hv.Points(df, kdims=["x", "y"], vdims=vdims)
 
-        tooltips = [(name, "@" + f"{name}") for name in self.variable_categories.get("all_labels")
+        tooltips = [(name, "@" + f"{name}") for name in vdims
                     if name in list(df.columns)]
 
         hover = HoverTool(tooltips=tooltips)

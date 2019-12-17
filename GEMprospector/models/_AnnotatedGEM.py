@@ -121,50 +121,6 @@ class AnnotatedGEM(param.Parameterized):
                                             skip=skip)
 
     @staticmethod
-    def xrarray_gem_from_pandas(count_df: pd.DataFrame,
-                                label_df: pd.DataFrame = None,
-                                transpose_count_df: bool = True) -> xr.Dataset:
-        """Stitch together a gene expression and annotation DataFrames into
-        a single `xarray.Dataset` object.
-
-        :param count_df: The gene expression matrix as a `pandas.DataFrame`.
-            This file is assumed to have genes as rows and samples as columns.
-
-        :param label_df: The gene annotation data as a `pandas.DataFrame`.
-            This file is assumed to have samples as rows and annotation observations
-            as columns.
-
-        :param transpose_count_df: Whether to transpose the count matrix from the typical creation
-            format (genes as rows, samples as columns) to the more standard (samples as rows,
-            observations as columns).
-
-        :return: An `xarray.Dataset` containing the gene expression matrix and
-            the gene annotation data.
-        """
-        # TODO: Add input validation.
-        # Shape validation.
-        # Index matching validation.
-        # Index name validation.
-        count_array = xr.Dataset(
-            {"counts": (("Gene", "Sample"), count_df.values)},
-            coords={
-                "Sample": count_df.columns.values,
-                "Gene": count_df.index.values
-            }
-        )
-
-        if transpose_count_df is True:
-            count_array = count_array.transpose()
-
-        if label_df is None:
-            return count_array
-
-        else:
-            label_df.index.name = "Sample"
-            label_ds = label_df.to_xarray()
-            return label_ds.merge(count_array)
-
-    @staticmethod
     def _parse_xarray_dataset(data, **params):
         existing_params = data.attrs.get("__GSForge.AnnotatedGEM.params")
         if existing_params:
@@ -185,7 +141,7 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def _parse_pandas(cls, count_df, label_df, **params):
-        data = cls.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = utils.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         return {"data": data, **params}
 
     @classmethod
@@ -204,7 +160,7 @@ class AnnotatedGEM(param.Parameterized):
 
         :return: An instance of the `GEM` class.
         """
-        data = cls.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = utils.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
         instance = super().__new__(cls)
         instance.set_param(**params)
@@ -237,7 +193,7 @@ class AnnotatedGEM(param.Parameterized):
             load your data in to `pandas.DataFrame` objects and provide them to the
             `AnnotatedGEM.from_pandas` constructor instead."""))
 
-        data = cls.xrarray_gem_from_pandas(count_df, label_df)
+        data = utils.xrarray_gem_from_pandas(count_df, label_df)
 
         return {"data": data, **params}
 

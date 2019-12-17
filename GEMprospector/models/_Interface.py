@@ -137,7 +137,7 @@ class Interface(param.Parameterized):
         }
 
         mask_modes = {
-            "complete": lambda counts: counts,
+            "complete": lambda counts: counts.fillna(0),
             "masked": lambda counts: counts.where(counts > 0.0),
             "dropped": lambda counts: counts.where(counts > 0.0).dropna(dim=self.gem.gene_index_name),
         }
@@ -222,23 +222,28 @@ class Interface(param.Parameterized):
         :return: An Xarray.Dataset selection of the currently active 'x_data'.
         """
         # TODO: Consider adding a copy option.
+
+        mask_modes = {
+            "complete": lambda counts: counts.fillna(0),
+            "masked": lambda counts: counts.where(counts > 0.0),
+            "dropped": lambda counts: counts.where(counts > 0.0).dropna(dim=self.gem.gene_index_name),
+        }
+        # Ensure the correct count array is selected.
+        count_variable = self.count_variable if self.count_variable is not None else self.gem.count_array_name
+
+        # Get the gene and sample indexes.
         gene_index = self.get_gene_index()
         sample_index = self.get_sample_index()
+
         selection_dict = {self.gem.gene_index_name: gene_index,
                           self.gem.sample_index_name: sample_index}
         selection_dict = {k: v for k, v in selection_dict.items() if v is not None}
         selection = self.gem.data.sel(selection_dict)
 
-        if self.count_variable is not None:
-            count_variable = self.count_variable
-        else:
-            count_variable = self.gem.count_array_name
+        # Mask the counts.
+        data = mask_modes[self.count_mask](selection[count_variable]).copy(deep=True)
 
-        if self.count_mask == "masked":
-            data = selection[count_variable].where(selection[self.gem.count_array_name] > 0).copy(deep=True)
-        else:
-            data = selection[count_variable].copy(deep=True)
-
+        # Optional transform.
         if self.count_transform is not None:
             data = self.count_transform(data)
 
