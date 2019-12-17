@@ -63,8 +63,7 @@ class UMAP_Panel(Interface):
         # Try to infer the variables of the data.
         if self.variable_categories is None:
             inferred_variables = infer_xarray_variables(self.gem.data,
-                                                        skip=[self.gem.gene_index_name,
-                                                              self.active_count_variable])
+                                                        skip=[self.gem.gene_index_name] + self.gem.count_array_names)
             self.set_param(variable_categories=inferred_variables)
 
         avail_hues = []
@@ -107,17 +106,12 @@ class UMAP_Panel(Interface):
         frozen_umap_kwargs = frozenset(self._get_umap_kwargs().items())
         frozen_map_selector = frozenset((self.selected_gene_sets + [self.gene_set_mode]))
         umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
-        # return umap_ds
         plotting_dims = ['x', 'y']
 
         if self.variable_categories.get("all_labels") is not None:
             plotting_dims += self.variable_categories.get("all_labels")
 
-        # print(plotting_dims)
-
         df = umap_ds[plotting_dims].to_dataframe().reindex()
-
-        # print(df.head(2))
 
         # Set quantileable or group categories to the 'string' datatype.
         # for var_type in ["discrete", "quantile"]:
