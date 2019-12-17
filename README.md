@@ -1,21 +1,19 @@
-[![Build Status](https://travis-ci.com/SystemsGenetics/GEMprospector.svg?branch=master)](https://travis-ci.com/SystemsGenetics/GEMprospector)
+[![Build Status](https://travis-ci.com/SystemsGenetics/GSForge.svg?branch=master)](https://travis-ci.com/SystemsGenetics/GSForge)
 
-# GEMprospector
+# GSForge
 
-*This project will probably have its named changed (again).*
-
-[Documentation](https://systemsgenetics.github.io/GEMprospector/)
+[Documentation](https://systemsgenetics.github.io/GSForge/)
 
 ## Installation
 
 ***Clone the repository.***
 
 ```bash
-git clone git@github.com:SystemsGenetics/GEMprospector.git
+git clone git@github.com:SystemsGenetics/GSForge.git
 ```
 
 ***Install via local pip:***
 
 ```bash
-pip install ./gemprospector/
+pip install ./gsforge/
 ```

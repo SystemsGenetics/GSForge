@@ -2,8 +2,6 @@
 # This file triggers a travis-ci build upon a commit to the master branch.
 #
 # The travis.yml file (in that branch) controls how travis will handle builds.
-#
-#
 
 branches:
   only:
@@ -68,7 +66,7 @@ jobs:
       script:
         - docker-compose build
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker push systemsgenetics/gemprospector_interactive:latest
+        - docker push systemsgenetics/gsforge_interactive:latest
         - docker push systemsgenetics/gemprospector_workflow:latest
 
     - stage: test_and_build_docs
