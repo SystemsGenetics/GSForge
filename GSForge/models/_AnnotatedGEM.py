@@ -64,7 +64,7 @@ class AnnotatedGEM(param.Parameterized):
 
     def __repr__(self) -> str:
         """Display a summary of this AnnotatedGEM."""
-        summary = [f"<GEMprospector.{type(self).__name__}>"]
+        summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"Selected GEM Variable: '{self.count_array_name}'"]
         summary += [f"    {self.gene_index_name}   {self.data[self.gene_index_name].shape[0]}"]
@@ -234,7 +234,7 @@ class AnnotatedGEM(param.Parameterized):
         params_to_save = {key: value for key, value in self.get_param_values()
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
-        self.data.attrs.update({"__GEMprospector.AnnotatedGEM.params": params_str})
+        self.data.attrs.update({"__GSForge.AnnotatedGEM.params": params_str})
         self.data.to_netcdf(path, mode="w")
         return path
 

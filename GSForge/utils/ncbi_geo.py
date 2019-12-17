@@ -11,6 +11,9 @@ def soft_to_pandas(soft_object):
     of `pandas.DataFrame` objects."""
     count_df = soft_object.table.loc[:, soft_object.columns.index]
     count_df["Gene"] = soft_object.table["ID_REF"]
+
+    if count_df["Gene"].dtype != "object":
+        count_df["Gene"] = "Gene_" + count_df["Gene"].astype("str")
     count_df = count_df.set_index("Gene")
     label_df = soft_object.columns
     return count_df, label_df

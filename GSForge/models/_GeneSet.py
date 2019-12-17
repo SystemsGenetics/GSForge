@@ -53,7 +53,7 @@ class GeneSet(param.Parameterized):
         """Display a summary of this GeneSet."""
         support_size = self.gene_support().shape[0]
         percent_support = support_size / self.data['Gene'].shape[0]
-        summary = [f"<GEMprospector.{type(self).__name__}>"]
+        summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"    Supported Genes:  {support_size}, {percent_support:.2%} of {self.data[self.gene_index_name].shape[0]}"]
         return "\n".join(summary)

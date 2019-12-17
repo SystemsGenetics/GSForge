@@ -52,7 +52,8 @@ def infer_xarray_variables(xr_dataset: xr.Dataset,
         skip = []
 
     selected_variables = [var for var in xr_dataset.variables
-                          if var not in skip]
+                          if var not in skip
+                          and len(xr_dataset[var].dims) >= 1]  # 0 dim variables are problematic.
 
     incomplete = [var for var in selected_variables
                   if xr_dataset[var].to_series().isnull().values.any()]

@@ -15,13 +15,13 @@ addons:
       - libnetcdf-dev
 
 env:
-  - GEMPROSPECTOR_DATA="${HOME}/GEMprospector_demo_data"
+  - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
 
 
 cache:
   directories:
-    - $GEMPROSPECTOR_DATA
-    - $GEMPROSPECTOR_DATA/lineaments/
+    - GSFORGE_DEMO_DATA
+    - GSFORGE_DEMO_DATA/boruta_gene_sets/
 
 language: python
 
@@ -47,19 +47,11 @@ install:
 
 jobs:
   include:
-
     - stage: Update OSF files
       install: skip
       script:
-        - rm -rf ${GEMPROSPECTOR_DATA}
-        - mkdir -p ${GEMPROSPECTOR_DATA}/lineaments/
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1eba3365cb8000dd9d251?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/rice_heat_drought.GEM.raw.txt"
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebb6365cb8000ad9194e?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/srx_sample_annots.txt"
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1ebd0365cb8000dd9d28d?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/all.gff3"
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db1f74f0db187000c3ab77d?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/osativa.nc"
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db37d30af84c3000ee17d09?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/lineaments/Genotype.nc"
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db37d30f3bb87000d82888a?action=download&amp;version=2&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/lineaments/Subspecies.nc"
-        - "curl -X 'GET' \"https://files.osf.io/v1/resources/rbhfz/providers/osfstorage/5db37d2ecfc96c000ebb6b20?action=download&amp;version=1&amp;direct\" -H \"Authorization: Bearer ${OSF_TOKEN}\" --output ${GEMPROSPECTOR_DATA}/lineaments/Treatment.nc"
+        - pip install osfclient
+        - osf -p 6ceuk clone ${GSFORGE_DEMO_DATA}
 
     - stage: build_dockerfiles
       install: skip

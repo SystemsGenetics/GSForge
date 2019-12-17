@@ -42,7 +42,7 @@ class GeneSetCollection(param.Parameterized):
         return counts
 
     def __repr__(self):
-        summary = [f"<GEMprospector.{type(self).__name__}>"]
+        summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [self.name]
         summary += [indent(self.gem.__repr__(), "    ")]
         summary += ["GeneSet Keys and # of Selected Genes"]
