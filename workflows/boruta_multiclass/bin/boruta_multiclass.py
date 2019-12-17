@@ -30,8 +30,8 @@ import click
 import xarray as xr
 import json
 
-from GEMprospector import AnnotatedGEM
-from GEMprospector.operations.prospectors import boruta_prospector
+from GSForge import AnnotatedGEM
+from GSForge.operations.prospectors import boruta_prospector
 
 from sklearn.ensemble import RandomForestClassifier
 # import lightgbm as lgb

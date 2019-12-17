@@ -5,7 +5,7 @@ from nbsite.shared_conf import *
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../../gemprospector'))
+sys.path.insert(0, os.path.abspath('..'))
 
 ###################################################
 # edit things below as appropriate for your project
@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath('../../gemprospector'))
 #     'within_subsection_order': lambda key: key
 # }
 
-project = u'GEMprospector'
+project = u'GSForge'
 authors = u'Tyler Biggs'
 copyright = u'2019 ' + authors
 description = 'Short description for html meta description.'
@@ -61,6 +61,6 @@ html_context.update({
     # by default, footer links are same as those in header
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Github', '//systemsgenetics.github.io/GEMprospector/index.html'),
+        ('Github', '//systemsgenetics.github.io/GSForge/index.html'),
     )
 })

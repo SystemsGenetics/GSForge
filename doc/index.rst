@@ -2,11 +2,11 @@
 GSForge
 *******
 
-.. notebook:: GEMprospector ../examples/Welcome.ipynb
+.. notebook:: GSForge ../examples/Welcome.ipynb
     :offset: 0
 
 
-.. notebook:: GEMprospector ../examples/Installation.ipynb
+.. notebook:: GSForge ../examples/Installation.ipynb
     :offset: 0
 
 

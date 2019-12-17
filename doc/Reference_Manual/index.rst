@@ -21,14 +21,14 @@ Welcome to the API reference for GSForge.
    :maxdepth: 2
    :hidden:
 
-   models <GEMprospector.models>
-   operations <GEMprospector.operations>
-   panels <GEMprospector.panels>
-   plots  <GEMprospector.plots>
-   util  <GEMprospector.utils>
+   models <GSForge.models>
+   operations <GSForge.operations>
+   panels <GSForge.panels>
+   plots  <GSForge.plots>
+   util  <GSForge.utils>
 
-.. _models: GEMprospector.models.html
-.. _operations: GEMprospector.operations.html
-.. _panels: GEMprospector.panels.html
-.. _plots: GEMprospector.plots.html
-.. _utils: GEMprospector.utils.html
+.. _models: GSForge.models.html
+.. _operations: GSForge.operations.html
+.. _panels: GSForge.panels.html
+.. _plots: GSForge.plots.html
+.. _utils: GSForge.utils.html
