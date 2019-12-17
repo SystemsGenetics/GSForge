@@ -67,7 +67,7 @@ jobs:
         - docker-compose build
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker push systemsgenetics/gsforge_interactive:latest
-        - docker push systemsgenetics/gemprospector_workflow:latest
+        - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: test_and_build_docs
       script:
