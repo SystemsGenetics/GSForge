@@ -25,6 +25,7 @@ sys.path.insert(0, os.path.abspath('..'))
 #     # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
 #     'within_subsection_order': lambda key: key
 # }
+exclude_patterns = ['AnnotatedGEM_from_NCBI_GEO', '*Creating_an_AnnotatedGEM']
 
 project = u'GSForge'
 authors = u'Tyler Biggs'
