@@ -40,6 +40,8 @@ stages:
 
 
 install:
+  - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
+  - sh ./ascp-install-3.5.4.102989-linux-64.sh
   - pip install -r requirements.txt
   - pip install -r doc/requirements.txt
   - pip install .
