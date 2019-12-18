@@ -35,7 +35,7 @@ python:
 stages:
 #  - name: Update OSF files
 #    if: commit_message =~ \bupdate_osf\b
-#  - build_dockerfiles
+  - build_dockerfiles
   - test_and_build_docs
 
 
@@ -55,27 +55,27 @@ jobs:
 #        - pip install osfclient
 #        - osf -p 6ceuk clone ${GSFORGE_DEMO_DATA}
 
-#    - stage: build_dockerfiles
-#      install: skip
-#      script:
-#        - docker-compose build
-#        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-#        - docker push systemsgenetics/gsforge_interactive:latest
-#        - docker push systemsgenetics/gsforge_workflow:latest
+    - stage: build_dockerfiles
+      install: skip
+      script:
+        - docker-compose build
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push systemsgenetics/gsforge_interactive:latest
+        - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: test_and_build_docs
       script:
         - osf -p 6ceuk clone "$GSFORGE_DEMO_DATA"
-        - ls "$GSFORGE_DEMO_DATA"
-#        - pytest --nbsmoke-run examples/*.ipynb
-#        - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-#        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-#        - nbsite build --what=html --output=builtdocs
-#      deploy:
-#        - provider: pages
-#          skip_cleanup: true
-#          local_dir: ./builtdocs
-#          target_branch: gh-pages
-#          github_token: $GITHUB_TOKEN
-#          on:
-#            branch: master
+#        - ls "$GSFORGE_DEMO_DATA"
+        - pytest --nbsmoke-run examples/*.ipynb
+        - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
+        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
+        - nbsite build --what=html --output=builtdocs
+      deploy:
+        - provider: pages
+          skip_cleanup: true
+          local_dir: ./builtdocs
+          target_branch: gh-pages
+          github_token: $GITHUB_TOKEN
+          on:
+            branch: master
