@@ -45,7 +45,7 @@ class SampleWiseDistribution(OperationInterface):
         if labels is not None:
             patches = [mpatches.Patch(color=color, label=label)
                        for label, color in colors.items()]
-            plt.legend(handles=patches)
+            ax.legend(handles=patches)
 
         return ax
 
