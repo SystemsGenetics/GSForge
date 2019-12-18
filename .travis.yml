@@ -20,8 +20,8 @@ env:
 
 cache:
   directories:
-    - GSFORGE_DEMO_DATA
-    - GSFORGE_DEMO_DATA/boruta_gene_sets/
+    - "$GSFORGE_DEMO_DATA"
+#    - "$GSFORGE_DEMO_DATA/boruta_gene_sets/"
 
 language: python
 
