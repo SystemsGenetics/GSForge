@@ -40,6 +40,7 @@ stages:
 
 
 install:
+  - sudo apt-get install graphviz
   - pip install -r requirements.txt
   - pip install -r doc/requirements.txt
   - pip install .
@@ -64,9 +65,9 @@ jobs:
     - stage: test_and_build_docs
       script:
         - osf -p 6ceuk clone "$GSFORGE_DEMO_DATA"
-        - pytest --nbsmoke-run examples/*.ipynb
+        - pytest --nbsmoke-run examples/**/*.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
+        - nbsite generate-rst --org SystemsGenetics --project-name GSForge --skip AnnotatedGEM
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
