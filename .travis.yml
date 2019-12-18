@@ -40,8 +40,6 @@ stages:
 
 
 install:
-  - wget http://download.asperasoft.com/download/sw/ascp-client/3.5.4/ascp-install-3.5.4.102989-linux-64.sh
-  - sudo sh ./ascp-install-3.5.4.102989-linux-64.sh
   - pip install -r requirements.txt
   - pip install -r doc/requirements.txt
   - pip install .
@@ -66,7 +64,6 @@ jobs:
     - stage: test_and_build_docs
       script:
         - osf -p 6ceuk clone "$GSFORGE_DEMO_DATA"
-#        - ls "$GSFORGE_DEMO_DATA"
         - pytest --nbsmoke-run examples/*.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
