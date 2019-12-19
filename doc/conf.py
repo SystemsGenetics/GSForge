@@ -10,7 +10,10 @@ sys.path.insert(0, os.path.abspath('..'))
 ###################################################
 # edit things below as appropriate for your project
 
-# extensions += ['nbsite.gallery']
+extensions += [
+    "nbsphinx",
+    # 'nbsite.gallery'
+]
 #
 # nbsite_gallery_conf = {
 #     'backends': ['bokeh', 'matplotlib'],
