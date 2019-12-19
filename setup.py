@@ -12,9 +12,6 @@ setup(
     install_requires=['boruta', 'umap_learn', 'h5py', 'netcdf4',
                       'xarray', 'pandas', 'numpy', 'lightgbm',
                       'param', 'scipy', 'scikit-learn', 'click',
-                      'joypy', 'methodtools'],
-    extras_require={
-        'interactive': ['matplotlib', 'jupyter', 'bokeh', 'holoviews', 'panel', 'datashader'],
-        'documentation': ['nbsite', 'sphinx_ioam_theme']
-    }
+                      'joypy', 'methodtools', 'dask'],
 )
+

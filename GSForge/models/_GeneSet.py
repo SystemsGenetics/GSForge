@@ -275,6 +275,7 @@ def _geneset_dispatch(*args, **params):
 
 
 _geneset_dispatch.register(str, GeneSet.parse_netcdf_path)
+_geneset_dispatch.register(pathlib.PosixPath, GeneSet.parse_netcdf_path)
 _geneset_dispatch.register(xr.Dataset, GeneSet.parse_xarray_dataset)
 _geneset_dispatch.register(pd.DataFrame, GeneSet.parse_pandas)
 _geneset_dispatch.register(np.ndarray, GeneSet.parse_gene_array)

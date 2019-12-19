@@ -242,4 +242,5 @@ def _annotated_gem_dispatch(*args, **params):
 
 _annotated_gem_dispatch.register(xr.Dataset, AnnotatedGEM._parse_xarray_dataset)
 _annotated_gem_dispatch.register(str, AnnotatedGEM._parse_netcdf_path)
+_annotated_gem_dispatch.register(pathlib.PosixPath, AnnotatedGEM._parse_netcdf_path)
 _annotated_gem_dispatch.register(pd.DataFrame, AnnotatedGEM._parse_pandas)
