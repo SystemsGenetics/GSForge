@@ -21,8 +21,8 @@ python:
   - "3.7"
 
 stages:
-  - build_dockerfiles
   - test_and_build_docs
+  - build_dockerfiles
 
 install:
   - sudo apt-get install graphviz
@@ -33,14 +33,6 @@ install:
 
 jobs:
   include:
-    - stage: build_dockerfiles
-      install: skip
-      script:
-        - docker-compose build
-        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker push systemsgenetics/gsforge_interactive:latest
-        - docker push systemsgenetics/gsforge_workflow:latest
-
     - stage: test_and_build_docs
       script:
         - osf -p t3xpw clone "$GSFORGE_DEMO_DATA"
@@ -56,3 +48,11 @@ jobs:
           github_token: $GITHUB_TOKEN
           on:
             branch: master
+
+#    - stage: build_dockerfiles
+#      install: skip
+#      script:
+#        - docker-compose build
+#        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+#        - docker push systemsgenetics/gsforge_interactive:latest
+#        - docker push systemsgenetics/gsforge_workflow:latest
