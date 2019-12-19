@@ -36,7 +36,8 @@ jobs:
     - stage: test_and_build_docs
       script:
         - osf -p t3xpw clone "$GSFORGE_DEMO_DATA"
-        - pytest --nbsmoke-run examples/**/*.ipynb
+        - pytest --nbsmoke-run examples/AnnotatedGEM_from_pandas.ipynb
+#        - pytest --nbsmoke-run examples/**/*.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
         - nbsite build --what=html --output=builtdocs
