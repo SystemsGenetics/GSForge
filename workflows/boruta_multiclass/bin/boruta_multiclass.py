@@ -29,6 +29,7 @@ import os
 import click
 import xarray as xr
 import json
+import hashlib
 
 from GSForge import AnnotatedGEM
 from GSForge.operations.prospectors import boruta_prospector
@@ -69,6 +70,22 @@ def main(gem_netcdf,
         * LGBMClassifier
     """
     click.echo("Boruta runner started.")
+
+    # Construct a hash of all given arguments.
+    def h6(w):
+        h = hashlib.md5(w.encode())
+        return h.hexdigest()[:6]
+
+    arg_str = "_".join([
+        gem_netcdf,
+        x_label,
+        y_label,
+        boruta_opts,
+        ranking_model_opts,
+        ranking_model,
+    ])
+    arg_hash = h6(arg_str)
+
     click.echo("Parsing options...")
     if ranking_model_opts is None:
         ranking_model_opts = MODEL_DEFAULTS[ranking_model]
@@ -89,8 +106,10 @@ def main(gem_netcdf,
         boruta_results = boruta_prospector(
             agem,
             estimator=selection_model,
-            y_variables=y_label,
+            annotation_variables=y_label,
             **boruta_kwargs,)
+        # Add the argument hash to the attributes.
+        boruta_results = boruta_results.assign_attrs({"arg_hash": arg_hash})
 
     click.echo("Examining Results...")
     found_gene_count = boruta_results.support.sum().values
@@ -105,9 +124,9 @@ def main(gem_netcdf,
 
     if append_wd:
         output_dir = os.path.basename(os.getcwd())
-        output_filename = f"{x_label}_v_{y_label}_{output_dir[-6:]}.nc"
+        output_filename = f"{arg_hash}_{output_dir[-6:]}.nc"
     else:
-        output_filename = f"{x_label}_v_{y_label}.nc"
+        output_filename = f"{arg_hash}.nc"
 
     boruta_results.to_netcdf(output_filename)
     click.echo(f"Results saved to: {output_filename}")
