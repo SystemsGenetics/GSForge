@@ -40,20 +40,20 @@ jobs:
 #        - pytest --nbsmoke-run examples/**/*.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-        - nbsite build --what=html --output=builtdocs
-      deploy:
-        - provider: pages
-          skip_cleanup: true
-          local_dir: ./builtdocs
-          target_branch: gh-pages
-          github_token: $GITHUB_TOKEN
-          on:
-            branch: master
+#        - nbsite build --what=html --output=builtdocs --skip Boruta*.ipynb
+#      deploy:
+#        - provider: pages
+#          skip_cleanup: true
+#          local_dir: ./builtdocs
+#          target_branch: gh-pages
+#          github_token: $GITHUB_TOKEN
+#          on:
+#            branch: master
 
-#    - stage: build_dockerfiles
-#      install: skip
-#      script:
-#        - docker-compose build
-#        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-#        - docker push systemsgenetics/gsforge_interactive:latest
-#        - docker push systemsgenetics/gsforge_workflow:latest
+    - stage: build_dockerfiles
+      install: skip
+      script:
+        - docker-compose build
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push systemsgenetics/gsforge_interactive:latest
+        - docker push systemsgenetics/gsforge_workflow:latest

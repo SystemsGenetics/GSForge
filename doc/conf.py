@@ -28,7 +28,7 @@ extensions += [
 #     # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
 #     'within_subsection_order': lambda key: key
 # }
-exclude_patterns = ['R_Integration/*.ipynb', '*Boruta*.ipynb']
+# exclude_patterns = ['R_Integration/*.ipynb', '*Boruta*.ipynb']
 
 project = u'GSForge'
 authors = u'Tyler Biggs'
