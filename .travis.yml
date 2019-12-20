@@ -37,10 +37,9 @@ jobs:
       script:
         - osf -p t3xpw clone "$GSFORGE_DEMO_DATA"
         - pytest --nbsmoke-run examples/user_guide/AnnotatedGEM_from_pandas.ipynb
-#        - pytest --nbsmoke-run examples/**/*.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-        - nbsite build --what=html --output=builtdocs --skip [Boruta*.ipynb, user_guide/*.ipynb]
+        - nbsite generate-rst --org SystemsGenetics --project-name GSForge --skip="[dev/*, Boruta*.ipynb, R_int*/*.ipynb]"
+        - nbsite build --what=html --output=builtdocs
 #      deploy:
 #        - provider: pages
 #          skip_cleanup: true
