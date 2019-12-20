@@ -12,6 +12,6 @@ setup(
     install_requires=['boruta', 'umap_learn', 'h5py', 'netcdf4',
                       'xarray', 'pandas', 'numpy', 'lightgbm',
                       'param', 'scipy', 'scikit-learn', 'click',
-                      'methodtools', 'datashader'],
+                      'methodtools', 'datashader', 'seaborn'],
 )
 
