@@ -31,7 +31,6 @@ class Interface(param.Parameterized):
     self.set_param(key=value)
     ```
 
-
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
@@ -47,7 +46,7 @@ class Interface(param.Parameterized):
     selected_genes = param.Parameter(default=None, doc=dedent("""\
     A list of genes to use in indexing from the count matrix. This parameter takes
     priority over all other gene selecting methods. That means that selected
-    lineaments (or combinations thereof) will have no effect."""))
+    lineaments (or combinations thereof) will have no effect."""), precedence=-1.0)
 
     gene_set_mode = param.ObjectSelector(
         default="union",
@@ -176,7 +175,7 @@ class Interface(param.Parameterized):
         else:
             count_variable = self.gem.count_array_name
         return count_variable
-            
+
     @property
     def gene_index_name(self) -> str:
         """Returns the name of the gene index."""
@@ -208,11 +207,22 @@ class Interface(param.Parameterized):
 
         return subset[self.gem.sample_index_name].values.copy()
 
+    def get_selection_indexes(self) -> dict:
+        """Returns the currently selected indexes as a dictionary."""
+        return {self.gem.gene_index_name: self.get_gene_index(),
+                self.gem.sample_index_name: self.get_sample_index()}
+
     @property
     def selection(self) -> xr.Dataset:
         """Returns the currently selected data."""
-        return self.gem.data.sel({self.gem.gene_index_name: self.get_gene_index(),
-                                  self.gem.sample_index_name: self.get_sample_index()})
+        selected_variables = [self.active_count_variable]
+
+        if self.annotation_variables is not None:
+            selected_variables += self.annotation_variables
+
+        return self.gem.data[selected_variables].sel({
+            self.gem.gene_index_name: self.get_gene_index(),
+            self.gem.sample_index_name: self.get_sample_index()})
 
     @property
     def x_count_data(self) -> xr.Dataset:
@@ -263,6 +273,8 @@ class Interface(param.Parameterized):
 
         sample_index = self.get_sample_index()
         subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
+        # if len(self.annotation_variables) == 1:
+        #     return subset[self.annotation_variables[0]].copy(deep=True)
         return subset[self.annotation_variables].copy(deep=True)
 
 

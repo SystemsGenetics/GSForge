@@ -110,6 +110,12 @@ class AnnotatedGEM(param.Parameterized):
         """
         if skip is None:
             skip = self.count_array_names + [self.sample_index_name, self.gene_index_name]
+
+        sample_dim = {self.sample_index_name}
+        gene_annots = [var for var in self.data.data_vars if set(self.data[var].dims) != sample_dim]
+        if gene_annots:
+            skip += gene_annots
+
         return utils.infer_xarray_variables(xr_dataset=self.data,
                                             quantile_size=quantile_size,
                                             skip=skip)

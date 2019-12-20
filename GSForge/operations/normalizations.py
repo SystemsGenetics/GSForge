@@ -100,7 +100,7 @@ class UpperQuartile(OperationInterface):
         adjusted_counts = counts + 0.1
         per_sample_quantile = adjusted_counts.quantile(0.75, dim="Gene")
         per_sample_quantile_mean = per_sample_quantile.mean()
-        return adjusted_counts / (per_sample_quantile / per_sample_quantile_mean)
+        return (adjusted_counts / (per_sample_quantile / per_sample_quantile_mean)).drop("quantile")
 
     def process(self):
         """

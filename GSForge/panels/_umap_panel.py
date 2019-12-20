@@ -62,8 +62,7 @@ class UMAP_Panel(Interface):
 
         # Try to infer the variables of the data.
         if self.variable_categories is None:
-            inferred_variables = infer_xarray_variables(self.gem.data,
-                                                        skip=[self.gem.gene_index_name] + self.gem.count_array_names)
+            inferred_variables = self.gem.infer_variables()
             self.set_param(variable_categories=inferred_variables)
 
         avail_hues = []
@@ -90,7 +89,9 @@ class UMAP_Panel(Interface):
         # Convert them to usable forms.
         umap_kwargs = dict(frozen_umap_kwargs)
         _ = list(frozen_mapping_key)  # Just used to hash the result of the data key.
-        subset = self.selection
+        index_selection = self.get_selection_indexes()
+        subset = self.gem.data[[self.active_count_variable] +
+                               self.variable_categories.get("all_labels")].sel(index_selection)
 
         zero_filled_data = subset[self.active_count_variable].fillna(0).values
         transform = umap.UMAP(**umap_kwargs).fit_transform(zero_filled_data)
@@ -98,6 +99,8 @@ class UMAP_Panel(Interface):
         subset["x"] = ((self.gem.sample_index_name,), transform[:, 0])
         subset["y"] = ((self.gem.sample_index_name,), transform[:, 1])
 
+        subset = subset.drop(self.active_count_variable)
+        subset = subset.drop(self.gene_index_name)
         return subset
 
     @param.depends('update_umap', 'hue')
@@ -107,12 +110,9 @@ class UMAP_Panel(Interface):
         frozen_map_selector = frozenset((self.selected_gene_sets + [self.gene_set_mode]))
         umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
         plotting_dims = ['x', 'y']
-
         if self.variable_categories.get("all_labels") is not None:
             plotting_dims += self.variable_categories.get("all_labels")
-
         df = umap_ds[plotting_dims].to_dataframe().reindex()
-
         # Set quantileable or group categories to the 'string' datatype.
         # for var_type in ["discrete", "quantile"]:
         #     if self.variable_categories.get(var_type) is not None:

@@ -248,6 +248,10 @@ class GeneSet(param.Parameterized):
         """
         target_dir = os.getcwd() if target_dir is None else target_dir
 
+        # Create any needed intermediate directories.
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
         if self.name is None and name is None:
             raise ValueError("The GeneSet must be named, or you must pass a name to the save function.")
 

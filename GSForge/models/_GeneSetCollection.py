@@ -79,7 +79,7 @@ class GeneSetCollection(param.Parameterized):
 
         for key in keys:
             save_path = self.gene_sets[key].save_as_netcdf(target_dir)
-            # yield save_path
+            print(save_path)
 
     def as_dict(self, keys=None, exclude=None):
         """Returns a dictionary of {name: supported_genes} for each gene set, or those specified

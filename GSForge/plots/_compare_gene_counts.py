@@ -59,7 +59,11 @@ class GenesVsCounts(OperationInterface):
         if self.gene_set_collection is not None:
             self.set_param(selected_gene_sets=list(self.gene_set_collection.gene_sets.keys()))
 
-        selected_subset = self.selection
+        plotting_dims = [self.count_variable]
+        if self.hue:
+            plotting_dims += [self.hue]
+
+        selected_subset = self.gem.data[plotting_dims].sel(self.get_selection_indexes())
 
         modes = {
             "scatter": self.genewise_scatter,

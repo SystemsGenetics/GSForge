@@ -35,7 +35,7 @@ class get_data(OperationInterface):
         return self.x_count_data, self.y_annotation_data
 
 
-class gs_train_test_split(OperationInterface):
+class train_test_split_wrapper(OperationInterface):
     """
     Performs an `sklearn.preprocessing.train_test_split()` call on the subset of data
     specified by the interface options (the same options passed to `get_data()`.
@@ -44,7 +44,7 @@ class gs_train_test_split(OperationInterface):
 
     def process(self):
         # Get the subset of data selected by this operation.
-        y_index = self.y_annotation_data[self.gem.sample_index_name].copy(deep=True)
+        y_index = self.get_sample_index()
 
         # Get the sample index and make the train and test indexes.
         train_idx, test_idx = train_test_split(y_index, **self.train_test_split_options)
