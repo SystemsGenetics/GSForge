@@ -31,7 +31,7 @@ import xarray as xr
 import json
 import hashlib
 
-from GSForge import AnnotatedGEM
+from GSForge.models._AnnotatedGEM import AnnotatedGEM  # To avoid the __init__ run.
 from GSForge.operations.prospectors import boruta_prospector
 
 from sklearn.ensemble import RandomForestClassifier
