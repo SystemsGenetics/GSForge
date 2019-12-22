@@ -13,8 +13,8 @@ from .. import utils
 
 class AnnotatedGEM(param.Parameterized):
     """
-    A wrapper class for a gene expression matrix and any associated phenotype
-    data or labels.
+    A data class for a gene expression matrix and any associated sample or
+    gene annotations.
 
     This model holds the count expression matrix, and any associated labels
     or annotations as an `xarray.Dataset` object under the `.data` attribute.

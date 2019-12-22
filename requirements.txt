@@ -10,7 +10,6 @@ xarray
 methodtools
 tqdm
 param
-joypy
 seaborn
 Boruta
 umap_learn

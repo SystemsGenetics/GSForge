@@ -22,8 +22,7 @@ from .. import utils
 #       Create the boolean support array from a variable in the given data parameter.
 class GeneSet(param.Parameterized):
     """
-    A `GeneSet` is at the very least a list of genes which are
-    considered to be 'within' the GeneSet.
+    A data class for a the result of a gene selection or analysis.
 
     A GeneSet can also be a measurement or ranking of a set of genes,
     and this could include all of the 'available' genes. In such cases

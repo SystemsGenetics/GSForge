@@ -19,8 +19,9 @@ from ._GeneSet import GeneSet
 #     + Add a `get_support(key)` function.
 class GeneSetCollection(param.Parameterized):
     """
-    Contains both an `AnnotatedGEM` and a dictionary of `GeneSet` objects, as well
-    as functions for comparing and analyzing those objects.
+    A data class that holds an AnnotatedGEM and a dictionary of associated
+    GeneSet objects.
+
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
