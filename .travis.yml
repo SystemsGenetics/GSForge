@@ -38,7 +38,10 @@ jobs:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - pytest --nbsmoke-run examples/user_guide/AnnotatedGEM_from_pandas.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge --skip="[^.*dev/*.ipynb, ^.*Boruta*.ipynb, ^.*R_integration_guide/*.ipynb]"
+        # The pipe below enables use of a multiple line bash script.
+        - |
+          nbsite generate-rst --org SystemsGenetics --project-name GSForge \
+          --skip="[^.*Boruta.*ipynb, ^.*R_integration_guide.*ipynb]"
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
