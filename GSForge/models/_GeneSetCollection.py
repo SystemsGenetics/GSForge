@@ -45,9 +45,10 @@ class GeneSetCollection(param.Parameterized):
     def __repr__(self):
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [self.name]
-        summary += [indent(self.gem.__repr__(), "    ")]
-        summary += ["GeneSet Keys and # of Selected Genes"]
-        summary += [f"    {k}: {v}" for k, v in self._summarize_gene_sets().items()]
+        # summary += [indent(self.gem.__repr__(), "    ")]
+        gene_set_info = self._summarize_gene_sets()
+        summary += [f"GeneSets ({len(gene_set_info)} total): Support Count"]
+        summary += [f"    {k}: {v}" for k, v in itertools.islice(self._summarize_gene_sets().items(), 10)]
         return "\n".join(summary)
 
     def get_support(self, key) -> np.array:
