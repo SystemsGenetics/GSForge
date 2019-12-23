@@ -3,9 +3,7 @@ R Integration Guide
 *******************
 
 
-.. notebook:: GSForge ../examples/user_guide/R_integration_guide/DESeq2_GeneSets.ipynb
-    :skip_execute: True
-    :offset: 0
+*Under construction...*
 
 
 .. toctree::

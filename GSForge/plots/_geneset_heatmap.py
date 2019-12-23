@@ -27,3 +27,13 @@ def geneset_overlap_heatmap(lineament_collection, keys=None, mode="overlap"):
     heatmap = hv.HeatMap(data, vdims=overlap_dim)  # .options(xrotation=45, width=450, height=450, labelled=[],
     #         colorbar=True)
     return heatmap * hv.Labels(heatmap)
+
+
+def dictionary_pair_overlap(alpha, beta):
+    overlap_dim = hv.Dimension("Overlap Count", value_format=lambda x: f"{x}")
+
+    data = [(f"{ak}: {len(av)}", f"{bk}: {len(bv)}", len(set.intersection(set(av), set(bv))))
+            for (ak, av), (bk, bv) in itertools.product(alpha.items(), beta.items())]
+
+    heatmap = hv.HeatMap(data, vdims=overlap_dim).opts(labelled=[], colorbar=True)
+    return heatmap * hv.Labels(heatmap)
