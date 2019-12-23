@@ -3,8 +3,7 @@ import holoviews as hv
 import itertools
 
 
-
-def lineament_overlap_heatmap(lineament_collection, keys=None, mode="overlap"):
+def geneset_overlap_heatmap(lineament_collection, keys=None, mode="overlap"):
     lineament_dict = lineament_collection.as_dict(keys)
 
     if mode == "overlap":
@@ -25,6 +24,6 @@ def lineament_overlap_heatmap(lineament_collection, keys=None, mode="overlap"):
     else:
         raise ValueError(f"{mode} is not a valid mode. Select from 'overlap' or 'percent'.)")
 
-    heatmap = hv.HeatMap(data, vdims=overlap_dim)#.options(xrotation=45, width=450, height=450, labelled=[],
-                                                 #         colorbar=True)
+    heatmap = hv.HeatMap(data, vdims=overlap_dim)  # .options(xrotation=45, width=450, height=450, labelled=[],
+    #         colorbar=True)
     return heatmap * hv.Labels(heatmap)

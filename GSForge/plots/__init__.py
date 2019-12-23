@@ -8,7 +8,7 @@ import holoviews as hv
 from ._gene_mass import plot_count_sum_mass, plot_sample_mass, plot_sample
 from ._scatter_distributions import ScatterDistributionBase
 from ._distributions import SampleWiseDistribution
-from ._lineament_heatmap import lineament_overlap_heatmap
+from ._geneset_heatmap import geneset_overlap_heatmap
 from ._raster_gem import RasterGEM
 from ._compare_gene_counts import GenesVsCounts
 
@@ -20,7 +20,7 @@ __all__ = [
     "plot_sample",
     "SampleWiseDistribution",
     "RasterGEM",
-    "lineament_overlap_heatmap",
+    "geneset_overlap_heatmap",
     "GenesVsCounts"
 ]
 
