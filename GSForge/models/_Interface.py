@@ -71,7 +71,7 @@ class Interface(param.Parameterized):
 
     annotation_variables = param.Parameter(doc=dedent("""\
     The name of the active annotation variable(s). These are the annotation columns that will
-    be control the subset returned by `y_annotation_data`."""), precedence=-1.0, default=None)
+    be control the subset returned by `y_annotation_data`."""), precedence=1.0, default=None)
 
     count_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the count matrix.
@@ -85,9 +85,9 @@ class Interface(param.Parameterized):
         + 'complete' returns the entire target array.
         + 'masked' returns the entire target array with zero or missing as NaN values.
         + 'dropped' returns the target array without samples that have zero or missing values.
-    """), default='complete', objects=["complete", "dropped"], precedence=-1.0)
+    """), default='complete', objects=["complete", "dropped"], precedence=1.0)
 
-    count_transform = param.Callable(default=None, precedence=-1.0, doc=dedent("""\
+    count_transform = param.Callable(default=None, precedence=1.0, doc=dedent("""\
     A transform that will be run on the x_data that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
 
