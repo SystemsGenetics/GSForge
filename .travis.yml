@@ -36,7 +36,7 @@ jobs:
     - stage: test_and_build_docs
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
-        - pytest --nbsmoke-run examples/user_guide/AnnotatedGEM_from_pandas.ipynb
+#        - pytest --nbsmoke-run examples/user_guide/AnnotatedGEM_from_pandas.ipynb
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         # The pipe below enables use of a multiple line bash script.
         - |

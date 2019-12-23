@@ -12,23 +12,24 @@ sys.path.insert(0, os.path.abspath('..'))
 
 extensions += [
     "nbsphinx",
-    # 'nbsite.gallery'
+    'nbsite.gallery'
 ]
-#
-# nbsite_gallery_conf = {
-#     'backends': ['bokeh', 'matplotlib'],
-#     'default_extensions': ['*.ipynb', '*.py'],
-#     'enable_download': True,
-#     'examples_dir': os.path.join('..', 'examples'),
-#     'galleries': {
-#         'user_guide': {'title': 'User Guide'}
-#     },
-#     'github_org': 'SystemsGenetics',
-#     'github_project': 'GemProspector',
-#     # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
-#     'within_subsection_order': lambda key: key
-# }
-# exclude_patterns = ['R_Integration/*.ipynb', '*Boruta*.ipynb']
+
+nbsite_gallery_conf = {
+    'backends': ['bokeh', 'matplotlib'],
+    'default_extensions': ['*.ipynb', '*.py'],
+    'enable_download': True,
+    'examples_dir': os.path.join('..', 'examples'),
+    'galleries': {
+        'user_guide': {'title': 'User Guide', 'path': 'user_guide'},
+        'R_integration_guide': {'title': 'R Integration Guide', 'path': 'R_integration_guide', 'skip': True},
+        'plotting_guide': {'title': 'Plotting Guide', 'path': 'plotting_guide'},
+    },
+    'github_org': 'SystemsGenetics',
+    'github_project': 'GSForge',
+    # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
+    # 'within_subsection_order': lambda key: key
+}
 
 project = u'GSForge'
 authors = u'Tyler Biggs'
