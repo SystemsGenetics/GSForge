@@ -2,6 +2,11 @@
 R Integration Guide
 *******************
 
+
+.. notebook:: GSForge ../examples/DESe2_GeneSets.ipynb
+    :offset: 0
+
+
 .. toctree::
     :titlesonly:
     :maxdepth: 2
