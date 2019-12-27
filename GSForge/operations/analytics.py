@@ -1,12 +1,8 @@
 """
-`Analytics` are injective functions, *i.e.* those that returns only one set of results for each set of
-arguments provided.
-
-They usually operate by requesting X and Y data via the `GSForge.Interface` class in their `process()`
-function, and then return an `Xarray.Dataset` object.
+`Analytics` are  functions  that returns only one set of results for each set of arguments provided.
 """
 
-import warnings
+# import warnings
 
 import param
 import xarray as xr
@@ -26,10 +22,12 @@ __all__ = [
 ]
 
 
+# TODO: Add linter ignore for class capitaliation.
 class get_data(OperationInterface):
     """
     Gets the GEM matrix and an optional annotation column.
     """
+    # TODO: Expand comment, describe how the sample and gene indexes are built.
 
     def process(self):
         return self.x_count_data, self.y_annotation_data
@@ -40,6 +38,7 @@ class train_test_split_wrapper(OperationInterface):
     Performs an `sklearn.preprocessing.train_test_split()` call on the subset of data
     specified by the interface options (the same options passed to `get_data()`.
     """
+    # TODO: Add links and reference to the sklearn function and docs.
     train_test_split_options = param.Parameter(default=dict())
 
     def process(self):
@@ -63,6 +62,7 @@ class chi_squared_test(OperationInterface):
     Compute chi-squared stats between each non-negative feature and class.
     See the `Scikit-learn documentation <https://scikit-learn.org/>`_
     """
+    # TODO: Note that this uses the OperationInterface.
 
     def process(self):
         x_data, y_data = self.x_count_data, self.y_annotation_data
@@ -83,6 +83,7 @@ class f_classification_test(OperationInterface):
     Compute the ANOVA F-value for the provided sample.
     See the `Scikit-learn documentation <https://scikit-learn.org/>`_
     """
+    # TODO: Note that this uses the OperationInterface.
 
     def process(self):
         x_data, y_data = self.x_count_data, self.y_annotation_data
@@ -101,6 +102,7 @@ class f_classification_test(OperationInterface):
 class rank_genes_by_model(OperationInterface):
     """Given some machine learning model, this operation runs n_iterations
     and returns a summary dataset of the ranking results."""
+    # TODO: Note that this uses the OperationInterface.
 
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
@@ -141,6 +143,7 @@ class rank_genes_by_model(OperationInterface):
 
 
 def _null_rank_distribution(a, b):
+    # TODO: Cite and add some description.
     return np.sum(a[:, None] <= b[None, :], axis=-1) / b.shape[0]
 
 
@@ -148,6 +151,7 @@ class calculate_null_rank_distribution(OperationInterface):
     """
     Probability for an irrelevant feature to be ranked above or at the same position as a given gene.
     """
+    # TODO: Cite and update docstring.
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
@@ -200,6 +204,8 @@ class calculate_null_rank_distribution(OperationInterface):
 
 
 class calculate_family_wise_error_rates(OperationInterface):
+    # TODO: Cite and update docstring.
+
     """
     Document me!
     """
@@ -242,12 +248,14 @@ class calculate_family_wise_error_rates(OperationInterface):
                             name="family_wise_error_rate")
 
 
-class cv_score_model(OperationInterface):
-    """
-    Document me!
-    """
-    model = param.Parameter()
-    cv = param.Parameter()
-
-    def process(self):
-        return cross_val_score(self.model, self.x_count_data, self.y_annotation_data, cv=self.cv)
+# class cv_score_model(OperationInterface):
+#     """
+#     Document me!
+#     """
+#     # TODO: Cite and update docstring.
+#
+#     model = param.Parameter()
+#     cv = param.Parameter()
+#
+#     def process(self):
+#         return cross_val_score(self.model, self.x_count_data, self.y_annotation_data, cv=self.cv)

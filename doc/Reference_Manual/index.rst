@@ -4,7 +4,6 @@ Reference Manual
 
 Welcome to the API reference for GSForge.
 
-
 `models`_
  Primary data models for GSForge.
 `operations`_

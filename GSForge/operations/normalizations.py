@@ -1,5 +1,13 @@
 """
 
+
+"""
+import param
+import numpy as np
+from ..models import OperationInterface
+
+"""
+
 Normalization Methods
 =====================
 
@@ -21,20 +29,16 @@ FPKM / RPKM (reads/fragments per kilo-base per million mapped reads)
 
 """
 
-import param
-import numpy as np
-from ..models import OperationInterface
-
 __all__ = [
     "ReadsPerKilobaseMillion",
     "UpperQuartile",
 ]
 
 
-class FullQuantile(OperationInterface):
-    """
-
-    """
+# class FullQuantile(OperationInterface):
+#     """
+#
+#     """
 
 
 class UpperQuartile(OperationInterface):
@@ -140,7 +144,6 @@ class ReadsPerKilobaseMillion(OperationInterface):
         counts = self.x_count_data
         lengths = self.gem.data[self.length_variable].sel({self.gene_index_name: self.get_gene_index()}).copy()
         return self.xr_reads_per_kilobase_million(counts=counts, lengths=lengths, sample_dim=self.sample_index_name)
-
 
 # class QuantileNormalization(OperationInterface):
 #

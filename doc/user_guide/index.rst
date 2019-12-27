@@ -8,18 +8,7 @@ User Guide
 Getting Started
 ---------------
 
-There are three core models that hold data in GSForge.
-
-The AnnotatedGEM holds the gene expression matrix (GEM) as well as any gene or sample annotations.
-
-* AnnotatedGEM
-  A data class for a gene expression matrix and any associated sample or gene annotations.
-* GeneSet
-  A data class for a the result of a gene selection or analysis.
-* GeneSetCollection
-  A data class that holds an AnnotatedGEM and a dictionary of associated GeneSet objects.
-
-So in using GSForge to help analyze your GEM:
+In using GSForge to help analyze your GEM:
 
 + Load the count matrix and any annotations into an AnnotatedGEM.
 + Perform one or more analyses, or gene-selections, and store each as a GeneSet.

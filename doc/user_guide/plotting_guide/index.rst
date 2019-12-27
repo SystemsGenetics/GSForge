@@ -26,7 +26,7 @@ Plotting Guide
     :maxdepth: 2
 
     GEM Rasters <GEM_Rasters>
-    Genes vs Counts <Genes_vs_Counts>
+    Gene vs Counts <Gene_vs_Counts>
     GeneSet Overlap Heatmaps <GeneSet_Overlap_Heatmaps>
     Gene-wise Scatter with Distributions <Genewise_Scatter_and_Distributions>
     Sample-wise Distributions <Samplewise_Distributions>

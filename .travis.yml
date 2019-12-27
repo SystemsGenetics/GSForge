@@ -41,7 +41,7 @@ jobs:
         # The pipe below enables use of a multiple line bash script.
         - |
           nbsite generate-rst --org SystemsGenetics --project-name GSForge \
-          --skip="[^.*Boruta.*ipynb, ^.*R_integration_guide.*ipynb]"
+          --skip="[^.*R_integration_guide.*ipynb]"
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
