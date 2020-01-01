@@ -15,6 +15,7 @@ from ..models import OperationInterface
 
 __all__ = [
     "get_data",
+    "train_test_split_wrapper",
     "rank_genes_by_model",
     "calculate_null_rank_distribution",
     "chi_squared_test",
@@ -37,6 +38,8 @@ class train_test_split_wrapper(OperationInterface):
     """
     Performs an `sklearn.preprocessing.train_test_split()` call on the subset of data
     specified by the interface options (the same options passed to `get_data()`.
+
+    :returns: x_train, x_test, y_train, y_test
     """
     # TODO: Add links and reference to the sklearn function and docs.
     train_test_split_options = param.Parameter(default=dict())

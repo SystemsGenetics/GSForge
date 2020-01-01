@@ -8,7 +8,6 @@ from methodtools import lru_cache
 from sklearn.decomposition import PCA
 
 from ..models import Interface
-from .helpers import generate_help_pane
 
 
 class PCA_Panel(Interface):

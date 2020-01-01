@@ -8,6 +8,7 @@ import xarray as xr
 
 from textwrap import dedent
 
+import GSForge.utils._input
 from .. import utils
 
 
@@ -141,7 +142,7 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def _parse_pandas(cls, count_df, label_df, **params):
-        data = utils.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         return {"data": data, **params}
 
     @classmethod
@@ -160,7 +161,7 @@ class AnnotatedGEM(param.Parameterized):
 
         :return: An instance of the `GEM` class.
         """
-        data = utils.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
         instance = super().__new__(cls)
         instance.set_param(**params)
@@ -193,7 +194,7 @@ class AnnotatedGEM(param.Parameterized):
             load your data in to `pandas.DataFrame` objects and provide them to the
             `AnnotatedGEM.from_pandas` constructor instead."""))
 
-        data = utils.xrarray_gem_from_pandas(count_df, label_df)
+        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df, label_df)
 
         return {"data": data, **params}
 

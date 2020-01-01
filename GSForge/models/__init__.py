@@ -33,6 +33,12 @@ transformations that researchers may need from the `core` classes. They are:
 **OperationInterface**
     Aside from being abstract, this is the same as the above *Interface*, except
     this calls a single function as defined by `process` in a subclass.
+
+
+.. image:: ../../doc/_static/GSForge_index_selection.svg
+  :width: 400
+  :alt: GSForge Index Selection
+
 """
 
 from ._AnnotatedGEM import AnnotatedGEM

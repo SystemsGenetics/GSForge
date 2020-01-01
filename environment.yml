@@ -3,23 +3,25 @@ channels:
   - conda-forge
 dependencies:
   - python=3.7
-  - netcdf4
-  - hdf5
-  - xarray
-  - networkx
+  - boruta_py
+  - bokeh
+  - click
+  - datashader
+  - h5py
   - holoviews
-  - joypy
+  - jupyter
+  - matplotlib
+  - netcdf4
   - numpy
   - pandas
-  - param
   - panel
-  - bokeh
-  - matplotlib
-  - boruta_py
-  - jupyter
+  - param
+  - scikit-learn
+  - scipy
+  - seaborn
+  - statsmodels
+  - tqdm
+  - umap-learn
   - pip
   - pip:
-      - umap_learn
       - methodtools
-      - sklearn
-      - xgboost

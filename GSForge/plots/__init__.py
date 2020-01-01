@@ -11,7 +11,7 @@ from ._distributions import SampleWiseDistribution
 from ._geneset_heatmap import geneset_overlap_heatmap
 from ._raster_gem import RasterGEM
 from ._compare_gene_counts import GenesVsCounts
-
+from ._genesetcollection_overlap_heatmap import genesetcollection_overlap_heatmap
 
 __all__ = [
     "plot_count_sum_mass",
@@ -21,7 +21,8 @@ __all__ = [
     "SampleWiseDistribution",
     "RasterGEM",
     "geneset_overlap_heatmap",
-    "GenesVsCounts"
+    "GenesVsCounts",
+    "genesetcollection_overlap_heatmap",
 ]
 
 

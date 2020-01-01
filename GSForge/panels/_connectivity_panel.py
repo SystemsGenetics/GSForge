@@ -7,7 +7,7 @@ import networkx as nx
 import itertools
 
 from ..models import Interface
-from .helpers import generate_help_pane
+from GSForge.utils._panel_utils import generate_help_pane
 
 
 class Connectivity_Panel(Interface):
