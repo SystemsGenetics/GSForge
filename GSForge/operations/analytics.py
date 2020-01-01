@@ -134,8 +134,8 @@ class rank_genes_by_model(OperationInterface):
         model = self.model.fit(x_data, y_data)
 
         attrs = {'Ranking Model': str(model),
-                 "selected_count_variable": self.count_variable,
-                 "selected_annotation_variables": self.annotation_variables}
+                 "count_variable": self.count_variable,
+                 "annotation_variables": self.annotation_variables}
 
         data = xr.DataArray(data=model.feature_importances_,
                             dims=[self.gem.gene_index_name],
@@ -198,8 +198,8 @@ class calculate_null_rank_distribution(OperationInterface):
         null_rank_dist = _null_rank_distribution(real, shadow)
 
         attrs = {'Ranking Model': str(model),
-                 "selected_count_variable": self.count_variable,
-                 "selected_annotation_variables": self.annotation_variables}
+                 "count_variable": self.count_variable,
+                 "annotation_variables": self.annotation_variables}
 
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,
@@ -243,8 +243,8 @@ class calculate_family_wise_error_rates(OperationInterface):
         null_rank_dist = _null_rank_distribution(real, shadow)
 
         attrs = {'Ranking Model': str(model),
-                 "selected_count_variable": self.count_variable,
-                 "selected_annotation_variables": self.annotation_variables}
+                 "count_variable": self.count_variable,
+                 "annotation_variables": self.annotation_variables}
 
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,

@@ -7,11 +7,11 @@
 Selecting Genes with Boruta
 ***************************
 
-.. notebook:: GSForge ..\..\examples/user_guide\Selecting_Genes_with_Boruta.ipynb
+.. notebook:: GSForge ../../examples/user_guide/Selecting_Genes_with_Boruta.ipynb
     :offset: 0
     :skip_execute: True
 
 
 -------
 
-`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/SystemsGenetics/GSForge/master/examples/user_guide\Selecting_Genes_with_Boruta.ipynb>`_
+`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/SystemsGenetics/GSForge/master/examples/user_guide/Selecting_Genes_with_Boruta.ipynb>`_
