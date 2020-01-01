@@ -7,11 +7,11 @@
 R GEM normalizations
 ********************
 
-.. notebook:: GSForge ..\..\..\examples/user_guide\R_integration_guide\R_GEM_normalizations.ipynb
+.. notebook:: GSForge ../../../examples/user_guide/R_integration_guide/R_GEM_normalizations.ipynb
     :offset: 0
     :skip_execute: True
 
 
 -------
 
-`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/SystemsGenetics/GSForge/master/examples/user_guide\R_integration_guide\R_GEM_normalizations.ipynb>`_
+`Right click to download this notebook from GitHub. <https://raw.githubusercontent.com/SystemsGenetics/GSForge/master/examples/user_guide/R_integration_guide/R_GEM_normalizations.ipynb>`_
