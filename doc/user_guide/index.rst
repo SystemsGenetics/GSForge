@@ -8,12 +8,9 @@ User Guide
 Getting Started
 ---------------
 
-In using GSForge to help analyze your GEM:
-
-+ Load the count matrix and any annotations into an AnnotatedGEM.
-+ Perform one or more analyses, or gene-selections, and store each as a GeneSet.
-+ Load the created AnnotatedGEM and GeneSet(s) into a GeneSetCollection.
-+ Compare the selected GeneSets.
+.. image:: ../../doc/_static/user_guide.svg
+  :width: 600
+  :alt: User Guide Overview
 
 
 Creating and working with an AnnotatedGEM
