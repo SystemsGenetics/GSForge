@@ -211,6 +211,8 @@ class calculate_family_wise_error_rates(OperationInterface):
 
     """
     Document me!
+
+    Estimate the false-discovery rate (type I errors).
     """
     model = param.Parameter()
     n_iterations = param.Integer(default=1)

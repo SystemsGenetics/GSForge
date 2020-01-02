@@ -8,9 +8,10 @@ User Guide
 Getting Started
 ---------------
 
-.. image:: ../../doc/_static/user_guide.svg
-  :width: 600
-  :alt: User Guide Overview
+.. Must use a raw element with an object tag for clickable links. https://stackoverflow.com/a/35562792
+
+.. raw:: html
+    <object data="../../doc/_static/user_guide.svg" type="image/svg+xml"></object>
 
 
 Creating and working with an AnnotatedGEM
