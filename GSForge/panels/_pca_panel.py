@@ -12,7 +12,6 @@ from ..models import Interface
 
 class PCA_Panel(Interface):
     """
-
     For lineamenet collections:
         By default all keys will be made available in the selector.
         By default the mode should be complete(?) i.e. no lineaments.

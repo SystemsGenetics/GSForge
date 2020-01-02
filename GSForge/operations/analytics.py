@@ -1,5 +1,5 @@
 """
-`Analytics` are  functions  that returns only one set of results for each set of arguments provided.
+``Analytics`` are  functions  that returns only one set of results for each set of arguments provided.
 """
 
 # import warnings
@@ -9,13 +9,10 @@ import xarray as xr
 import numpy as np
 
 from sklearn.feature_selection import chi2, f_classif
-from sklearn.model_selection import cross_val_score, train_test_split
 
 from ..models import OperationInterface
 
 __all__ = [
-    "get_data",
-    "train_test_split_wrapper",
     "rank_genes_by_model",
     "calculate_null_rank_distribution",
     "chi_squared_test",
@@ -24,40 +21,6 @@ __all__ = [
 
 
 # TODO: Add linter ignore for class capitaliation.
-class get_data(OperationInterface):
-    """
-    Gets the GEM matrix and an optional annotation column.
-    """
-    # TODO: Expand comment, describe how the sample and gene indexes are built.
-
-    def process(self):
-        return self.x_count_data, self.y_annotation_data
-
-
-class train_test_split_wrapper(OperationInterface):
-    """
-    Performs an `sklearn.preprocessing.train_test_split()` call on the subset of data
-    specified by the interface options (the same options passed to `get_data()`.
-
-    :returns: x_train, x_test, y_train, y_test
-    """
-    # TODO: Add links and reference to the sklearn function and docs.
-    train_test_split_options = param.Parameter(default=dict())
-
-    def process(self):
-        # Get the subset of data selected by this operation.
-        y_index = self.get_sample_index()
-
-        # Get the sample index and make the train and test indexes.
-        train_idx, test_idx = train_test_split(y_index, **self.train_test_split_options)
-
-        x_train = self.x_count_data.sel({self.gem.sample_index_name: train_idx})
-        x_test = self.x_count_data.sel({self.gem.sample_index_name: test_idx})
-
-        y_train = self.y_annotation_data.sel({self.gem.sample_index_name: train_idx})
-        y_test = self.y_annotation_data.sel({self.gem.sample_index_name: test_idx})
-
-        return x_train, x_test, y_train, y_test
 
 
 class chi_squared_test(OperationInterface):
@@ -65,6 +28,7 @@ class chi_squared_test(OperationInterface):
     Compute chi-squared stats between each non-negative feature and class.
     See the `Scikit-learn documentation <https://scikit-learn.org/>`_
     """
+
     # TODO: Note that this uses the OperationInterface.
 
     def process(self):
@@ -86,6 +50,7 @@ class f_classification_test(OperationInterface):
     Compute the ANOVA F-value for the provided sample.
     See the `Scikit-learn documentation <https://scikit-learn.org/>`_
     """
+
     # TODO: Note that this uses the OperationInterface.
 
     def process(self):
@@ -152,7 +117,8 @@ def _null_rank_distribution(a, b):
 
 class calculate_null_rank_distribution(OperationInterface):
     """
-    Probability for an irrelevant feature to be ranked above or at the same position as a given gene.
+    Probability for an irrelevant (randomly chosen from the unselected) feature
+    to be ranked above or at the same position as a given gene.
     """
     # TODO: Cite and update docstring.
     # TODO: Re-name this function? name does not seem correct. "mPropes"?
@@ -252,16 +218,3 @@ class calculate_family_wise_error_rates(OperationInterface):
         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
                             dims=[self.gem.gene_index_name], attrs=attrs,
                             name="family_wise_error_rate")
-
-
-# class cv_score_model(OperationInterface):
-#     """
-#     Document me!
-#     """
-#     # TODO: Cite and update docstring.
-#
-#     model = param.Parameter()
-#     cv = param.Parameter()
-#
-#     def process(self):
-#         return cross_val_score(self.model, self.x_count_data, self.y_annotation_data, cv=self.cv)

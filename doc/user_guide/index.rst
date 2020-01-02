@@ -12,7 +12,7 @@ Getting Started
 
 .. raw:: html
 
-    <object data="../_static/user_guide.svg" type="image/svg+xml"></object>
+    <object data="../_static/user_guide.svg" type="image/svg+xml" width="900"></object>
 
 
 Creating and working with an AnnotatedGEM
@@ -48,7 +48,7 @@ Other Guides
 * `Workflow Guide <workflow_guide/index.rst>`_
   Using nextflow to run many different boruta analyses.
 
-* `R-Integration Guide <R_integration/index.rst>`_
+* `R-Integration Guide <R_integration_guide/index.rst>`_
   Integrating results from R packages into GeneSet objects.
 
 
@@ -63,4 +63,4 @@ Other Guides
     GeneSet Analysis <GeneSet_Analysis>
     Plotting Guide <plotting_guide/index>
     Workflow Guide <workflow_guide/index>
-    R-Integration Guide <R_integration/index>
+    R-Integration Guide <R_integration_guide/index>

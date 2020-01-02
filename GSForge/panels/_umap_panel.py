@@ -5,6 +5,7 @@ import panel as pn
 import holoviews as hv
 from bokeh.models import HoverTool
 from methodtools import lru_cache
+import functools
 
 import umap
 

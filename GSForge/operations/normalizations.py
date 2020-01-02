@@ -1,33 +1,14 @@
 """
+Normalization functions inherit from the ``OperationInterface`` class.
+This means that they can all be called upon an ``AnnotatedGEM`` or a ``GeneSetCollection``.
 
-
+These (classes) functions have static methods that implement the transform on a ``numpy``
+or ``xarray`` source.
 """
+
 import param
 import numpy as np
 from ..models import OperationInterface
-
-"""
-
-Normalization Methods
-=====================
-
-**A replication of Table 1 from https://doi.org/10.1371/journal**
-
-Summary of current normalization methods to correct the technical biases for RNA-Seq data.
-
-Total count (TC)
-Median
-UQ Upper Quartile
-TMM Trimmed Mean ofM-values
-RLE Relative Log Expression
-Quantile (Q)
-PCA Principal Component Analysis
-RUV Remove Unwanted Variation
-SVA Surrogate Variable Analysis
-TPM (transcripts per million)
-FPKM / RPKM (reads/fragments per kilo-base per million mapped reads)
-
-"""
 
 __all__ = [
     "ReadsPerKilobaseMillion",
@@ -35,20 +16,14 @@ __all__ = [
 ]
 
 
-# class FullQuantile(OperationInterface):
-#     """
-#
-#     """
-
-
 class UpperQuartile(OperationInterface):
     """
     Under this normalization method, after removing genes having zero read counts for all samples,
     the remaining gene counts are divided by the upper quartile of counts different from zero in
     the computation of the normalization factors associated with their sample and multiplied by
-    the mean upper quartile across all samples of the dataset.
+    the mean upper quartile across all samples of the dataset. [method_compare]_
 
-    **Original R code [method_compare]_** ::
+    Original R code.  ::
 
         uq<-function(X){
 
@@ -63,8 +38,8 @@ class UpperQuartile(OperationInterface):
           return(upq.res)
         }
 
-    .. [method_compare] `A comparison of per sample global scaling and per gene normalization methods for differential
-    expression analysis of RNA-seq data <https://doi.org/10.1371/journal.pone.0176185>`_
+    .. [method_compare] `A comparison of per sample global scaling and per gene normalization methods for differential expression analysis of RNA-seq data <https://doi.org/10.1371/journal.pone.0176185>`_
+
     """
 
     # For clarity of testing I write normalization methods as their own, self-contained functions.
@@ -77,7 +52,7 @@ class UpperQuartile(OperationInterface):
         Perform the upper quartile normalization.
 
         :param counts: A numpy array containing the raw count values. The shape is assumed to be
-            (samples * genes). Zero counts are expected to be present as zeros.
+            (samples by genes). Zero counts are expected to be present as zeros.
 
         :returns: The upper quartile normalized count matrix.
         """
@@ -91,8 +66,8 @@ class UpperQuartile(OperationInterface):
         """
         Perform the upper quartile normalization.
 
-        :param counts: An xarray.DataArray containing the raw count values. The shape is
-            assumed to be (samples * genes). Zero counts are expected to be present as zeros.
+        :param counts: An ``xarray.DataArray`` containing the raw count values. The shape is
+            assumed to be (samples by genes). Zero counts are expected to be present as zeros.
 
         :returns: The upper quartile normalized count matrix.
         """
@@ -112,6 +87,12 @@ class UpperQuartile(OperationInterface):
 
 
 class ReadsPerKilobaseMillion(OperationInterface):
+    """
+    RPKM or FPKM -- Reads or Fragments per per Kilobase Million.
+
+    These methods attempt to compensate for sequencing depth and gene length.
+    The utility of this method is disputed in the literature [cite me].
+    """
     length_variable = param.String(default="lengths")
 
     @staticmethod
@@ -132,36 +113,3 @@ class ReadsPerKilobaseMillion(OperationInterface):
         counts = self.x_count_data
         lengths = self.gem.data[self.length_variable].sel({self.gene_index_name: self.get_gene_index()}).copy()
         return self.xr_reads_per_kilobase_million(counts=counts, lengths=lengths, sample_dim=self.sample_index_name)
-
-# class QuantileNormalization(OperationInterface):
-#
-#     quantile = param.Magnitude(default=0.75)
-#
-#     @staticmethod
-#     def np_quantile_normalization():
-#         pass
-#
-#     @staticmethod
-#     def xr_quantile_normalization():
-#         pass
-#
-#     def process(self):
-#         self.set_param(count_mask="dropped")
-#         counts = self.x_data
-#         sample_quantile = counts.quantile(q=self.quantile, dim=self.sample_index_name)
-#         return counts / (sample_quantile / sample_quantile.mean())
-#
-#
-# class NormalizationMethod(OperationInterface):
-#     """
-#     Some normalization method.
-#     """
-#     k = param.Integer(default=100)
-#
-#     @staticmethod
-#     def normalization_method(*args, **kwargs):
-#         raise NotImplemented
-#
-#     def process(self):
-#         random_genes = np.random.choice(self.gene_index, self.k)
-#         return random_genes, {"random_size": self.k}

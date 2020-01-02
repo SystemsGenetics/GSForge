@@ -1,8 +1,7 @@
 """
-Prospector operations return either boolean support arrays or arrays
-of selected genes. While these may include some values / ranks, prospector
-operations differ from analyzer operations, in that they are not expected
-to return results for every gene.
+``Prospector`` operations return either boolean support arrays or arrays of selected genes.
+Prospector operations differ from analytics, in that they are not required to return a 'result' for every gene,
+or return the same result each call.
 """
 
 import enum
@@ -27,9 +26,9 @@ __all__ = [
 
 class create_random_lineament(OperationInterface):
     """
-    Creates a random lineament of size `k`.
+    Creates a random lineament of size ``k``.
 
-    Picks from the gene index defined by the `Interface` options.
+    Picks from the gene index defined by the ``Interface`` options.
     """
     k = param.Integer(default=100)
 
@@ -47,11 +46,11 @@ class _model_parsers(enum.Enum):
 
 
 def _parse_model(model, model_type, dim) -> dict:
-    """Parse a model into a dictionary appropriate for constructing an `Xarray.Dataset`.
+    """Parse a model into a dictionary appropriate for constructing an ``xarray.Dataset``.
 
     :param model: The model object to be parsed.
 
-    :param model_type: The key to the Enum `_model_parsers`.
+    :param model_type: The key to the Enum ``_model_parsers``.
 
     :param dim:
 
@@ -62,7 +61,7 @@ def _parse_model(model, model_type, dim) -> dict:
 
 
 def parse_boruta_model(boruta_model, gene_coords, attrs=None, dim="Gene") -> xr.Dataset:
-    """Convert a boruta model into an `xarray.Dataset` object.
+    """Convert a boruta model into an ``xarray.Dataset`` object.
 
     :param boruta_model: A boruta_py model.
 
@@ -72,7 +71,7 @@ def parse_boruta_model(boruta_model, gene_coords, attrs=None, dim="Gene") -> xr.
 
     :param dim: The name of the coordinate dimension.
 
-    :return: An `xarray.Dataset` object.
+    :return: An ``xarray.Dataset`` object.
     """
     model_data = _parse_model(boruta_model, "boruta", dim=dim)
     return xr.Dataset(model_data, coords={dim: gene_coords}, attrs=attrs)
@@ -83,12 +82,12 @@ class boruta_prospector(OperationInterface):
     """Runs a single instance of BorutaPy feature selection.
 
     This is just a simple wrapper for a boruta model that produces an
-    `xarray.Dataset` object suitable for use in the creation of a
-    `GSForge.GeneSet` object."""
+    ``xarray.Dataset`` object suitable for use in the creation of a
+    ``GSForge.GeneSet`` object."""
 
     estimator = param.Parameter(doc=dedent("""\
     A supervised learning estimator, with a 'fit' method that returns the
-    `feature_importances_` attribute. Important features must correspond to
+    ``feature_importances_`` attribute. Important features must correspond to
     high absolute values in the `feature_importances_`."""))
 
     n_estimators = param.Parameter(default=1000, doc=dedent("""\
@@ -121,7 +120,7 @@ class boruta_prospector(OperationInterface):
     If int, random_state is the seed used by the random number generator;
     If RandomState instance, random_state is the random number generator;
     If None, the random number generator is the RandomState instance used
-    by `np.random`."""))
+    by ``np.random``."""))
 
     verbose = param.Integer(default=0, doc=dedent("""\
     Controls verbosity of output:
