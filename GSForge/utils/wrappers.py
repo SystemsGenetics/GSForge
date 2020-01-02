@@ -4,7 +4,8 @@ Some simple wrappers for maintaining ``xarray`` coordinates through ``sklearn`` 
 This module may eventually be supplanted by use of `sklearn xarray <https://phausamann.github.io/sklearn-xarray/index.html>`_.
 """
 
-from sklearn.model_selection import cross_val_score, train_test_split
+import param
+from sklearn.model_selection import train_test_split
 from ..models import OperationInterface
 
 __all__ = [

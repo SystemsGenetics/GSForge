@@ -12,16 +12,60 @@ import numpy as np
 import param
 import xarray as xr
 from boruta import boruta_py
+from sklearn.feature_selection import chi2, f_classif
 
 from ..models import OperationInterface
 from ..utils import kwargs_overlap
-
 
 __all__ = [
     "create_random_lineament",
     "parse_boruta_model",
     "boruta_prospector",
 ]
+
+
+class chi_squared_test(OperationInterface):
+    """
+    Compute chi-squared stats between each non-negative feature and class.
+    See the `Scikit-learn documentation <https://scikit-learn.org/>`_
+    """
+
+    # TODO: Note that this uses the OperationInterface.
+
+    def process(self):
+        x_data, y_data = self.x_count_data, self.y_annotation_data
+
+        chi2_scores, chi2_pvals = chi2(np.nan_to_num(x_data), y_data)
+        attrs = {"Method": "Chi-Squared",
+                 "x_variable": self.x_variable,
+                 "y_variables": self.y_variables}
+        data = xr.Dataset({"chi2_scores": (["Gene"], chi2_scores),
+                           "chi2_pvals": (["Gene"], chi2_pvals)},
+                          coords={"Gene": x_data[self.gem.gene_index_name]},
+                          attrs=attrs)
+        return data
+
+
+class f_classification_test(OperationInterface):
+    """
+    Compute the ANOVA F-value for the provided sample.
+    See the `Scikit-learn documentation <https://scikit-learn.org/>`_
+    """
+
+    # TODO: Note that this uses the OperationInterface.
+
+    def process(self):
+        x_data, y_data = self.x_count_data, self.y_annotation_data
+
+        f_scores, f_pvals = f_classif(np.nan_to_num(x_data), y_data)
+        attrs = {"Method": "ANOVA F-value",
+                 "x_variable": self.x_variable,
+                 "y_variables": self.y_variables}
+        data = xr.Dataset({"f_scores": (["Gene"], f_scores),
+                           "f_pvals": (["Gene"], f_pvals)},
+                          coords={"Gene": x_data[self.gem.gene_index_name]},
+                          attrs=attrs)
+        return data
 
 
 class create_random_lineament(OperationInterface):
@@ -137,7 +181,7 @@ class boruta_prospector(OperationInterface):
         # Convert attribute dictionaries to .json format.
         # We can't store nested dictionaries in the attrs.
         boruta_json_attrs = json.dumps(boruta_kwargs, default=lambda o: '<not serializable>')
-        ranking_model_json_attrs =  json.dumps(self.estimator.get_params(), default=lambda o: '<not serializable>')
+        ranking_model_json_attrs = json.dumps(self.estimator.get_params(), default=lambda o: '<not serializable>')
 
         attrs = {'boruta_model': boruta_json_attrs,
                  'ranking_model': ranking_model_json_attrs,
@@ -147,8 +191,6 @@ class boruta_prospector(OperationInterface):
         return parse_boruta_model(boruta_model, attrs=attrs, gene_coords=self.get_gene_index(),
                                   dim=self.gem.gene_index_name)
 
-
 # class boruta_one_vs_rest_prospector(boruta_prospector):
 #     def process(self):
 #         pass
-
