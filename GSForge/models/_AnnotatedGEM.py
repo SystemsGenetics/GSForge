@@ -24,13 +24,14 @@ class AnnotatedGEM(param.Parameterized):
     index names used.
 
     An AnnotatedGEM object can be created with one of the class methods:
-    + from_files()
+
+    from_files()
         A helper function for loading disparate GEM and annotation files through
         pandas.read_csv().
-    + from_pandas()
+    from_pandas()
         Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
         must share the same sample index.
-    + from_netcdf()
+    from_netcdf()
         Reads in from a .nc filepath. Usually this means loading a previously
         created AnnotatedGEM.
 

@@ -96,6 +96,8 @@ class Interface(param.Parameterized):
             params = _interface_dispatch(*args, **params)
         super().__init__(**params)
 
+        # TODO: Add and update an 'available count matrix' parameter.
+
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
             self.param["selected_gene_sets"].objects = avail_mappings

@@ -155,6 +155,7 @@ class calculate_null_rank_distribution(OperationInterface):
     Probability for an irrelevant feature to be ranked above or at the same position as a given gene.
     """
     # TODO: Cite and update docstring.
+    # TODO: Re-name this function? name does not seem correct. "mPropes"?
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
