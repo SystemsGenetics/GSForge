@@ -46,30 +46,25 @@ class UpperQuartile(OperationInterface):
     Under this normalization method, after removing genes having zero read counts for all samples,
     the remaining gene counts are divided by the upper quartile of counts different from zero in
     the computation of the normalization factors associated with their sample and multiplied by
-    the mean upper quartile across all samples ofthe dataset.
+    the mean upper quartile across all samples of the dataset.
 
-    **Original R code:**
+    **Original R code [method_compare]_** ::
 
-    ```R
-    uq<-function(X){
+        uq<-function(X){
 
-      #excluding zero counts in each sample
-      UQ<-function(y){
-        quantile(y, 0.75)
-      }
-      X<-X+0.1
-      upperQ<-apply(X,2,UQ)
-      f.uq<-upperQ/mean(upperQ)
-      upq.res<-scale(X,center=FALSE,scale=f.uq)
-      return(upq.res)
-    }
-    ```
+          #excluding zero counts in each sample
+          UQ<-function(y){
+            quantile(y, 0.75)
+          }
+          X<-X+0.1
+          upperQ<-apply(X,2,UQ)
+          f.uq<-upperQ/mean(upperQ)
+          upq.res<-scale(X,center=FALSE,scale=f.uq)
+          return(upq.res)
+        }
 
-    ***Reference:***
-
-    [A comparison of per sample global scaling and per gene normalization methods for differential
-    expression analysis of RNA-seq data](https://doi.org/10.1371/journal.pone.0176185)
-
+    .. [method_compare] `A comparison of per sample global scaling and per gene normalization methods for differential
+    expression analysis of RNA-seq data <https://doi.org/10.1371/journal.pone.0176185>`_
     """
 
     # For clarity of testing I write normalization methods as their own, self-contained functions.
@@ -117,13 +112,6 @@ class UpperQuartile(OperationInterface):
 
 
 class ReadsPerKilobaseMillion(OperationInterface):
-    """
-
-    ***Citation(s):***
-    +[**]()
-
-    """
-
     length_variable = param.String(default="lengths")
 
     @staticmethod
