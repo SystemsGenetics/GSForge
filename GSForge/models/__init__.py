@@ -31,7 +31,7 @@ transformations that researchers may need from the core data classes. They are:
 
 **OperationInterface**
     Aside from being abstract, this is the same as the above *Interface*, except
-    this calls a single function as defined by `process` in a subclass.
+    this calls a single function as defined by ``process`` function in a subclass.
 
 
 .. image:: ../../doc/_static/GSForge_index_selection.svg

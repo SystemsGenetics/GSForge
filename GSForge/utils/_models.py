@@ -24,12 +24,17 @@ def filter_by_json_attr(xr_dataset, key_pair, req_value):
 
 
 def params_to_json(parameterized_instance, skip: list = None):
-    """Build a .json string of the string parameters from a given instance of a
-    `param.Parameterized` subclass.
+    """
+    Builds a .json string of the string parameters from a given instance of a ``param.Parameterized`` subclass.
 
     :param parameterized_instance:
+      An instance of a ``param.Parameterized`` class.
+
     :param skip:
+      List of keys to be skipped.
+
     :return:
+      A json encoded string of the parameters.
     """
     values = {key: value for key, value in parameterized_instance.get_param_values()
               if isinstance(value, str) and value not in skip}
@@ -37,9 +42,11 @@ def params_to_json(parameterized_instance, skip: list = None):
 
 
 def kwargs_overlap(paramaterized, func):
-    """Gets the intersection between the parameters of a paramaterized model and
-     the keyword arguments of a function, and returns the current intersection
-     and their values as a dictionary."""
+    """
+    Gets the intersection between the parameters of a ``param.Parameterized`` class and
+    the keyword arguments of a function, and returns the current intersection
+    and their values as a dictionary.
+    """
     key_set = set(inspect.signature(func).parameters.keys()
                   ).intersection(set(paramaterized.param.objects().keys()))
     return {key: getattr(paramaterized, key) for key in key_set}

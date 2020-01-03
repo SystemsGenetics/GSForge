@@ -8,7 +8,7 @@ GSForge is a Python software package that assists researchers in the selection o
 to an experimental condition or phenotypic trait, which offers new potential hypotheses for gene-trait causality.
 
 .. image:: ./_static/rna_seq_generation_highlights.svg
-  :width: 600
+  :width: 900
   :alt: GSForge and GEMmaker within the RNA-Seq Analysis Cycle
 
 
