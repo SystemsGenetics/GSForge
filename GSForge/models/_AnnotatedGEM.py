@@ -8,6 +8,7 @@ import xarray as xr
 
 from textwrap import dedent
 
+import GSForge.utils._input
 from .. import utils
 
 
@@ -17,37 +18,39 @@ class AnnotatedGEM(param.Parameterized):
     gene annotations.
 
     This model holds the count expression matrix, and any associated labels
-    or annotations as an `xarray.Dataset` object under the `.data` attribute.
+    or annotations as an ``xarray.Dataset`` object under the ``.data`` attribute.
     By default this dataset will be expected to have its indexes named "Gene"
     and "Sample", although there are parameters to override those arrays and
     index names used.
 
     An AnnotatedGEM object can be created with one of the class methods:
-    + from_files()
-        A helper function for loading disparate GEM and annotation files through
-        pandas.read_csv().
-    + from_pandas()
-        Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
-        must share the same sample index.
-    + from_netcdf()
-        Reads in from a .nc filepath. Usually this means loading a previously
-        created AnnotatedGEM.
 
+    from_files()
+      A helper function for loading disparate GEM and annotation files through
+      pandas.read_csv().
+
+    from_pandas()
+      Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
+      must share the same sample index.
+
+    from_netcdf()
+      Reads in from a .nc filepath. Usually this means loading a previously
+      created AnnotatedGEM.
     """
 
     data = param.ClassSelector(class_=xr.Dataset, doc=dedent("""\
-    An `Xarray.Dataset` object that contains the Gene Expression Matrix, and any 
-    needed annotations. This `Xarray.Dataset` object is expected to have a count 
+    An ``xarray.Dataset`` object that contains the Gene Expression Matrix, and any 
+    needed annotations. This `xarray.Dataset` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample')."""))
 
     count_array_name = param.String(default="counts", doc=dedent("""\
-    This parameter controls which variable from the `Xarray.Dataset` should be
+    This parameter controls which variable from the `xarray.Dataset` should be
     considered to be the 'count' variable.
     Consider using this if you require different index names, or wish to control 
     which count array among many should be used by default."""))
 
     sample_index_name = param.String(default="Sample", doc=dedent("""\
-    This parameter controls which variable from the `Xarray.Dataset` should be
+    This parameter controls which variable from the `xarray.Dataset` should be
     considered to be the 'sample' coordinate.
     Consider using this if you require different coordinate names."""))
 
@@ -72,19 +75,19 @@ class AnnotatedGEM(param.Parameterized):
 
     @property
     def gene_index(self) -> xr.DataArray:
-        """Returns the entire gene index of this AnnotatedGEM object as an `Xarray.DataArray`.
+        """Returns the entire gene index of this AnnotatedGEM object as an ``xarray.DataArray``.
 
         The actual variable or coordinate that this returns is controlled by the
-        `gene_index_name` parameter.
+        ``gene_index_name`` parameter.
         """
         return self.data[self.gene_index_name].copy(deep=True)
 
     @property
     def sample_index(self) -> xr.DataArray:
-        """Returns the entire sample index of this AnnotatedGEM object as an `Xarray.DataArray`.
+        """Returns the entire sample index of this AnnotatedGEM object as an ``xarray.DataArray``.
 
         The actual variable or coordinate that this returns is controlled by the
-        `sample_index_name` parameter.
+        ``sample_index_name`` parameter.
         """
         return self.data[self.sample_index_name].copy(deep=True)
 
@@ -135,13 +138,13 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def from_netcdf(cls, netcdf_path, **params):
-        """Construct a `GEM` object from a `netcdf` file path."""
+        """Construct a ``GEM`` object from a ``netcdf`` (.nc) file path."""
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return cls(**params)
 
     @classmethod
     def _parse_pandas(cls, count_df, label_df, **params):
-        data = utils.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         return {"data": data, **params}
 
     @classmethod
@@ -160,7 +163,7 @@ class AnnotatedGEM(param.Parameterized):
 
         :return: An instance of the `GEM` class.
         """
-        data = utils.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
         instance = super().__new__(cls)
         instance.set_param(**params)
@@ -193,7 +196,7 @@ class AnnotatedGEM(param.Parameterized):
             load your data in to `pandas.DataFrame` objects and provide them to the
             `AnnotatedGEM.from_pandas` constructor instead."""))
 
-        data = utils.xrarray_gem_from_pandas(count_df, label_df)
+        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df, label_df)
 
         return {"data": data, **params}
 

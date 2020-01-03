@@ -8,23 +8,11 @@ User Guide
 Getting Started
 ---------------
 
-There are three core models that hold data in GSForge.
+.. Must use a raw element with an object tag for clickable links. https://stackoverflow.com/a/35562792
 
-The AnnotatedGEM holds the gene expression matrix (GEM) as well as any gene or sample annotations.
+.. raw:: html
 
-* AnnotatedGEM
-  A data class for a gene expression matrix and any associated sample or gene annotations.
-* GeneSet
-  A data class for a the result of a gene selection or analysis.
-* GeneSetCollection
-  A data class that holds an AnnotatedGEM and a dictionary of associated GeneSet objects.
-
-So in using GSForge to help analyze your GEM:
-
-+ Load the count matrix and any annotations into an AnnotatedGEM.
-+ Perform one or more analyses, or gene-selections, and store each as a GeneSet.
-+ Load the created AnnotatedGEM and GeneSet(s) into a GeneSetCollection.
-+ Compare the selected GeneSets.
+    <object data="../_static/user_guide.svg" type="image/svg+xml" width="900"></object>
 
 
 Creating and working with an AnnotatedGEM
@@ -60,7 +48,7 @@ Other Guides
 * `Workflow Guide <workflow_guide/index.rst>`_
   Using nextflow to run many different boruta analyses.
 
-* `R-Integration Guide <R_integration/index.rst>`_
+* `R-Integration Guide <R_integration_guide/index.rst>`_
   Integrating results from R packages into GeneSet objects.
 
 
@@ -75,4 +63,4 @@ Other Guides
     GeneSet Analysis <GeneSet_Analysis>
     Plotting Guide <plotting_guide/index>
     Workflow Guide <workflow_guide/index>
-    R-Integration Guide <R_integration/index>
+    R-Integration Guide <R_integration_guide/index>

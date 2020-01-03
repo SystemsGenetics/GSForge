@@ -7,9 +7,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath('..'))
 
-###################################################
-# edit things below as appropriate for your project
-
 extensions += [
     "nbsphinx",
     # 'nbsite.gallery'
@@ -65,6 +62,6 @@ html_context.update({
     # by default, footer links are same as those in header
     'LINKS': _NAV,
     'SOCIAL': (
-        ('Github', '//systemsgenetics.github.io/GSForge/index.html'),
+        ('Github', 'https://github.com/SystemsGenetics/GSForge'),
     )
 })

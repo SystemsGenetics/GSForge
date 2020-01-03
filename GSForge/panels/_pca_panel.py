@@ -8,12 +8,10 @@ from methodtools import lru_cache
 from sklearn.decomposition import PCA
 
 from ..models import Interface
-from .helpers import generate_help_pane
 
 
 class PCA_Panel(Interface):
     """
-
     For lineamenet collections:
         By default all keys will be made available in the selector.
         By default the mode should be complete(?) i.e. no lineaments.

@@ -5,143 +5,159 @@ import panel as pn
 import holoviews as hv
 from bokeh.models import HoverTool
 from methodtools import lru_cache
+import functools
 
 import umap
 
-from ..models import Interface
-from ..utils import infer_xarray_variables
-from .helpers import generate_help_pane
+from GSForge.utils._panel_utils import generate_help_pane
 
 
-class UMAP_Panel(Interface):
-    """
-    UMAP Panel short description.
+class UMAP_Panel(param.Parameterized):
+    """A UMAP Panel Exploration Tool.
+
     """
 
-    # UMAP model parameters.
-    n_neighbors = param.Integer(default=15, doc=dedent("""\
-    The size of local neighborhood (in terms of number of neighboring sample points) used 
-    for manifold approximation. Larger values result in more global views of the manifold, 
-    while smaller values result in more local data being preserved. In general values 
-    should be in the range 2 to 100.\n
-    Sourced from the UMAP documentation.\n
-    This parameter is limited by the number of samples in a given dataset."""))
+    interface = param.Parameter(
+        precedence=-1.0,
+        doc="An instance of a GSForge.Interface object.",
+    )
 
-    n_components = param.Integer(default=2, precedence=-2, doc=dedent("""\
-    The number of components (dimensions) to reduce to. Maybe one day we will go 3D.
-    For now this should not be changed."""))
+    data_var_cats = param.Dict(
+        precedence=-1.0,
+        doc="Categories of variables. Controls which values are selectable as a 'hue'.",
+    )
+    ###############################################################################################
+    # Transform Parameters.
+    ###############################################################################################
 
-    min_dist = param.Number(default=0.1, bounds=[0, 1.0], doc=dedent("""\
-    The effective minimum distance between embedded points. Smaller values will 
-    result in a more clustered/clumped embedding where nearby points on the manifold 
-    are drawn closer together, while larger values will result on a more even dispersal
-    of points. The value should be set relative to the spread value, which determines 
-    the scale at which embedded points will be spread out.\n UMAP Documentation."""))
+    n_neighbors = param.Integer(
+        precedence=1.0,
+        default=15,
+        doc=dedent("""\
+        The size of local neighborhood (in terms of number of neighboring sample points) used 
+        for manifold approximation. Larger values result in more global views of the manifold, 
+        while smaller values result in more local data being preserved. In general values 
+        should be in the range 2 to 100.\n  
+        *This parameter is limited by the number of samples in a given dataset.*""")
+    )
+
+    n_components = param.Integer(
+        default=2,
+        precedence=-2,
+        doc=dedent("""\
+        The number of components (dimensions) to reduce to. Maybe one day we will go 3D.
+        For now this should not be changed.""")
+    )
+
+    min_dist = param.Number(
+        precedence=1.0,
+        default=0.1,
+        bounds=[0, 1.0],
+        doc=dedent("""\
+        The effective minimum distance between embedded points. Smaller values will 
+        result in a more clustered/clumped embedding where nearby points on the manifold 
+        are drawn closer together, while larger values will result on a more even dispersal
+        of points. The value should be set relative to the spread value, which determines 
+        the scale at which embedded points will be spread out.""")
+    )
 
     metric = param.ObjectSelector(
-        default="manhattan", objects=["euclidean", "manhattan", "chebyshev", "minkowski"],
+        precedence=1.0,
+        default="manhattan",
+        objects=["euclidean", "manhattan", "chebyshev", "minkowski"],
         doc=dedent("""The metric to use to compute distances in high dimensional space."""))
-    random_state = param.Integer(default=42, doc="Random state seed.")
 
-    # Display Parameters.
-    hue = param.ObjectSelector(doc=dedent("""\
-    Select the column by which the points drawn should be colored by."""), default=None)
+    random_state = param.Integer(
+        precedence=1.0,
+        default=None,
+        doc="Random state seed. Set for (exactly) reproducible plots."
+    )
 
-    variable_categories = param.Dict(default=None, precedence=-2)
+    ###############################################################################################
+    # Plot display parameters.
+    ###############################################################################################
 
-    # Use a secret, undocumented, method to update the view with a button.
-    # https://github.com/pyviz/panel/issues/389
-    update_umap = param.Action(lambda self: self.param.trigger('update_umap'),
-                               doc="Update panel view.")
+    hue = param.ObjectSelector(
+        precedence=1.0,
+        doc="Select the column by which the points drawn should be colored by.",
+        default=None
+    )
+
+    # Create a button so that the transform only occurs when clicked.
+    update = param.Action(lambda self: self.param.trigger('update'))
 
     def __init__(self, *args, **params):
         super().__init__(*args, **params)
 
-        # UMAP n_neighbors is limited by the number of samples.
-        self.param["n_neighbors"].bounds = [1, len(self.gem.data[self.gem.sample_index_name]) - 1]
+        # Infer the variable categoires of the supplied dataframe.
+        if self.data_var_cats is None:
+            self.set_param(data_var_cats=self.interface.gem.infer_variables())
 
-        # Try to infer the variables of the data.
-        if self.variable_categories is None:
-            inferred_variables = self.gem.infer_variables()
-            self.set_param(variable_categories=inferred_variables)
+        # Limit the number of neighbors to the number of samples.
+        self.param["n_neighbors"].bounds = [1, len(self.interface.gem.data[self.interface.gem.sample_index_name]) - 1]
 
         avail_hues = []
-        if self.variable_categories.get("discrete") is not None:
-            avail_hues += self.variable_categories.get("discrete")
-        if self.variable_categories.get("quantile") is not None:
-            avail_hues += self.variable_categories.get("quantile")
+        if self.data_var_cats.get("discrete") is not None:
+            avail_hues += self.data_var_cats.get("discrete")
+        if self.data_var_cats.get("quantile") is not None:
+            avail_hues += self.data_var_cats.get("quantile")
 
         avail_hues = list(set(avail_hues))
         if avail_hues:
             self.param["hue"].objects = [None] + sorted(avail_hues)
 
-    def _get_umap_kwargs(self):
-        """Returns the arguments needed for the UMAP reduction."""
-        key_set = set(inspect.signature(umap.umap_.UMAP).parameters.keys()
+    def get_transform_kwargs(self, transform=umap.umap_.UMAP):
+        """Gets the overlapping arguments of the transform and parameters of this panel class,
+        and returns them as a dictionary."""
+        key_set = set(inspect.signature(transform).parameters.keys()
                       ).intersection(set(self.param.objects().keys()))
         return {key: getattr(self, key) for key in key_set}
 
+    @staticmethod
+    def static_transform(array, **kwargs):
+        """Runs the transform with the selected panel parameters on the given array."""
+        return umap.UMAP(**kwargs).fit_transform(array)
+
+    def transform(self):
+        """Runs the transform with the selected panel parameters and data."""
+        array = self.interface.x_count_data
+        kwargs = self.get_transform_kwargs()
+        return self.static_transform(array, **kwargs)
+
     @lru_cache()
-    def transform(self, frozen_mapping_key, frozen_umap_kwargs):
-        """A cached UMAP transform function. This lets the user to update the plot quickly
-        for those parameters that do not require a new UMAP calculation."""
-        # The arguments come in as frozen sets so that the lru_cache works correctly.
-        # Convert them to usable forms.
-        umap_kwargs = dict(frozen_umap_kwargs)
-        _ = list(frozen_mapping_key)  # Just used to hash the result of the data key.
-        index_selection = self.get_selection_indexes()
-        subset = self.gem.data[[self.active_count_variable] +
-                               self.variable_categories.get("all_labels")].sel(index_selection)
+    def cached_transform(self, gene_set, transform_state):
+        """A chached transform based on the genes and transform arguments selected."""
+        return self.transform()
 
-        zero_filled_data = subset[self.active_count_variable].fillna(0).values
-        transform = umap.UMAP(**umap_kwargs).fit_transform(zero_filled_data)
+    @param.depends('update', 'hue')
+    def hvplot_view(self):
+        """A holoviews.Points plot of the selected transform."""
+        df = self.interface.gem.data[self.data_var_cats["all_labels"]].to_dataframe().reset_index()
+        gene_set = frozenset(self.interface.get_gene_index())
+        transform_state = frozenset(self.get_transform_kwargs().items())
+        hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in list(df.columns)])
 
-        subset["x"] = ((self.gem.sample_index_name,), transform[:, 0])
-        subset["y"] = ((self.gem.sample_index_name,), transform[:, 1])
+        transform = self.cached_transform(gene_set, transform_state)
+        df["x"] = transform[:, 0]
+        df["y"] = transform[:, 1]
 
-        subset = subset.drop(self.active_count_variable)
-        subset = subset.drop(self.gene_index_name)
-        return subset
+        plot = hv.Points(df, kdims=["x", "y"])
 
-    @param.depends('update_umap', 'hue')
-    def view(self):
-        """Draw a 2d umap embedding."""
-        frozen_umap_kwargs = frozenset(self._get_umap_kwargs().items())
-        frozen_map_selector = frozenset((self.selected_gene_sets + [self.gene_set_mode]))
-        umap_ds = self.transform(frozen_map_selector, frozen_umap_kwargs)
-        plotting_dims = ['x', 'y']
-        if self.variable_categories.get("all_labels") is not None:
-            plotting_dims += self.variable_categories.get("all_labels")
-        df = umap_ds[plotting_dims].to_dataframe().reindex()
-        # Set quantileable or group categories to the 'string' datatype.
-        # for var_type in ["discrete", "quantile"]:
-        #     if self.variable_categories.get(var_type) is not None:
-        #         df[self.variable_categories.get(var_type)] = df[self.variable_categories.get(var_type)].astype("str")
+        hue = self.hue if self.hue else "#3288bd"
 
-        vdims = [item for item in self.variable_categories.get("all_labels")
-                 if item in list(df.columns)]
-
-        plot = hv.Points(df, kdims=["x", "y"], vdims=vdims)
-
-        tooltips = [(name, "@" + f"{name}") for name in vdims
-                    if name in list(df.columns)]
-
-        hover = HoverTool(tooltips=tooltips)
-
-        # plot = plot.opts(hv.opts.Points(tools=[hover]))
-        plot = plot.opts(tools=[hover])
-        color = self.hue if self.hue else "#3288bd"
-
-        return plot.options(color=color, cmap="Set1", legend_position='bottom', xaxis=None, yaxis=None,
-                            padding=0.1, show_grid=True, bgcolor="lightgrey", width=500, height=500)
+        return plot.opts(tools=[hover], color=hue, cmap="Set1", legend_position='bottom', xaxis=None, yaxis=None,
+                         padding=0.05, show_grid=True, bgcolor="lightgrey", width=500, height=500)
 
     def panel(self):
-        controls = pn.Param(self.param, widgets={
-            'update_umap': {'type': pn.widgets.Button, 'button_type': 'primary'}, }
-                            )
+        """Interactive panel application for transform exploration."""
+        # Update styles or types of buttons for the interface.
+        transform_controls = pn.Param(self.param, widgets={
+            'update': {'type': pn.widgets.Button, 'button_type': 'primary'},
+        })
 
-        umap_layout = pn.Column("### UMAP Exploration Panel",
-                                pn.Row(self.view, controls))
-        help_text = generate_help_pane(self)
+        transform_layout = pn.Row(self.interface, self.hvplot_view, transform_controls)
+        docs = generate_help_pane(self)
 
-        return pn.Tabs(("UMAP", umap_layout), ("Documentation", help_text))
+        tab_layout = pn.Tabs(("UMAP", transform_layout), ("Documentation", docs))
+
+        return tab_layout

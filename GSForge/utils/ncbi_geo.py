@@ -3,7 +3,13 @@ Convert SOFT files from the NCBI: Geo Database and convert them into xarray.Data
 """
 
 import warnings
-from ..utils._models import xrarray_gem_from_pandas
+from ._input import xrarray_gem_from_pandas
+
+
+__all__ = [
+    "soft_to_pandas",
+    "build_geo_xarray",
+]
 
 
 def soft_to_pandas(soft_object):

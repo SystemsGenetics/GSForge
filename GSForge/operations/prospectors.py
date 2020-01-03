@@ -1,8 +1,7 @@
 """
-Prospector operations return either boolean support arrays or arrays
-of selected genes. While these may include some values / ranks, prospector
-operations differ from analyzer operations, in that they are not expected
-to return results for every gene.
+``Prospector`` operations return either boolean support arrays or arrays of selected genes.
+Prospector operations differ from analytics, in that they are not required to return a 'result' for every gene,
+or return the same result each call.
 """
 
 import enum
@@ -13,10 +12,10 @@ import numpy as np
 import param
 import xarray as xr
 from boruta import boruta_py
+from sklearn.feature_selection import chi2, f_classif
 
 from ..models import OperationInterface
 from ..utils import kwargs_overlap
-
 
 __all__ = [
     "create_random_lineament",
@@ -25,11 +24,55 @@ __all__ = [
 ]
 
 
+class chi_squared_test(OperationInterface):
+    """
+    Compute chi-squared stats between each non-negative feature and class.
+    See the `Scikit-learn documentation <https://scikit-learn.org/>`_
+    """
+
+    # TODO: Note that this uses the OperationInterface.
+
+    def process(self):
+        x_data, y_data = self.x_count_data, self.y_annotation_data
+
+        chi2_scores, chi2_pvals = chi2(np.nan_to_num(x_data), y_data)
+        attrs = {"Method": "Chi-Squared",
+                 "x_variable": self.x_variable,
+                 "y_variables": self.y_variables}
+        data = xr.Dataset({"chi2_scores": (["Gene"], chi2_scores),
+                           "chi2_pvals": (["Gene"], chi2_pvals)},
+                          coords={"Gene": x_data[self.gem.gene_index_name]},
+                          attrs=attrs)
+        return data
+
+
+class f_classification_test(OperationInterface):
+    """
+    Compute the ANOVA F-value for the provided sample.
+    See the `Scikit-learn documentation <https://scikit-learn.org/>`_
+    """
+
+    # TODO: Note that this uses the OperationInterface.
+
+    def process(self):
+        x_data, y_data = self.x_count_data, self.y_annotation_data
+
+        f_scores, f_pvals = f_classif(np.nan_to_num(x_data), y_data)
+        attrs = {"Method": "ANOVA F-value",
+                 "x_variable": self.x_variable,
+                 "y_variables": self.y_variables}
+        data = xr.Dataset({"f_scores": (["Gene"], f_scores),
+                           "f_pvals": (["Gene"], f_pvals)},
+                          coords={"Gene": x_data[self.gem.gene_index_name]},
+                          attrs=attrs)
+        return data
+
+
 class create_random_lineament(OperationInterface):
     """
-    Creates a random lineament of size `k`.
+    Creates a random lineament of size ``k``.
 
-    Picks from the gene index defined by the `Interface` options.
+    Picks from the gene index defined by the ``Interface`` options.
     """
     k = param.Integer(default=100)
 
@@ -47,11 +90,11 @@ class _model_parsers(enum.Enum):
 
 
 def _parse_model(model, model_type, dim) -> dict:
-    """Parse a model into a dictionary appropriate for constructing an `Xarray.Dataset`.
+    """Parse a model into a dictionary appropriate for constructing an ``xarray.Dataset``.
 
     :param model: The model object to be parsed.
 
-    :param model_type: The key to the Enum `_model_parsers`.
+    :param model_type: The key to the Enum ``_model_parsers``.
 
     :param dim:
 
@@ -62,7 +105,7 @@ def _parse_model(model, model_type, dim) -> dict:
 
 
 def parse_boruta_model(boruta_model, gene_coords, attrs=None, dim="Gene") -> xr.Dataset:
-    """Convert a boruta model into an `xarray.Dataset` object.
+    """Convert a boruta model into an ``xarray.Dataset`` object.
 
     :param boruta_model: A boruta_py model.
 
@@ -72,7 +115,7 @@ def parse_boruta_model(boruta_model, gene_coords, attrs=None, dim="Gene") -> xr.
 
     :param dim: The name of the coordinate dimension.
 
-    :return: An `xarray.Dataset` object.
+    :return: An ``xarray.Dataset`` object.
     """
     model_data = _parse_model(boruta_model, "boruta", dim=dim)
     return xr.Dataset(model_data, coords={dim: gene_coords}, attrs=attrs)
@@ -83,12 +126,12 @@ class boruta_prospector(OperationInterface):
     """Runs a single instance of BorutaPy feature selection.
 
     This is just a simple wrapper for a boruta model that produces an
-    `xarray.Dataset` object suitable for use in the creation of a
-    `GSForge.GeneSet` object."""
+    ``xarray.Dataset`` object suitable for use in the creation of a
+    ``GSForge.GeneSet`` object."""
 
     estimator = param.Parameter(doc=dedent("""\
     A supervised learning estimator, with a 'fit' method that returns the
-    `feature_importances_` attribute. Important features must correspond to
+    ``feature_importances_`` attribute. Important features must correspond to
     high absolute values in the `feature_importances_`."""))
 
     n_estimators = param.Parameter(default=1000, doc=dedent("""\
@@ -121,7 +164,7 @@ class boruta_prospector(OperationInterface):
     If int, random_state is the seed used by the random number generator;
     If RandomState instance, random_state is the random number generator;
     If None, the random number generator is the RandomState instance used
-    by `np.random`."""))
+    by ``np.random``."""))
 
     verbose = param.Integer(default=0, doc=dedent("""\
     Controls verbosity of output:
@@ -138,7 +181,7 @@ class boruta_prospector(OperationInterface):
         # Convert attribute dictionaries to .json format.
         # We can't store nested dictionaries in the attrs.
         boruta_json_attrs = json.dumps(boruta_kwargs, default=lambda o: '<not serializable>')
-        ranking_model_json_attrs =  json.dumps(self.estimator.get_params(), default=lambda o: '<not serializable>')
+        ranking_model_json_attrs = json.dumps(self.estimator.get_params(), default=lambda o: '<not serializable>')
 
         attrs = {'boruta_model': boruta_json_attrs,
                  'ranking_model': ranking_model_json_attrs,
@@ -148,8 +191,6 @@ class boruta_prospector(OperationInterface):
         return parse_boruta_model(boruta_model, attrs=attrs, gene_coords=self.get_gene_index(),
                                   dim=self.gem.gene_index_name)
 
-
 # class boruta_one_vs_rest_prospector(boruta_prospector):
 #     def process(self):
 #         pass
-
