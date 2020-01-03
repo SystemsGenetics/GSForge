@@ -24,7 +24,7 @@ import numpy as np
 from sklearn.base import clone
 
 from ..models import OperationInterface
-from ..utils._operations import shuffle_along_axis
+from ..utils._operations import shuffle_along_axis, null_rank_distribution
 
 __all__ = [
     "rank_genes_by_model",
@@ -33,7 +33,6 @@ __all__ = [
 ]
 
 
-# TODO: Add linter ignore for class capitaliation.
 class rank_genes_by_model(OperationInterface):
     """
     Given some machine learning model, this operation runs n_iterations
@@ -78,21 +77,6 @@ class rank_genes_by_model(OperationInterface):
         return data
 
 
-# TODO: Consider moving to utils.
-def _null_rank_distribution(real, shadow):
-    """
-    Returns the percent for which shadow values are ranked higher than a given real value.
-
-    :param real: The 'real' scores.
-
-    :param shadow: Scores from fake, or shadow, features.
-
-    :return: An array of the same shape as ``real``, with the percent of times a shadow
-      score had a higher value.
-    """
-    return np.sum(real[:, None] <= shadow[None, :], axis=-1) / shadow.shape[0]
-
-
 class nFDR(OperationInterface):
     """
     nFDR (False Discovery Rate) [method_compare]_.
@@ -119,7 +103,7 @@ class nFDR(OperationInterface):
         real_scores = real_model.feature_importances_
         shadow_scores = shadow_model.feature_importances_
 
-        null_rank_dist = _null_rank_distribution(real_scores, shadow_scores)
+        null_rank_dist = null_rank_distribution(real_scores, shadow_scores)
         return null_rank_dist
 
     def _nFDR_to_xarray(self, nFRD_values):
@@ -168,79 +152,39 @@ class mProbes(OperationInterface):
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
-    def process(self):
-        if self.n_iterations == 1:
-            return self._calculate_null_rank_distribution()
-        else:
-            rankings = [self._calculate_null_rank_distribution() for i in range(self.n_iterations)]
-            ranking_ds = xr.concat(rankings, "nrd_iter")
-            ranking_ds.name = "null rank distribution"
-            ranking_ds["nrd_iter"] = (["nrd_iter", ], np.arange(self.n_iterations))
-            ranking_ds["nrd_mean"] = ([self.gem.gene_index_name], ranking_ds.mean(dim="nrd_iter"))
-            ranking_ds["nrd_std"] = ([self.gem.gene_index_name], ranking_ds.std(dim="nrd_iter"))
-            return ranking_ds.to_dataset()
-
-    def _calculate_null_rank_distribution(self):
-        shadowed_array = shuffle_along_axis(self.x_count_data.values, 1)
-        shadowed_dataset = np.hstack((self.x_count_data.values, shadowed_array))
-
-        x_values = shadowed_dataset[self.count_variable].values
-        y_values = self.y_annotation_data
-
-        model = self.model.fit(x_values, y_values)
+    @staticmethod
+    def mProbes(x_data, y_data, model):
+        shadowed_array = shuffle_along_axis(x_data, 1)
+        x_shadowed = np.hstack((x_data, shadowed_array))
+        model = model.fit(x_shadowed, y_data)
         ranks = model.feature_importances_
-        real, shadow = ranks.reshape((2, self.get_gene_index().shape[0]))
-        null_rank_dist = _null_rank_distribution(real, shadow)
+        real, shadow = ranks.reshape((2, x_data.shape[0]))
+        null_rank_dist = null_rank_distribution(real, shadow)
+        return null_rank_dist
 
-        attrs = {'Ranking Model': str(model),
+    def _mprobes_fdr_to_xarray(self, values):
+        attrs = {'Ranking Model': str(self.model),
                  "count_variable": self.count_variable,
                  "annotation_variables": self.annotation_variables}
+        return xr.DataArray(
+            data=values,
+            coords=[self.get_gene_index()],
+            dims=[self.gem.gene_index_name],
+            attrs=attrs,
+            name="nFDR")
 
-        return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
-                            dims=[self.gem.gene_index_name], attrs=attrs,
-                            name="null_rank_distribution")
+    def process(self):
 
-#
-# class calculate_family_wise_error_rates(OperationInterface):
-#     # TODO: Cite and update docstring.
-#
-#     """
-#     Estimates the false-discovery rate (type I errors).
-#     """
-#     model = param.Parameter()
-#     n_iterations = param.Integer(default=1)
-#
-#     def process(self):
-#         if self.n_iterations == 1:
-#             return self._calculate_family_wise_error_rates()
-#         else:
-#             rankings = [self._calculate_family_wise_error_rates() for i in range(self.n_iterations)]
-#             ranking_ds = xr.concat(rankings, "fwe_iter")
-#             ranking_ds.name = "Family-wise error rate"
-#             ranking_ds["fwe_iter"] = (["fwe_iter", ], np.arange(self.n_iterations))
-#             ranking_ds["fwe_mean"] = ([self.gem.gene_index_name], ranking_ds.mean(dim="fwe_iter"))
-#             ranking_ds["fwe_std"] = ([self.gem.gene_index_name], ranking_ds.std(dim="fwe_iter"))
-#             return ranking_ds.to_dataset()
-#
-#     def _calculate_family_wise_error_rates(self):
-#         random_values = np.random.randn(*self.x_count_data.shape)
-#         shadowed_values = np.hstack([self.x_count_data, random_values])
-#
-#         y_values = self.y_annotation_data
-#
-#         if isinstance(self.annotation_variables, list):
-#             y_values = y_values.to_dataframe().values
-#
-#         model = self.model.fit(shadowed_values, y_values)
-#         ranks = model.feature_importances_
-#         real, shadow = ranks.reshape((2, self.x_count_data.shape[1]))
-#
-#         null_rank_dist = _null_rank_distribution(real, shadow)
-#
-#         attrs = {'Ranking Model': str(model),
-#                  "count_variable": self.count_variable,
-#                  "annotation_variables": self.annotation_variables}
-#
-#         return xr.DataArray(data=null_rank_dist, coords=[self.get_gene_index()],
-#                             dims=[self.gem.gene_index_name], attrs=attrs,
-#                             name="family_wise_error_rate")
+        x_data = self.x_count_data
+        y_data = self.y_annotation_data
+
+        if self.n_iterations == 1:
+            return self._mprobes_fdr_to_xarray(self.mProbes(x_data, y_data, self.model))
+        else:
+            rankings = [self._calculate_null_rank_distribution() for _ in range(self.n_iterations)]
+            ranking_ds = xr.concat(rankings, "mProbes_iter")
+            ranking_ds.name = "mProbes NRD"
+            ranking_ds["mProbes_iter"] = (["mProbes_iter", ], np.arange(self.n_iterations))
+            ranking_ds["mProbes_mean"] = ([self.gem.gene_index_name], ranking_ds.mean(dim="mProbes_iter"))
+            ranking_ds["mProbes_std"] = ([self.gem.gene_index_name], ranking_ds.std(dim="mProbes_iter"))
+            return ranking_ds.to_dataset()
