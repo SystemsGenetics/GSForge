@@ -181,8 +181,9 @@ class mProbes(OperationInterface):
         if self.n_iterations == 1:
             return self._mprobes_fdr_to_xarray(self.mProbes(x_data, y_data, self.model))
         else:
-            rankings = [self._calculate_null_rank_distribution() for _ in range(self.n_iterations)]
-            ranking_ds = xr.concat(rankings, "mProbes_iter")
+            fdrs = [self.mProbes(x_data, y_data, self.model) for i in range(self.n_iterations)]
+            fdrs = [self._mprobes_fdr_to_xarray(values) for values in fdrs]
+            ranking_ds = xr.concat(fdrs, "mProbes_iter")
             ranking_ds.name = "mProbes NRD"
             ranking_ds["mProbes_iter"] = (["mProbes_iter", ], np.arange(self.n_iterations))
             ranking_ds["mProbes_mean"] = ([self.gem.gene_index_name], ranking_ds.mean(dim="mProbes_iter"))
