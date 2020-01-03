@@ -163,7 +163,7 @@ class mProbes(OperationInterface):
         x_shadowed = np.hstack((x_data, shadowed_array))
         model = model.fit(x_shadowed, y_data)
         ranks = model.feature_importances_
-        real, shadow = ranks.reshape((2, x_data.shape[0]))
+        real, shadow = ranks.reshape((2, x_data.shape[1]))
         null_rank_dist = null_rank_distribution(real, shadow)
         return null_rank_dist
 
