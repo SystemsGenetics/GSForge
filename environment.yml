@@ -25,3 +25,4 @@ dependencies:
   - pip
   - pip:
       - methodtools
+      - git+https://github.com/SystemsGenetics/GSForge
