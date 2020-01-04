@@ -37,10 +37,7 @@ jobs:
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        # The pipe below enables use of a multiple line bash script.
-        - |
-          nbsite generate-rst --org SystemsGenetics --project-name GSForge
-#          --skip="[^.*R_integration_guide.*ipynb]"
+        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
