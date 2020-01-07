@@ -1,0 +1,3 @@
+#!/bin/bash
+GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
+osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
