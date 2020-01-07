@@ -32,7 +32,6 @@ setup(
     author='Tyler Biggs',
     author_email='tyler.biggs@wsu.edu',
     description='Feature (gene) selection package for gene expression data.',
-    python_requires='>3.6',
+    python_requires='>3.7',
     install_requires=requirements,
 )
-
