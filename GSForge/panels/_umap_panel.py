@@ -92,6 +92,8 @@ class UMAP_Panel(param.Parameterized):
                                   "count_mask": "complete"}
         if interface_opts is not None:
             interface_opts = {**default_interface_opts, **interface_opts}
+        else:
+            interface_opts = default_interface_opts
 
         interface = Interface(source, **interface_opts)
         super().__init__(interface=interface, **params)
