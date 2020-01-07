@@ -1,12 +1,20 @@
 import numpy as np
 
 
-def shuffle_along_axis(a, axis):
+def shuffle_along_axis(array, axis):
     """
-    Shuffle along an axis. `Source <https://stackoverflow.com/a/55317373>`_.
+    Shuffle along an axis.
+
+    :param array:
+        A ``numpy.ndarray`` object.
+
+    :param axis:
+        The axis to be shuffled along.
+
+    `Source <https://stackoverflow.com/a/55317373>`_.
     """
-    idx = np.random.rand(*a.shape).argsort(axis=axis)
-    return np.take_along_axis(a, idx, axis=axis)
+    idx = np.random.rand(*array.shape).argsort(axis=axis)
+    return np.take_along_axis(array, idx, axis=axis)
 
 
 def null_rank_distribution(real, shadow):
