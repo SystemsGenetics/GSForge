@@ -14,9 +14,6 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
 
 
-# TODO: Consider `gene_subset` parameter.
-# TODO: Consider generalizing some GeneSetCollection-specific functions
-#       as found in the Lineament_Connectivity_Panel.
 # TODO: Add GeneSet data access.
 class Interface(param.Parameterized):
     """
@@ -100,7 +97,7 @@ class Interface(param.Parameterized):
 
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
-            self.param["selected_gene_sets"].objects = avail_mappings
+            self.param["selected_gene_sets"].objects = avail_mappings + [None]
 
     @staticmethod
     def _parse_annotated_gem(annotated_gem, *args, **params):
