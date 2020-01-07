@@ -2,9 +2,6 @@
 User Guide
 **********
 
-*Under Construction...*
-
-
 Getting Started
 ---------------
 
