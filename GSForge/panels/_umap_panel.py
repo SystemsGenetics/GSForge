@@ -86,12 +86,17 @@ class UMAP_Panel(param.Parameterized):
     # Create a button so that the transform only occurs when clicked.
     update = param.Action(lambda self: self.param.trigger('update'))
 
-    def __init__(self, source, **params):
+    def __init__(self, source, interface_opts=None, **params):
         # Set up the Interface object.
-        interface = Interface(source)
+        default_interface_opts = {"gene_set_mode": "complete",
+                                  "count_mask": "complete"}
+        if interface_opts is not None:
+            interface_opts = {**default_interface_opts, **interface_opts}
+
+        interface = Interface(source, **interface_opts)
         super().__init__(interface=interface, **params)
 
-        # Infer the variable categoires of the supplied dataframe.
+        # Infer the variable categories of the supplied dataframe.
         if self.data_var_cats is None:
             self.set_param(data_var_cats=self.interface.gem.infer_variables())
 

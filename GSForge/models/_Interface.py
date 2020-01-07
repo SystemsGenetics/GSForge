@@ -261,9 +261,9 @@ class Interface(param.Parameterized):
     @property
     def y_annotation_data(self):
         """Returns the currently selected 'y_data', or None, based on the
-        `selected_annotation_variables` parameter.
+        ``selected_annotation_variables`` parameter.
 
-        :return: An Xarray.Dataset or Xarray.DataArray object of the currently selected y_data.
+        :return: An ``xarray.Dataset`` or ``xarray.DataArray`` object of the currently selected y_data.
         """
         # TODO: Consider enforcing list input for standardizing outputs to datasets.
         # TODO: Consider adding a copy option.
