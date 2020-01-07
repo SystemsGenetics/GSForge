@@ -88,12 +88,11 @@ class UMAP_Panel(param.Parameterized):
 
     def __init__(self, source, interface_opts=None, **params):
         # Set up the Interface object.
-        default_interface_opts = {"gene_set_mode": "complete",
-                                  "count_mask": "complete"}
-        if interface_opts is not None:
-            interface_opts = {**default_interface_opts, **interface_opts}
-        else:
+        default_interface_opts = {"count_mask": "complete"}
+        if interface_opts is None:
             interface_opts = default_interface_opts
+        else:
+            interface_opts = {**default_interface_opts, **interface_opts}
 
         interface = Interface(source, **interface_opts)
         super().__init__(interface=interface, **params)
