@@ -1,6 +1,6 @@
 """
 GSForge Panel applications provide interactive visualizations for ``AnnotatedGEM``
-or ``GeneSetCollection`` objects (or saved .netcdf files).
+or ``GeneSetCollection`` objects.
 """
 
 from ._umap_panel import UMAP_Panel

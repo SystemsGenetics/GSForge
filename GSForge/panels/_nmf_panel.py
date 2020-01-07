@@ -1,19 +1,20 @@
 import param
-from textwrap import dedent
-import inspect
 import panel as pn
+import inspect
 import holoviews as hv
 from bokeh.models import HoverTool
 from methodtools import lru_cache
 
-import umap
+from sklearn.decomposition import NMF
 
-from GSForge import Interface
+from textwrap import dedent
+
+
 from GSForge.utils._panel_utils import generate_help_pane
 
 
-class UMAP_Panel(param.Parameterized):
-    """A UMAP Panel Exploration Tool.
+class NMF_Panel(param.Parameterized):
+    """A Negative Matrix Factorization Panel Exploration Tool.
 
     """
 
@@ -30,17 +31,6 @@ class UMAP_Panel(param.Parameterized):
     # Transform Parameters.
     ###############################################################################################
 
-    n_neighbors = param.Integer(
-        precedence=1.0,
-        default=15,
-        doc=dedent("""\
-        The size of local neighborhood (in terms of number of neighboring sample points) used 
-        for manifold approximation. Larger values result in more global views of the manifold, 
-        while smaller values result in more local data being preserved. In general values 
-        should be in the range 2 to 100.\n  
-        *This parameter is limited by the number of samples in a given dataset.*""")
-    )
-
     n_components = param.Integer(
         default=2,
         precedence=-2,
@@ -48,24 +38,6 @@ class UMAP_Panel(param.Parameterized):
         The number of components (dimensions) to reduce to. Maybe one day we will go 3D.
         For now this should not be changed.""")
     )
-
-    min_dist = param.Number(
-        precedence=1.0,
-        default=0.1,
-        bounds=[0, 1.0],
-        doc=dedent("""\
-        The effective minimum distance between embedded points. Smaller values will 
-        result in a more clustered/clumped embedding where nearby points on the manifold 
-        are drawn closer together, while larger values will result on a more even dispersal
-        of points. The value should be set relative to the spread value, which determines 
-        the scale at which embedded points will be spread out.""")
-    )
-
-    metric = param.ObjectSelector(
-        precedence=1.0,
-        default="manhattan",
-        objects=["euclidean", "manhattan", "chebyshev", "minkowski"],
-        doc=dedent("""The metric to use to compute distances in high dimensional space."""))
 
     random_state = param.Integer(
         precedence=1.0,
@@ -86,17 +58,12 @@ class UMAP_Panel(param.Parameterized):
     # Create a button so that the transform only occurs when clicked.
     update = param.Action(lambda self: self.param.trigger('update'))
 
-    def __init__(self, source, **params):
-        # Set up the Interface object.
-        interface = Interface(source)
-        super().__init__(interface=interface, **params)
+    def __init__(self, *args, **params):
+        super().__init__(*args, **params)
 
         # Infer the variable categoires of the supplied dataframe.
         if self.data_var_cats is None:
             self.set_param(data_var_cats=self.interface.gem.infer_variables())
-
-        # Limit the number of neighbors to the number of samples.
-        self.param["n_neighbors"].bounds = [1, len(self.interface.gem.data[self.interface.gem.sample_index_name]) - 1]
 
         avail_hues = []
         if self.data_var_cats.get("discrete") is not None:
@@ -108,7 +75,7 @@ class UMAP_Panel(param.Parameterized):
         if avail_hues:
             self.param["hue"].objects = [None] + sorted(avail_hues)
 
-    def get_transform_kwargs(self, transform=umap.umap_.UMAP):
+    def get_transform_kwargs(self, transform=NMF):
         """Gets the overlapping arguments of the transform and parameters of this panel class,
         and returns them as a dictionary."""
         key_set = set(inspect.signature(transform).parameters.keys()
@@ -117,8 +84,8 @@ class UMAP_Panel(param.Parameterized):
 
     @staticmethod
     def static_transform(array, **kwargs):
-        """Runs the transform with the selected panel parameters on the given array."""
-        return umap.UMAP(**kwargs).fit_transform(array)
+        """Runs the transform on the given array."""
+        return NMF(**kwargs).fit_transform(array)
 
     def transform(self):
         """Runs the transform with the selected panel parameters and data."""
