@@ -73,6 +73,7 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: pip_dev_package
+      install: skip
       deploy:
         provider: pypi
         server: https://test.pypi.org/legacy/
@@ -83,6 +84,7 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
+      install: skip
       deploy:
         provider: pypi
         distributions: "sdist bdist_wheel"
