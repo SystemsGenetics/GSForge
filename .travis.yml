@@ -1,6 +1,9 @@
-branches:
-  only:
-    - master
+# Much of this setup is borrowed or inspired from the travis.yml files
+# of the param, holoviews and related packages.
+
+#branches:
+#  only:
+#    - master
 
 addons:
   apt:
@@ -20,9 +23,22 @@ services:
 python:
   - "3.7"
 
+
 stages:
   - test_and_build_docs
   - build_dockerfiles
+  # Upload to the pypi development repository. eg 1.a1
+  - name: pip_dev_package
+    if: tag =~ ^v(\d+|\.)+[a-z]\d+$
+  # Deploy to the real pypi repository. eg 1.1
+  - name: pip_package
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
+  # For possible future use. This may require a separate development repository.
+#  - name: website_dev
+#    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR tag = website_dev
+  - name: website_release
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
+
 
 install:
   - sudo apt-get install graphviz
@@ -55,3 +71,22 @@ jobs:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker push systemsgenetics/gsforge_interactive:latest
         - docker push systemsgenetics/gsforge_workflow:latest
+
+    - stage: pip_dev_package
+      deploy:
+        provider: pypi
+        server: https://test.pypi.org/legacy/
+        distributions: "sdist bdist_wheel"
+        on:
+          tags: true
+        user: $TESTPYPI_USER
+        password: $TESTPYPI_PWD
+
+    - stage: pip_package
+      deploy:
+        provider: pypi
+        distributions: "sdist bdist_wheel"
+        on:
+          tags: true
+        user: $PYPI_USER
+        password: $PYPI_PWD
