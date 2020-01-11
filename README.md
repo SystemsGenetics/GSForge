@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.com/SystemsGenetics/GSForge.svg?branch=master)](https://travis-ci.com/SystemsGenetics/GSForge)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SystemsGenetics/GSForge/master?filepath=examples%2Fuser_guide.ipynb)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/SystemsGenetics/GSForge/master?filepath=examples%2Fuser_guide%2Fuser_guide.ipynb)
 
 # GSForge
 
