@@ -108,15 +108,15 @@ class GeneSetCollection(param.Parameterized):
     def union(self, keys=None, exclude=None):
         """Get the union of supported genes in this GeneSet collection."""
         gene_set_dict = self.as_dict(keys, exclude)
-        return reduce(np.intersect1d, gene_set_dict.values())
+        return reduce(np.union1d, gene_set_dict.values())
 
     def difference(self, keys=None, exclude=None):
         gene_set_dict = self.as_dict(keys, exclude)
-        return reduce(np.intersect1d, gene_set_dict.values())
+        return reduce(np.setdiff1d, gene_set_dict.values())
 
     def pairwise_unions(self, keys=None, exclude=None, size=2):
         gene_set_dict = self.as_dict(keys, exclude)
-        return {(ak, bk): np.intersect1d(av, bv)
+        return {(ak, bk): np.union1d(av, bv)
                 for (ak, av), (bk, bv) in itertools.permutations(gene_set_dict.items(), size)
                 if ak != bk}
 

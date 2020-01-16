@@ -209,8 +209,9 @@ class GeneSet(param.Parameterized):
 
     @staticmethod
     def parse_GeneSets(gene_sets, complete_gene_index, attrs=None, **params):
-        union = np.array(list(set.union(*[set(lin.gene_support()) for lin in gene_sets])))
-        data = xr.Dataset({"support": (["Gene"], np.isin(complete_gene_index, union))},
+        gene_set_dict = {k: v.gene_support() for k, v in gene_sets.items()}
+        gene_set_union = functools.reduce(np.intersect1d, gene_set_dict.values())
+        data = xr.Dataset({"support": (["Gene"], np.isin(complete_gene_index, gene_set_union))},
                           coords={"Gene": complete_gene_index})
         if attrs is not None:
             data = data.assign_attrs(attrs)
