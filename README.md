@@ -10,11 +10,11 @@
 ***Clone the repository.***
 
 ```bash
-git clone git@github.com:SystemsGenetics/GSForge.git
+git clone https://github.com/SystemsGenetics/GSForge.git
 ```
 
 ***Install via local pip:***
 
 ```bash
-pip install ./gsforge/
+pip install ./GSForge/
 ```
