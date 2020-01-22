@@ -10,8 +10,9 @@ import numpy as np
 
 from textwrap import dedent
 
+
 # Local imports.
-from .. import utils
+# from .. import utils
 
 
 # TODO: Feature: Automatic GeneSet replicate combination?
@@ -37,7 +38,7 @@ class GeneSet(param.Parameterized):
     support_index_name = param.String(default="support", doc=dedent("""\
     This parameter controls which variable should be considered to be the
     (boolean) variable indicating membership in this GeneSet."""))
-    
+
     gene_index_name = param.String(default="Gene", doc=dedent("""\
     This parameter controls which variable from the `Xarray.Dataset` should be 
     considered to be the 'gene index' coordinate.
@@ -54,24 +55,38 @@ class GeneSet(param.Parameterized):
         percent_support = support_size / self.data['Gene'].shape[0]
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
-        summary += [f"    Supported Genes:  {support_size}, {percent_support:.2%} of {self.data[self.gene_index_name].shape[0]}"]
+        summary += [
+            f"    Supported Genes:  {support_size}, {percent_support:.2%} of {self.data[self.gene_index_name].shape[0]}"]
         return "\n".join(summary)
 
+    @property
+    def gene_index(self):
+        """
+        Returns the entire gene index of this GeneSet object as an ``xarray.DataArray``.
+
+        The variable or coordinate that this returns is controlled by the ``gene_index_name``
+        parameter.
+
+        :return:
+            The entire gene index of this GeneSet as an ``xarray.DataArray``.
+        """
+        return self.data[self.gene_index_name].copy(deep=True)
+
     def gene_support(self) -> np.array:
-        """Returns the list of genes 'supported in this GeneSet.
+        """
+        Returns the list of genes 'supported in this GeneSet.
 
         The value that this return is (by default) controlled by the self.support_index_name
         parameter.
 
-        :return: A numpy array of the genes 'supported' by this GeneSet.
+        :return:
+            A numpy array of the genes 'supported' by this GeneSet.
         """
-        # TODO: Consider implementing an override for the target variable.
         if self.support_index_name in self.data:
             supported_genes = self.data[self.gene_index_name].sel(
                 {self.gene_index_name: (self.data[self.support_index_name] == True)}).values.copy()
             return self.data[self.gene_index_name].sel({self.gene_index_name: supported_genes}).values.copy()
         else:
-            # TODO: Implement proper warnings.
             Warning("Warning, no boolean support array found. Returning the complete "
                     "set of genes in this GeneSet.")
             return self.data[self.gene_index_name].values.copy()
@@ -94,7 +109,7 @@ class GeneSet(param.Parameterized):
         top_k_indexes = np.argsort(np.abs(scores))[-k:]
         top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes})[self.gene_index_name].values.copy()
         return top_k_genes
-        
+
     def k_best_genes(self, k=100, score_name=None) -> np.array:
         """Select the highest scoring genes from the 'score_name' variable.
 
@@ -171,7 +186,7 @@ class GeneSet(param.Parameterized):
         if genes is not None:
             dataframe["Gene"] = genes
             dataframe = dataframe.set_index("Gene")
-        
+
         if dataframe.index.name is None:
             dataframe.index.name = "Gene"
         else:
@@ -208,21 +223,63 @@ class GeneSet(param.Parameterized):
         return cls(**params)
 
     @staticmethod
-    def parse_GeneSets(gene_sets, complete_gene_index, attrs=None, **params):
-        gene_set_dict = {k: v.gene_support() for k, v in gene_sets.items()}
-        gene_set_union = functools.reduce(np.intersect1d, gene_set_dict.values())
-        data = xr.Dataset({"support": (["Gene"], np.isin(complete_gene_index, gene_set_union))},
-                          coords={"Gene": complete_gene_index})
+    def parse_GeneSets(*gene_sets, mode: str = "union", attrs=None, **params):
+        """
+        Combines the GeneSet objects given using ``mode`` to create a single new
+        GeneSet object.
+
+        Since the complete gene index is not necessarily known, it must minimally
+        be the union of all genes included in the provided gene sets.
+
+        :param gene_sets:
+            One or more ``GSForge.GeneSet`` objects.
+
+        :param mode:
+            Mode by which the gene_sets should be combined. Options are "union"
+            or "intersection".
+
+        :param attrs:
+            Optional attributes for the combined GeneSet. These attributes are
+            added to the ``GeneSet.data.attrs`` attribute.
+
+        :param params:
+            Keyword parameters for the GeneSet object to be initialized with.
+
+        :return:
+            A new GeneSet object that contains genes from the provided ``gene_sets``.
+        """
+        # Get the mode function from the dictionary of options.
+        modes = {"union": lambda sets: functools.reduce(np.union1d, sets),
+                 "intersection": lambda sets: functools.reduce(np.intersect1d, sets)}
+        mode_fn = modes[mode]
+
+        # Construct the minimal 'complete' gene index for the new GeneSet.
+        gene_index = functools.reduce(np.union1d, [gs.gene_index.values for gs in gene_sets])
+
+        # Construct the new support array based on the mode selected.
+        gene_support = mode_fn([gs.gene_support() for gs in gene_sets])
+
+        # Construct the new xarray.Dataset object.
+        data = xr.Dataset(
+            {"support": (["Gene"], np.isin(gene_index, gene_support))},
+            coords={"Gene": gene_index})
+
         if attrs is not None:
             data = data.assign_attrs(attrs)
+
         return {"data": data, **params}
 
     @classmethod
-    def from_GeneSets(cls, gene_sets, complete_gene_index, attrs=None, **params):
-        """Create a new GeneSet by combining all the genes in the given GeneSets.
-        No variables or attributes from the original GeneSets are maintained in this process."""
-        params = cls.parse_GeneSets(gene_sets=gene_sets, complete_gene_index=complete_gene_index,
-                                    attrs=attrs, **params)
+    def from_GeneSets(cls, *gene_sets, mode: str = "union", attrs=None, **params):
+        """
+        Create a new GeneSet by combining all the genes in the given GeneSets.
+
+        No variables or attributes from the original GeneSets are maintained in this process.
+        """
+        params = cls.parse_GeneSets(*gene_sets,
+                                    mode=mode,
+                                    attrs=attrs,
+                                    **params)
         return cls(**params)
 
     @classmethod

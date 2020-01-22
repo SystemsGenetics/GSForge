@@ -8,8 +8,12 @@ import xarray as xr
 
 from textwrap import dedent
 
-import GSForge.utils._input
-from .. import utils
+from ._utils import (
+    infer_xarray_variables,
+    xrarray_gem_from_pandas,
+    load_count_df,
+    load_label_df,
+)
 
 
 class AnnotatedGEM(param.Parameterized):
@@ -119,9 +123,9 @@ class AnnotatedGEM(param.Parameterized):
         if gene_annots:
             skip += gene_annots
 
-        return utils.infer_xarray_variables(xr_dataset=self.data,
-                                            quantile_size=quantile_size,
-                                            skip=skip)
+        return infer_xarray_variables(xr_dataset=self.data,
+                                      quantile_size=quantile_size,
+                                      skip=skip)
 
     @staticmethod
     def _parse_xarray_dataset(data, **params):
@@ -144,7 +148,7 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def _parse_pandas(cls, count_df, label_df, **params):
-        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         return {"data": data, **params}
 
     @classmethod
@@ -163,7 +167,7 @@ class AnnotatedGEM(param.Parameterized):
 
         :return: An instance of the `GEM` class.
         """
-        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
         instance = super().__new__(cls)
         instance.set_param(**params)
@@ -180,12 +184,12 @@ class AnnotatedGEM(param.Parameterized):
         if label_path:
             label_path = str(pathlib.Path(label_path).expanduser().resolve())
 
-        count_df = utils.load_count_df(count_path=count_path, **count_kwargs)
+        count_df = load_count_df(count_path=count_path, **count_kwargs)
 
         if label_path:
             if label_kwargs is None:
                 label_kwargs = dict(index_col=0)
-            label_df = utils.load_label_df(label_path=label_path, **label_kwargs)
+            label_df = load_label_df(label_path=label_path, **label_kwargs)
         else:
             label_df = None
 
@@ -196,7 +200,7 @@ class AnnotatedGEM(param.Parameterized):
             load your data in to `pandas.DataFrame` objects and provide them to the
             `AnnotatedGEM.from_pandas` constructor instead."""))
 
-        data = GSForge.utils._input.xrarray_gem_from_pandas(count_df, label_df)
+        data = xrarray_gem_from_pandas(count_df, label_df)
 
         return {"data": data, **params}
 

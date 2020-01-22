@@ -1,11 +1,16 @@
 import json
 import inspect
 
+from ..models import GeneSet, GeneSetCollection
+
+
 __all__ = [
     "get_by_json_attr",
     "filter_by_json_attr",
     "params_to_json",
     "kwargs_overlap",
+    "merge_collections",
+    "merge_and_combine_collections",
 ]
 
 
@@ -50,3 +55,48 @@ def kwargs_overlap(paramaterized, func):
     key_set = set(inspect.signature(func).parameters.keys()
                   ).intersection(set(paramaterized.param.objects().keys()))
     return {key: getattr(paramaterized, key) for key in key_set}
+
+
+def merge_collections(*collections, **params):
+    """
+    Merge the GeneSetCollection objects provided into a single GeneSetCollection.
+
+    This merges all of the collection gene_set dictionaries, and returns them
+    within a single GeneSetCollection object.
+
+    :param collections:
+        GeneSetCollection objects, these should be named (via the name parameter)
+        for the output dictionary to be interpretable.
+
+    :param params:
+        Keyword parameters to be passed to the new GeneSetCollection.
+
+    :returns:
+        A new GeneSetCollection.
+    """
+    new_gene_set_dict = dict()
+    for coll in collections:
+        new_gene_set_dict = {**coll.gene_sets, **new_gene_set_dict}
+    return GeneSetCollection(gene_sets=new_gene_set_dict, **params)
+
+
+def merge_and_combine_collections(*collections, **params):
+    """
+    Merge the GeneSets within the given GeneSetCollection objects provided and then
+    combine them into a a single GeneSetCollection.
+
+    :param collections:
+        GeneSetCollection objects, these should be named (via the name parameter)
+        for the output dictionary to be interpretable.
+
+    :param params:
+        Keyword parameters to be passed to the new GeneSetCollection.
+
+    :return:
+        A new GeneSetCollection.
+    """
+    new_gene_set_dict = dict()
+    for coll in collections:
+        gene_sets = list(coll.gene_sets.values())
+        new_gene_set_dict[coll.name] = GeneSet.from_GeneSets(*gene_sets)
+    return GeneSetCollection(gene_sets=new_gene_set_dict, **params)
