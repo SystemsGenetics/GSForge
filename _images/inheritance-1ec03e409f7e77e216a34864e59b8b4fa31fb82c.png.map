@@ -1,0 +1,7 @@
+<map id="inheritance3637331df8" name="inheritance3637331df8">
+<area shape="rect" id="node1" title="The Interface provides common API access for interacting with the `AnnotatedGEM` and" alt="" coords="298,5,521,27"/>
+<area shape="rect" id="node3" title="Abstract class for a GEMOperation." alt="" coords="588,27,921,49"/>
+<area shape="rect" id="node2" title="params(name=String)" alt="" coords="5,27,231,49"/>
+<area shape="rect" id="node4" title="params(name=String)" alt="" coords="273,48,546,70"/>
+<area shape="rect" id="node5" href="#GSForge.operations.get_data" target="_top" title="Gets the GEM matrix and an optional annotation column." alt="" coords="963,27,1147,49"/>
+</map>

@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>AnnotatedGEM from pandas — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../_static/css/main.css" rel="stylesheet"/>
+<link href="../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../_static/js/main.js"></script>
+<script src="../_static/nbsite.js"></script>
+<script src="../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/user_guide/AnnotatedGEM_from_pandas.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../index.html">
+<img alt="Logo" src="../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="index.html">User Guide</a></li>
+<li class="nav-link"><a href="../Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">User Guide</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">AnnotatedGEM from pandas</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GEM_Normalization.html">GEM Normalization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="Selecting_Genes_with_Boruta.html">Selecting Genes with Boruta</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GeneSet_Analysis.html">GeneSet Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting_guide/index.html">Plotting Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="workflow_guide/index.html">Workflow Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="R_integration_guide/index.html">R-Integration Guide</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<div class="section" id="annotatedgem-from-pandas">
+<h1>AnnotatedGEM from pandas<a class="headerlink" href="#annotatedgem-from-pandas" title="Permalink to this headline">¶</a></h1>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>This notebook describes how to create and save an <code>AnnotatedGEM</code> object from separate count and label text files.</p>
+<p>A count matrix and an annotation table are often created as separate text files.
+The count matrix is often formatted with samples as columns and genes as rows due to the way counts are calculated.
+An annotation file must have a matching 'sample' index to the count file.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Downloading the demo data</em></strong></p>
+<p>A demo gene expression matrix and accompanying annotation text files are stored in a public <a href="">OSF</a> project.
+You can download them by:</p>
+<ul>
+<li>Navigating to the <a href="https://osf.io/t3xpw/">data repository on osf</a> and manually download them.</li>
+</ul>
+<p>or</p>
+<ul>
+<li>Installing the <a href="https://osfclient.readthedocs.io/en/latest/index.html">OSF CLI utility</a> and clone to a directory:<div class="highlight"><pre><span></span>osf -p rbhfz clone ~/GSForge_demo_data
+</pre></div>
+</li>
+</ul>
+<p>The paths used in this example assume the second method was used.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Declaring used paths</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [1]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="c1"># OS-independent path management.</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">fspath</span><span class="p">,</span> <span class="n">environ</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Declare the OSF project directory path.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [2]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">OSF_PATH</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"GSFORGE_DEMO_DATA"</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">"~/GSForge_demo_data"</span><span class="p">))</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+<span class="n">OSF_PATH</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[2]:</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>PosixPath('/home/travis/GSForge_demo_data')</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>View the files within:</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [3]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="nb">list</span><span class="p">(</span><span class="n">OSF_PATH</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">"**/*"</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[3]:</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>[PosixPath('/home/travis/GSForge_demo_data/osfstorage'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/rice.nc'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/srx_sample_annots.txt'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/rice_heat_drought.GEM.raw.txt'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/boruta_gene_sets'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/DEG_gene_sets'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/all.gff3'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/boruta_gene_sets/Boruta_Treatment.nc'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/boruta_gene_sets/Boruta_Genotype.nc'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/boruta_gene_sets/Boruta_Subspecies.nc'),
+ PosixPath('/home/travis/GSForge_demo_data/osfstorage/DEG_gene_sets/deseq2_treatment.nc')]</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Declare the paths to the count and label files.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [4]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">COUNT_PATH</span> <span class="o">=</span> <span class="n">OSF_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"osfstorage"</span><span class="p">,</span> <span class="s2">"rice_heat_drought.GEM.raw.txt"</span><span class="p">)</span>
+<span class="n">LABEL_PATH</span> <span class="o">=</span> <span class="n">OSF_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"osfstorage"</span><span class="p">,</span> <span class="s2">"srx_sample_annots.txt"</span><span class="p">)</span>
+<span class="n">GFF3_PATH</span> <span class="o">=</span> <span class="n">OSF_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"osfstorage"</span><span class="p">,</span> <span class="s2">"all.gff3"</span><span class="p">)</span>
+<span class="n">AGEM_PATH</span> <span class="o">=</span> <span class="n">OSF_PATH</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">"osfstorage"</span><span class="p">,</span> <span class="s2">"rice.nc"</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Ensure these files exsist.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [5]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="n">COUNT_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">LABEL_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+<span class="k">assert</span> <span class="n">GFF3_PATH</span><span class="o">.</span><span class="n">exists</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr/>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Preparing the notebook</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [6]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">GSForge</span> <span class="k">as</span> <span class="nn">gsf</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Loading-data-with-pandas">Loading data with <code>pandas</code><a class="anchor-link" href="#Loading-data-with-pandas">¶</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Loading the count matrix</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [7]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">count_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">COUNT_PATH</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 1.5 s, sys: 324 ms, total: 1.82 s
+Wall time: 1.82 s
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [8]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">count_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[8]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>SRX1423934</th>
+<th>SRX1423935</th>
+<th>SRX1423936</th>
+<th>SRX1423937</th>
+<th>SRX1423938</th>
+<th>SRX1423939</th>
+<th>SRX1423940</th>
+<th>SRX1423941</th>
+<th>SRX1423942</th>
+<th>SRX1423943</th>
+<th>...</th>
+<th>SRX1424399</th>
+<th>SRX1424400</th>
+<th>SRX1424401</th>
+<th>SRX1424402</th>
+<th>SRX1424403</th>
+<th>SRX1424404</th>
+<th>SRX1424405</th>
+<th>SRX1424406</th>
+<th>SRX1424407</th>
+<th>SRX1424408</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>LOC_Os06g05820</th>
+<td>20</td>
+<td>2</td>
+<td>22</td>
+<td>11</td>
+<td>23</td>
+<td>39</td>
+<td>24</td>
+<td>34</td>
+<td>33</td>
+<td>20</td>
+<td>...</td>
+<td>5</td>
+<td>20</td>
+<td>20</td>
+<td>38</td>
+<td>35</td>
+<td>43</td>
+<td>25</td>
+<td>8</td>
+<td>8</td>
+<td>21</td>
+</tr>
+<tr>
+<th>LOC_Os10g27460</th>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<th>LOC_Os02g35980</th>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<th>LOC_Os09g23260</th>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<th>LOC_Os01g41670</th>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>...</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>2</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>5 rows × 475 columns</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Loading the annotation table</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [9]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="o">%%time</span>
+<span class="n">label_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">LABEL_PATH</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt"></div>
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>CPU times: user 4.01 ms, sys: 0 ns, total: 4.01 ms
+Wall time: 3.61 ms
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [10]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">label_df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[10]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>SampleSRR</th>
+<th>Treatment</th>
+<th>Time</th>
+<th>Tissue</th>
+<th>Genotype</th>
+<th>Subspecies</th>
+</tr>
+<tr>
+<th>Sample</th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>SRX1423934</th>
+<td>SRR2931040</td>
+<td>CONTROL</td>
+<td>15</td>
+<td>leaf</td>
+<td>AZ</td>
+<td>Japonica</td>
+</tr>
+<tr>
+<th>SRX1423935</th>
+<td>SRR2931041</td>
+<td>CONTROL</td>
+<td>15</td>
+<td>leaf</td>
+<td>AZ</td>
+<td>Japonica</td>
+</tr>
+<tr>
+<th>SRX1423936</th>
+<td>SRR2931042</td>
+<td>CONTROL</td>
+<td>30</td>
+<td>leaf</td>
+<td>AZ</td>
+<td>Japonica</td>
+</tr>
+<tr>
+<th>SRX1423937</th>
+<td>SRR2931043</td>
+<td>CONTROL</td>
+<td>30</td>
+<td>leaf</td>
+<td>AZ</td>
+<td>Japonica</td>
+</tr>
+<tr>
+<th>SRX1423938</th>
+<td>SRR2931044</td>
+<td>CONTROL</td>
+<td>45</td>
+<td>leaf</td>
+<td>AZ</td>
+<td>Japonica</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Ensure sample indexes overlap</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Check that the number of samples is the same in both files, and that their overlap is that same length.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [11]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">count_df</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">label_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">count_df</span><span class="o">.</span><span class="n">columns</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Combine-the-dataframes-into-an-AnnotatedGEM:">Combine the dataframes into an AnnotatedGEM:<a class="anchor-link" href="#Combine-the-dataframes-into-an-AnnotatedGEM:">¶</a></h3><p><code>AnnotatedGEM.from_pandas</code> does a bit of data wrangling, and loads the data into a single <code>xarray.Dataset</code>.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [12]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">agem</span> <span class="o">=</span> <span class="n">gsf</span><span class="o">.</span><span class="n">AnnotatedGEM</span><span class="o">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">count_df</span><span class="o">=</span><span class="n">count_df</span><span class="p">,</span> <span class="n">label_df</span><span class="o">=</span><span class="n">label_df</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"Rice"</span><span class="p">)</span>
+<span class="n">agem</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[12]:</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;GSForge.AnnotatedGEM&gt;
+Name: Rice
+Selected GEM Variable: 'counts'
+    Gene   55986
+    Sample 475</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Examine the data</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [13]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">agem</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[13]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<pre>&lt;xarray.Dataset&gt;
+Dimensions:     (Gene: 55986, Sample: 475)
+Coordinates:
+  * Sample      (Sample) object 'SRX1423934' 'SRX1423935' ... 'SRX1424408'
+  * Gene        (Gene) object 'LOC_Os06g05820' ... 'LOC_Os07g03418'
+Data variables:
+    SampleSRR   (Sample) object 'SRR2931040' 'SRR2931041' ... 'SRR2931514'
+    Treatment   (Sample) object 'CONTROL' 'CONTROL' ... 'RECOV_DROUGHT'
+    Time        (Sample) int64 15 15 30 30 45 45 60 ... 240 240 270 270 300 300
+    Tissue      (Sample) object 'leaf' 'leaf' 'leaf' ... 'leaf' 'leaf' 'leaf'
+    Genotype    (Sample) object 'AZ' 'AZ' 'AZ' 'AZ' 'AZ' ... 'TD' 'TD' 'TD' 'TD'
+    Subspecies  (Sample) object 'Japonica' 'Japonica' ... 'Indica' 'Indica'
+    counts      (Sample, Gene) int64 20 0 0 0 0 0 200 ... 19 0 52 335 0 666 0</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p><strong><em>Add gene annotations</em></strong></p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [14]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">GFF3_PATH</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">"#"</span><span class="p">,</span>
+             <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">'seqname'</span><span class="p">,</span> <span class="s1">'source'</span><span class="p">,</span> <span class="s1">'feature'</span><span class="p">,</span> <span class="s1">'start'</span><span class="p">,</span> <span class="s1">'end'</span><span class="p">,</span>
+                    <span class="s1">'score'</span><span class="p">,</span> <span class="s1">'strand'</span><span class="p">,</span> <span class="s1">'frame'</span><span class="p">,</span> <span class="s1">'attribute'</span><span class="p">])</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[14]:</div>
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped="">
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+<thead>
+<tr style="text-align: right;">
+<th></th>
+<th>seqname</th>
+<th>source</th>
+<th>feature</th>
+<th>start</th>
+<th>end</th>
+<th>score</th>
+<th>strand</th>
+<th>frame</th>
+<th>attribute</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th>0</th>
+<td>Chr1</td>
+<td>MSU_osa1r7</td>
+<td>gene</td>
+<td>2903</td>
+<td>10817</td>
+<td>.</td>
+<td>+</td>
+<td>.</td>
+<td>ID=LOC_Os01g01010;Name=LOC_Os01g01010;Note=TBC...</td>
+</tr>
+<tr>
+<th>1</th>
+<td>Chr1</td>
+<td>MSU_osa1r7</td>
+<td>mRNA</td>
+<td>2903</td>
+<td>10817</td>
+<td>.</td>
+<td>+</td>
+<td>.</td>
+<td>ID=LOC_Os01g01010.1;Name=LOC_Os01g01010.1;Pare...</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [15]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">extract_gff3_gene_lengths</span><span class="p">(</span><span class="n">gff3_file</span><span class="p">):</span>
+    <span class="sd">"""A custom function to extract gene lengths."""</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">gff3_file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">"</span><span class="se">\t</span><span class="s2">"</span><span class="p">,</span> <span class="n">comment</span><span class="o">=</span><span class="s2">"#"</span><span class="p">,</span>
+                     <span class="n">names</span><span class="o">=</span><span class="p">[</span><span class="s1">'seqname'</span><span class="p">,</span> <span class="s1">'source'</span><span class="p">,</span> <span class="s1">'feature'</span><span class="p">,</span> <span class="s1">'start'</span><span class="p">,</span> <span class="s1">'end'</span><span class="p">,</span>
+                            <span class="s1">'score'</span><span class="p">,</span> <span class="s1">'strand'</span><span class="p">,</span> <span class="s1">'frame'</span><span class="p">,</span> <span class="s1">'attribute'</span><span class="p">])</span>
+    <span class="n">gene_ids</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s2">"attribute"</span><span class="p">]</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">extract</span><span class="p">(</span><span class="sa">r</span><span class="s2">"ID=(\w+)"</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">gene_ids</span><span class="o">.</span><span class="n">notna</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">]</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">'Gene'</span><span class="p">]</span> <span class="o">=</span> <span class="n">gene_ids</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop_duplicates</span><span class="p">(</span><span class="s2">"Gene"</span><span class="p">)</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Gene"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">df</span><span class="p">[</span><span class="s2">"end"</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s2">"start"</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Because gene_lengths is already (hopefully) indexed correctly, it is trivial to incorporate into our AnnotatedGEM.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [16]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">gene_lengths</span> <span class="o">=</span> <span class="n">extract_gff3_gene_lengths</span><span class="p">(</span><span class="n">GFF3_PATH</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [17]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">agem</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"lengths"</span><span class="p">]</span> <span class="o">=</span> <span class="n">gene_lengths</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Save-the-AnnotatedGEM">Save the <code>AnnotatedGEM</code><a class="anchor-link" href="#Save-the-AnnotatedGEM">¶</a></h3>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [18]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">agem</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">AGEM_PATH</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[18]:</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>PosixPath('/home/travis/GSForge_demo_data/osfstorage/rice.nc')</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Creating-an-AnnotatedGEM-from-files">Creating an AnnotatedGEM from files<a class="anchor-link" href="#Creating-an-AnnotatedGEM-from-files">¶</a></h3><p>If you are fortunate enough to have consistenly formatted data (like the above example) you can directly load your data into an AnnotatedGEM.</p>
+<p>If you do not provide a sep argument in the count_kwargs or label_kwargs dictionaries, GEMprospector will attempt to infer it by reading the first line of each file.</p>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In [19]:</div>
+<div class="inner_cell">
+<div class="input_area">
+<div class="highlight hl-ipython3"><pre><span></span><span class="n">agem</span> <span class="o">=</span> <span class="n">gsf</span><span class="o">.</span><span class="n">AnnotatedGEM</span><span class="o">.</span><span class="n">from_files</span><span class="p">(</span>
+    <span class="n">count_path</span><span class="o">=</span><span class="n">COUNT_PATH</span><span class="p">,</span>
+    <span class="n">label_path</span><span class="o">=</span><span class="n">LABEL_PATH</span><span class="p">,</span>
+    <span class="c1"># These are the default arguments passed to from_files,</span>
+    <span class="c1"># to the individual calls to `pandas.read_csv`.</span>
+    <span class="n">count_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">label_kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">agem</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="output_wrapper">
+<div class="output">
+<div class="output_area">
+<div class="prompt output_prompt">Out[19]:</div>
+<div class="output_text output_subarea output_execute_result">
+<pre>&lt;GSForge.AnnotatedGEM&gt;
+Name: AnnotatedGEM01384
+Selected GEM Variable: 'counts'
+    Gene   55986
+    Sample 475</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<hr/>
+</div>
+</div>
+</div>
+<hr class="docutils">
+<p><a class="reference external" href="https://raw.githubusercontent.com/SystemsGenetics/GSForge/master/examples/user_guide/AnnotatedGEM_from_pandas.ipynb">Right click to download this notebook from GitHub.</a></p>
+</hr></div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../Welcome.html">Welcome</a></li>
+<li><a href="index.html">User Guide</a></li>
+<li><a href="../Reference_Manual/index.html">API</a></li>
+<li><a href="../Development.html">Developer Guide</a></li>
+<li><a href="../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

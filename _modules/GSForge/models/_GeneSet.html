@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>GSForge.models._GeneSet — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/css/main.css" rel="stylesheet"/>
+<link href="../../../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../../../_static/js/main.js"></script>
+<script src="../../../_static/nbsite.js"></script>
+<script src="../../../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/_modules/GSForge/models/_GeneSet.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../../../index.html">
+<img alt="Logo" src="../../../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../../../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../../../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="../../../user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="../../../Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="../../../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../../../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../../../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<h1>Source code for GSForge.models._GeneSet</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">param</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">dedent</span>
+
+
+<span class="c1"># Local imports.</span>
+<span class="c1"># from .. import utils</span>
+
+
+<span class="c1"># TODO: Feature: Automatic GeneSet replicate combination?</span>
+<span class="c1">#       + From name or some hash, and by:</span>
+<span class="c1">#       + By membership</span>
+<span class="c1">#       + By filter_function(variables)</span>
+<span class="c1"># TODO: Add support inference?</span>
+<span class="c1">#       Create the boolean support array from a variable in the given data parameter.</span>
+<div class="viewcode-block" id="GeneSet"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet">[docs]</a><span class="k">class</span> <span class="nc">GeneSet</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">Parameterized</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    A data class for a the result of a gene selection or analysis.</span>
+
+<span class="sd">    A GeneSet can also be a measurement or ranking of a set of genes,</span>
+<span class="sd">    and this could include all of the 'available' genes. In such cases</span>
+<span class="sd">    a boolean array 'support' indicates membership in the GeneSet.</span>
+<span class="sd">    """</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">allow_None</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    Contains a gene-index `Xarray.Dataset` object, it should have</span>
+<span class="s2">    only those genes that are considered 'within' the GeneSet</span>
+<span class="s2">    in the index, or a boolean variable named 'support'."""</span><span class="p">))</span>
+
+    <span class="n">support_index_name</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"support"</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    This parameter controls which variable should be considered to be the</span>
+<span class="s2">    (boolean) variable indicating membership in this GeneSet."""</span><span class="p">))</span>
+
+    <span class="n">gene_index_name</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"Gene"</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    This parameter controls which variable from the `Xarray.Dataset` should be </span>
+<span class="s2">    considered to be the 'gene index' coordinate.</span>
+<span class="s2">    Consider using this if you require different coordinate names."""</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">_geneset_dispatch</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""Display a summary of this GeneSet."""</span>
+        <span class="n">support_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gene_support</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">percent_support</span> <span class="o">=</span> <span class="n">support_size</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">'Gene'</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"&lt;GSForge.{type(self).__name__}&gt;"</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"Name: </span><span class="si">{self.name}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s2">"    Supported Genes:  </span><span class="si">{support_size}</span><span class="s2">, </span><span class="si">{percent_support:.2%}</span><span class="s2"> of </span><span class="si">{self.data[self.gene_index_name].shape[0]}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gene_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Returns the entire gene index of this GeneSet object as an ``xarray.DataArray``.</span>
+
+<span class="sd">        The variable or coordinate that this returns is controlled by the ``gene_index_name``</span>
+<span class="sd">        parameter.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            The entire gene index of this GeneSet as an ``xarray.DataArray``.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GeneSet.gene_support"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.gene_support">[docs]</a>    <span class="k">def</span> <span class="nf">gene_support</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">"""</span>
+<span class="sd">        Returns the list of genes 'supported in this GeneSet.</span>
+
+<span class="sd">        The value that this return is (by default) controlled by the self.support_index_name</span>
+<span class="sd">        parameter.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            A numpy array of the genes 'supported' by this GeneSet.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">support_index_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">supported_genes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">(</span>
+                <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">:</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">support_index_name</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)})</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">sel</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">:</span> <span class="n">supported_genes</span><span class="p">})</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="ne">Warning</span><span class="p">(</span><span class="s2">"Warning, no boolean support array found. Returning the complete "</span>
+                    <span class="s2">"set of genes in this GeneSet."</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="GeneSet.set_gene_support"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.set_gene_support">[docs]</a>    <span class="k">def</span> <span class="nf">set_gene_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">genes</span><span class="p">):</span>
+        <span class="sd">"""Set this GeneSet support to the given genes."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">support_index_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">,),</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Gene</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">genes</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">set_boolean_support</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">variable</span><span class="p">):</span>
+        <span class="n">support</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">variable</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">support_index_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">,),</span> <span class="n">support</span><span class="p">)</span>
+
+    <span class="c1"># TODO: Combine with k_best_genes as a mode or option.</span>
+    <span class="k">def</span> <span class="nf">k_abs_best_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">score_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1">#     Fixes Issue #1240: NaNs can't be properly compared, so change them to the</span>
+        <span class="c1">#     smallest value of scores's dtype. -inf seems to be unreliable.</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">score_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">scores</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">scores</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">min</span>
+
+        <span class="n">top_k_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">scores</span><span class="p">))[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
+        <span class="n">top_k_genes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">isel</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">:</span> <span class="n">top_k_indexes</span><span class="p">})[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">top_k_genes</span>
+
+<div class="viewcode-block" id="GeneSet.k_best_genes"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.k_best_genes">[docs]</a>    <span class="k">def</span> <span class="nf">k_best_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">score_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">"""Select the highest scoring genes from the 'score_name' variable.</span>
+
+<span class="sd">        :param k: The number of genes to return.</span>
+
+<span class="sd">        :param score_name: The variable name to rank genes by.</span>
+
+<span class="sd">        :return: A numpy array of the top k genes based on their scores in `score_name`.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Look for a variable name that ends in "_score" if none is given.</span>
+        <span class="k">if</span> <span class="n">score_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="s2">"_scores"</span> <span class="ow">in</span> <span class="n">var_name</span><span class="p">:</span>
+                    <span class="n">score_name</span> <span class="o">=</span> <span class="n">var_name</span>
+                    <span class="k">break</span>  <span class="c1"># Use the first match.</span>
+
+        <span class="n">scores</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">score_name</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">scores</span> <span class="o">=</span> <span class="n">scores</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">scores</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">min</span>
+        <span class="n">top_k_indexes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">scores</span><span class="p">)[</span><span class="o">-</span><span class="n">k</span><span class="p">:]</span>
+        <span class="n">top_k_genes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">isel</span><span class="p">({</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">:</span> <span class="n">top_k_indexes</span><span class="p">})</span><span class="o">.</span><span class="n">Gene</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">top_k_genes</span></div>
+
+<div class="viewcode-block" id="GeneSet.q_best_genes"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.q_best_genes">[docs]</a>    <span class="k">def</span> <span class="nf">q_best_genes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">q</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">score_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">:</span>
+        <span class="sd">"""Returns a numpy array of the q best genes based on the quantile `q`,</span>
+<span class="sd">        and the target variable `score_name`.</span>
+
+<span class="sd">        :param q: The quantile cutoff.</span>
+
+<span class="sd">        :param score_name: The target variable to judge the genes by.</span>
+
+<span class="sd">        :return: A numpy array of the top `q` quantile genes based on `score_name`.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">score_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">var_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="s2">"_scores"</span> <span class="ow">in</span> <span class="n">var_name</span><span class="p">:</span>
+                    <span class="n">score_name</span> <span class="o">=</span> <span class="n">var_name</span>
+                    <span class="k">break</span>  <span class="c1"># Use the first match.</span>
+
+        <span class="n">quantile_score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">score_name</span><span class="p">]</span><span class="o">.</span><span class="n">quantile</span><span class="p">(</span><span class="n">q</span><span class="o">=</span><span class="n">q</span><span class="p">)</span>
+        <span class="n">quantile_selection</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">score_name</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">quantile_score</span><span class="p">)</span>
+        <span class="n">top_q_genes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">sel</span><span class="p">({</span><span class="s2">"Gene"</span><span class="p">:</span> <span class="n">quantile_selection</span><span class="p">})</span><span class="o">.</span><span class="n">Gene</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">top_q_genes</span></div>
+
+    <span class="c1"># TODO: Ensure 'attrs' get added to the dataset if they are found in params.</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">existing_params</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"__GSForge.GeneSet.params"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing_params</span><span class="p">:</span>
+            <span class="n">existing_params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">existing_params</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">existing_params</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse_netcdf_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">netcdf_path</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_xarray_dataset</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">netcdf_path</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">netcdf_path</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_xarray_dataset</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GeneSet.from_netcdf"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.from_netcdf">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_netcdf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""Construct a `GeneSet` object from a `netcdf` file path."""</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_xarray_dataset</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GeneSet.parse_pandas"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.parse_pandas">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_pandas</span><span class="p">(</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">genes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""Parse a `pandas.DataFrame` for use in a GeneSet."""</span>
+
+        <span class="k">if</span> <span class="n">genes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataframe</span><span class="p">[</span><span class="s2">"Gene"</span><span class="p">]</span> <span class="o">=</span> <span class="n">genes</span>
+            <span class="n">dataframe</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s2">"Gene"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">"Gene"</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"gene_index_name"</span><span class="p">:</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">dataframe</span><span class="o">.</span><span class="n">to_xarray</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_pandas</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">dataframe</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">genes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_pandas</span><span class="p">(</span><span class="n">dataframe</span><span class="o">=</span><span class="n">dataframe</span><span class="p">,</span> <span class="n">genes</span><span class="o">=</span><span class="n">genes</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_gene_array</span><span class="p">(</span><span class="n">selected_gene_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">complete_gene_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">selected_gene_array</span> <span class="k">if</span> <span class="n">complete_gene_index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">complete_gene_index</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">({</span><span class="s2">"support"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">selected_gene_array</span><span class="p">))},</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"Gene"</span><span class="p">:</span> <span class="n">coords</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_gene_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">selected_gene_array</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">complete_gene_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_gene_array</span><span class="p">(</span><span class="n">selected_gene_array</span><span class="o">=</span><span class="n">selected_gene_array</span><span class="p">,</span>
+                                      <span class="n">complete_gene_index</span><span class="o">=</span><span class="n">complete_gene_index</span><span class="p">,</span>
+                                      <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GeneSet.parse_GeneSets"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.parse_GeneSets">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">parse_GeneSets</span><span class="p">(</span><span class="o">*</span><span class="n">gene_sets</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"union"</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Combines the GeneSet objects given using ``mode`` to create a single new</span>
+<span class="sd">        GeneSet object.</span>
+
+<span class="sd">        Since the complete gene index is not necessarily known, it must minimally</span>
+<span class="sd">        be the union of all genes included in the provided gene sets.</span>
+
+<span class="sd">        :param gene_sets:</span>
+<span class="sd">            One or more ``GSForge.GeneSet`` objects.</span>
+
+<span class="sd">        :param mode:</span>
+<span class="sd">            Mode by which the gene_sets should be combined. Options are "union"</span>
+<span class="sd">            or "intersection".</span>
+
+<span class="sd">        :param attrs:</span>
+<span class="sd">            Optional attributes for the combined GeneSet. These attributes are</span>
+<span class="sd">            added to the ``GeneSet.data.attrs`` attribute.</span>
+
+<span class="sd">        :param params:</span>
+<span class="sd">            Keyword parameters for the GeneSet object to be initialized with.</span>
+
+<span class="sd">        :return:</span>
+<span class="sd">            A new GeneSet object that contains genes from the provided ``gene_sets``.</span>
+<span class="sd">        """</span>
+        <span class="c1"># Get the mode function from the dictionary of options.</span>
+        <span class="n">modes</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"union"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">sets</span><span class="p">:</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">union1d</span><span class="p">,</span> <span class="n">sets</span><span class="p">),</span>
+                 <span class="s2">"intersection"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">sets</span><span class="p">:</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">,</span> <span class="n">sets</span><span class="p">)}</span>
+        <span class="n">mode_fn</span> <span class="o">=</span> <span class="n">modes</span><span class="p">[</span><span class="n">mode</span><span class="p">]</span>
+
+        <span class="c1"># Construct the minimal 'complete' gene index for the new GeneSet.</span>
+        <span class="n">gene_index</span> <span class="o">=</span> <span class="n">functools</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">union1d</span><span class="p">,</span> <span class="p">[</span><span class="n">gs</span><span class="o">.</span><span class="n">gene_index</span><span class="o">.</span><span class="n">values</span> <span class="k">for</span> <span class="n">gs</span> <span class="ow">in</span> <span class="n">gene_sets</span><span class="p">])</span>
+
+        <span class="c1"># Construct the new support array based on the mode selected.</span>
+        <span class="n">gene_support</span> <span class="o">=</span> <span class="n">mode_fn</span><span class="p">([</span><span class="n">gs</span><span class="o">.</span><span class="n">gene_support</span><span class="p">()</span> <span class="k">for</span> <span class="n">gs</span> <span class="ow">in</span> <span class="n">gene_sets</span><span class="p">])</span>
+
+        <span class="c1"># Construct the new xarray.Dataset object.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span>
+            <span class="p">{</span><span class="s2">"support"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">gene_index</span><span class="p">,</span> <span class="n">gene_support</span><span class="p">))},</span>
+            <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"Gene"</span><span class="p">:</span> <span class="n">gene_index</span><span class="p">})</span>
+
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="GeneSet.from_GeneSets"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.from_GeneSets">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_GeneSets</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">gene_sets</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"union"</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Create a new GeneSet by combining all the genes in the given GeneSets.</span>
+
+<span class="sd">        No variables or attributes from the original GeneSets are maintained in this process.</span>
+<span class="sd">        """</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">parse_GeneSets</span><span class="p">(</span><span class="o">*</span><span class="n">gene_sets</span><span class="p">,</span>
+                                    <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+                                    <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span>
+                                    <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_bool_array</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">bool_array</span><span class="p">,</span> <span class="n">genes</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">({</span><span class="s2">"support"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">bool_array</span><span class="p">)},</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"Gene"</span><span class="p">:</span> <span class="n">genes</span><span class="p">})</span>
+        <span class="k">if</span> <span class="n">attrs</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">assign_attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="c1"># TODO: Consider overwrite protection?</span>
+<div class="viewcode-block" id="GeneSet.save_as_netcdf"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.GeneSet.save_as_netcdf">[docs]</a>    <span class="k">def</span> <span class="nf">save_as_netcdf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">"""Save this GeneSet as a netcdf (.nc) file in the `target_dir` directory.</span>
+
+<span class="sd">        The default filename will be: `{GeneSet.name}.nc`, if the GeneSet does not</span>
+<span class="sd">        have a name, one must be provided via the `name` argument.</span>
+
+<span class="sd">        :param target_dir: The directory to place the saved GeneSet into.</span>
+
+<span class="sd">        :param name: The name to give the GeneSet upon saving.</span>
+
+<span class="sd">        :returns output_path: The path to which the file was saved.</span>
+<span class="sd">        """</span>
+        <span class="n">target_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span> <span class="k">if</span> <span class="n">target_dir</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">target_dir</span>
+
+        <span class="c1"># Create any needed intermediate directories.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">target_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">target_dir</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The GeneSet must be named, or you must pass a name to the save function."</span><span class="p">)</span>
+
+        <span class="n">active_name</span> <span class="o">=</span> <span class="n">name</span> <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="c1"># Remove any spaces in the active name.</span>
+        <span class="n">active_name</span> <span class="o">=</span> <span class="n">active_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">" "</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">)</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">target_dir</span><span class="p">,</span> <span class="n">active_name</span> <span class="o">+</span> <span class="s2">".nc"</span><span class="p">)</span>
+
+        <span class="c1"># Save some parameters that may be unique to this instance.</span>
+        <span class="n">params_to_save</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param_values</span><span class="p">()</span>
+                          <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)}</span>
+        <span class="n">params_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">params_to_save</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"__GSForge.GeneSet.params"</span><span class="p">:</span> <span class="n">params_str</span><span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">output_path</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">output_path</span></div></div>
+
+
+<span class="c1"># Python 3.8 will let us move this code into the class body, and add</span>
+<span class="c1"># add register the @classmethod functions.</span>
+<span class="nd">@functools</span><span class="o">.</span><span class="n">singledispatch</span>
+<span class="k">def</span> <span class="nf">_geneset_dispatch</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Source of type: {type(args[0])} not supported."</span><span class="p">)</span>
+
+
+<span class="n">_geneset_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">GeneSet</span><span class="o">.</span><span class="n">parse_netcdf_path</span><span class="p">)</span>
+<span class="n">_geneset_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">PosixPath</span><span class="p">,</span> <span class="n">GeneSet</span><span class="o">.</span><span class="n">parse_netcdf_path</span><span class="p">)</span>
+<span class="n">_geneset_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">GeneSet</span><span class="o">.</span><span class="n">parse_xarray_dataset</span><span class="p">)</span>
+<span class="n">_geneset_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">GeneSet</span><span class="o">.</span><span class="n">parse_pandas</span><span class="p">)</span>
+<span class="n">_geneset_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">GeneSet</span><span class="o">.</span><span class="n">parse_gene_array</span><span class="p">)</span>
+<span class="n">_geneset_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">GeneSet</span><span class="o">.</span><span class="n">parse_gene_array</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../../../Welcome.html">Welcome</a></li>
+<li><a href="../../../user_guide/index.html">User Guide</a></li>
+<li><a href="../../../Reference_Manual/index.html">API</a></li>
+<li><a href="../../../Development.html">Developer Guide</a></li>
+<li><a href="../../../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

@@ -1,0 +1,8 @@
+<map id="inheritance3af151baf3" name="inheritance3af151baf3">
+<area shape="rect" id="node1" title="The Interface provides common API access for interacting with the `AnnotatedGEM` and" alt="" coords="260,4,454,23"/>
+<area shape="rect" id="node3" title="Abstract class for a GEMOperation." alt="" coords="513,23,804,43"/>
+<area shape="rect" id="node2" title="params(name=String)" alt="" coords="4,23,201,43"/>
+<area shape="rect" id="node4" title="params(name=String)" alt="" coords="238,42,476,61"/>
+<area shape="rect" id="node5" href="#GSForge.operations.normalizations.ReadsPerKilobaseMillion" target="_top" title="RPKM or FPKM &#45;&#45; Reads or Fragments per per Kilobase Million." alt="" coords="841,4,1148,23"/>
+<area shape="rect" id="node6" href="#GSForge.operations.normalizations.UpperQuartile" target="_top" title="Under this normalization method, after removing genes having zero read counts for all samples," alt="" coords="865,42,1124,61"/>
+</map>

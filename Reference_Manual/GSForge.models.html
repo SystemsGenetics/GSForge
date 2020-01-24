@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>GSForge.models Package — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../_static/css/main.css" rel="stylesheet"/>
+<link href="../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../_static/js/main.js"></script>
+<script src="../_static/nbsite.js"></script>
+<script src="../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/Reference_Manual/GSForge.models.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../index.html">
+<img alt="Logo" src="../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="../user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="index.html">API</a></li>
+<li class="nav-link"><a href="../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GSForge.operations.html">operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GSForge.panels.html">panels</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GSForge.plots.html">plots</a></li>
+<li class="toctree-l2"><a class="reference internal" href="GSForge.utils.html">util</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<div class="section" id="gsforge-models-package">
+<h1>GSForge.models Package<a class="headerlink" href="#gsforge-models-package" title="Permalink to this headline">¶</a></h1>
+<hr class="docutils"/>
+<div class="section" id="models-package">
+<h2><code class="xref py py-mod docutils literal notranslate"><span class="pre">models</span></code> Package<a class="headerlink" href="#models-package" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-GSForge.models"></span><p>There are two ‘core’ data models in <em>GSForge</em>, both of which store their associated data
+in <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> object under a <code class="docutils literal notranslate"><span class="pre">data</span></code> attribute. You are encouraged to consult the
+<a class="reference external" href="http://xarray.pydata.org/en/stable/">xarray documentation</a>
+for how to perform any transform or selection not provided by <em>GSForge</em>.
+The two ‘core’ data classes are:</p>
+<dl class="simple">
+<dt><strong>AnnotatedGEM</strong></dt><dd><p>Contains the gene expression matrix, which is indexed by a ‘Gene’
+and ‘Sample’ coordinates. This <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> object also contains
+(but is not limited to) phenotype information as well.</p>
+</dd>
+<dt><strong>GeneSet</strong></dt><dd><p>A GeneSet is a set of genes and any associated values. A GeneSet
+can a set of ‘supported’ genes, <em>i.e.</em> genes that are ‘within’ a
+given GeneSet.</p>
+</dd>
+</dl>
+<p>The interface classes provide patterns of data access and common
+transformations that researchers may need from the core data classes. They are:</p>
+<dl class="simple">
+<dt><strong>GeneSetCollection</strong></dt><dd><p>The work-horse of the <em>GSForge</em> package. This object contains an
+<em>AnnotatedGEM</em> and a python dictionary of {name: GeneSet} objects.
+This class contains functions for comparing and analyzing <em>GeneSet</em>,
+as well as tools to pass of <em>GeneSet</em>-derived subsets to other functions.</p>
+</dd>
+<dt><strong>Interface</strong></dt><dd><p>The <em>Interface</em> object provides a common API to interacting with <em>AnnotatedGEM</em>
+or <em>GeneSetCollection</em>. It provides functions that facilitate pulling gene
+or sample subsets and access to any transforms of the count matrix.</p>
+</dd>
+<dt><strong>OperationInterface</strong></dt><dd><p>Aside from being abstract, this is the same as the above <em>Interface</em>, except
+this calls a single function as defined by <code class="docutils literal notranslate"><span class="pre">process</span></code> function in a subclass.</p>
+</dd>
+</dl>
+<a class="reference internal image-reference" href="../_images/GSForge_index_selection.svg"><img alt="GSForge Index Selection" src="../_images/GSForge_index_selection.svg" width="400"/></a>
+<dl class="class">
+<dt id="GSForge.models.AnnotatedGEM">
+<em class="property">class </em><code class="sig-prename descclassname">GSForge.models.</code><code class="sig-name descname">AnnotatedGEM</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_AnnotatedGEM.html#AnnotatedGEM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.AnnotatedGEM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">param.parameterized.Parameterized</span></code></p>
+<p>A data class for a gene expression matrix and any associated sample or
+gene annotations.</p>
+<p>This model holds the count expression matrix, and any associated labels
+or annotations as an <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> object under the <code class="docutils literal notranslate"><span class="pre">.data</span></code> attribute.
+By default this dataset will be expected to have its indexes named “Gene”
+and “Sample”, although there are parameters to override those arrays and
+index names used.</p>
+<p>An AnnotatedGEM object can be created with one of the class methods:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">from_files()</span></code></dt><dd><p>A helper function for loading disparate GEM and annotation files through
+pandas.read_csv().</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">from_pandas()</span></code></dt><dd><p>Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
+must share the same sample index.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">from_netcdf()</span></code></dt><dd><p>Reads in from a .nc filepath. Usually this means loading a previously
+created AnnotatedGEM.</p>
+</dd>
+</dl>
+<p><strong>Randomly generate a demo AnnotatedGEM</strong></p>
+<p># &gt;&gt;&gt; from sklearn.datasets import make_multilabel_classification
+# &gt;&gt;&gt; data, labels = make_multilabel_classification()
+# &gt;&gt;&gt; agem = AnnotatedGEM.from_pandas(pd.DataFrame(data), pd.DataFrame(labels), name=”Generated GEM”)</p>
+<p># &gt;&gt;&gt; agem
+# &lt;GSForge.AnnotatedGEM&gt;
+# Name: Generated GEM
+# Selected GEM Variable: ‘counts’
+#     Gene   100
+#     Sample 100</p>
+<p><strong>View the entire gene or sample index:</strong></p>
+<p># &gt;&gt;&gt; agem.gene_index
+# &lt;xarray.DataArray ‘Gene’ (Gene: 100)&gt;…</p>
+<p># &gt;&gt;&gt; agem.sample_index
+# &lt;xarray.DataArray ‘Sample’ (Sample: 100)&gt;…</p>
+<p># &gt;&gt;&gt; agem.infer_variables()
+# {‘all_labels’: …</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">data</span></code> = param.ClassSelector(class_=&lt;class ‘xarray.core.dataset.Dataset’&gt;)</dt><dd><p>An <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> object that contains the Gene Expression Matrix, and any 
+needed annotations. This <cite>xarray.Dataset</cite> object is expected to have a count 
+array named ‘counts’, that has coordinates (‘Gene’, ‘Sample’).</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_array_name</span></code> = param.String(default=’counts’)</dt><dd><p>This parameter controls which variable from the <cite>xarray.Dataset</cite> should be
+considered to be the ‘count’ variable.
+Consider using this if you require different index names, or wish to control 
+which count array among many should be used by default.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sample_index_name</span></code> = param.String(default=’Sample’)</dt><dd><p>This parameter controls which variable from the <cite>xarray.Dataset</cite> should be
+considered to be the ‘sample’ coordinate.
+Consider using this if you require different coordinate names.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_index_name</span></code> = param.String(default=’Gene’)</dt><dd><p>This parameter controls which variable from the <cite>Xarray.Dataset</cite> should be 
+considered to be the ‘gene index’ coordinate.
+Consider using this if you require different coordinate names.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.count_array_names">
+<em class="property">property </em><code class="sig-name descname">count_array_names</code><a class="headerlink" href="#GSForge.models.AnnotatedGEM.count_array_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of all available count arrays contained within this AnnotatedGEM object.</p>
+<p>This is done simply by returning all data variables that have the same dimension set
+as the default count array.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.debug method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.defaults">
+<code class="sig-name descname">defaults</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.defaults method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.force_new_dynamic_value">
+<code class="sig-name descname">force_new_dynamic_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.force_new_dynamic_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.from_files">
+<em class="property">classmethod </em><code class="sig-name descname">from_files</code><span class="sig-paren">(</span><em class="sig-param">count_path: str</em>, <em class="sig-param">label_path: str = None</em>, <em class="sig-param">count_kwargs: dict = None</em>, <em class="sig-param">label_kwargs: dict = None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_AnnotatedGEM.html#AnnotatedGEM.from_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.AnnotatedGEM.from_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <cite>GEM</cite> object from file paths and optional parsing arguments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>count_path</strong> – The path to the gene expression matrix.</p></li>
+<li><p><strong>label_path</strong> – The path to the gene annotation data.</p></li>
+<li><p><strong>count_kwargs</strong> – Arguments to be passed to <cite>pandas.read_csv</cite> for the count matrix.</p></li>
+<li><p><strong>label_kwargs</strong> – Arguments to be passed to <cite>pandas.read_csv</cite> for the annotations.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An instance of the <cite>GEM</cite> class.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.from_netcdf">
+<em class="property">classmethod </em><code class="sig-name descname">from_netcdf</code><span class="sig-paren">(</span><em class="sig-param">netcdf_path</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_AnnotatedGEM.html#AnnotatedGEM.from_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.AnnotatedGEM.from_netcdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <code class="docutils literal notranslate"><span class="pre">GEM</span></code> object from a <code class="docutils literal notranslate"><span class="pre">netcdf</span></code> (.nc) file path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>netcdf_path</strong> – A path to a <code class="docutils literal notranslate"><span class="pre">netcdf</span></code> file. If this file has different
+index names than default (Gene, Sample, counts), be sure to explicitly set those
+parameters (<code class="docutils literal notranslate"><span class="pre">gene_index_name</span></code>, <code class="docutils literal notranslate"><span class="pre">sample_index_name</span></code>, <code class="docutils literal notranslate"><span class="pre">count_array_name</span></code>).</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.from_pandas">
+<em class="property">classmethod </em><code class="sig-name descname">from_pandas</code><span class="sig-paren">(</span><em class="sig-param">count_df: pandas.core.frame.DataFrame</em>, <em class="sig-param">label_df: pandas.core.frame.DataFrame = None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_AnnotatedGEM.html#AnnotatedGEM.from_pandas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.AnnotatedGEM.from_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <cite>GEM</cite> object from <cite>pandas.DataFrame</cite> objects.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>count_df</strong> – The gene expression matrix as a <cite>pandas.DataFrame</cite>.
+This file is assumed to have genes as rows and samples as columns.</p></li>
+<li><p><strong>label_df</strong> – The gene annotation data as a <cite>pandas.DataFrame</cite>.
+This file is assumed to have samples as rows and annotation observations
+as columns.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An instance of the <cite>GEM</cite> class.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.gene_index">
+<em class="property">property </em><code class="sig-name descname">gene_index</code><a class="headerlink" href="#GSForge.models.AnnotatedGEM.gene_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the entire gene index of this AnnotatedGEM object as an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
+<p>The actual variable or coordinate that this returns is controlled by the
+<code class="docutils literal notranslate"><span class="pre">gene_index_name</span></code> parameter.</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.get_param_values">
+<code class="sig-name descname">get_param_values</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.get_param_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.get_value_generator">
+<code class="sig-name descname">get_value_generator</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.get_value_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.infer_variables">
+<code class="sig-name descname">infer_variables</code><span class="sig-paren">(</span><em class="sig-param">quantile_size=10</em>, <em class="sig-param">skip=None</em><span class="sig-paren">)</span> → dict<a class="reference internal" href="../_modules/GSForge/models/_AnnotatedGEM.html#AnnotatedGEM.infer_variables"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.AnnotatedGEM.infer_variables" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infer categories for the variables in the AnnotatedGEM’s labels.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>quantile_size</strong> – The maximum number of unique elements before a variable is no
+longer considered as a <cite>quantile-able</cite> set of values.</p></li>
+<li><p><strong>skip</strong> – The variables to be skipped.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A dictionary of the inferred value types.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.inspect_value">
+<code class="sig-name descname">inspect_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.inspect_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.message method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.params">
+<code class="sig-name descname">params</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.pprint">
+<code class="sig-name descname">pprint</code><span class="sig-paren">(</span><em class="sig-param">imports=None</em>, <em class="sig-param">prefix=' '</em>, <em class="sig-param">unknown_value='&lt;?&gt;'</em>, <em class="sig-param">qualify=False</em>, <em class="sig-param">separator=''</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Experimental) Pretty printed representation that may be
+evaluated with eval. See pprint() function for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.print_param_defaults">
+<em class="property">classmethod </em><code class="sig-name descname">print_param_defaults</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.print_param_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_defaults method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.print_param_values">
+<code class="sig-name descname">print_param_values</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.print_param_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_values method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.sample_index">
+<em class="property">property </em><code class="sig-name descname">sample_index</code><a class="headerlink" href="#GSForge.models.AnnotatedGEM.sample_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the entire sample index of this AnnotatedGEM object as an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
+<p>The actual variable or coordinate that this returns is controlled by the
+<code class="docutils literal notranslate"><span class="pre">sample_index_name</span></code> parameter.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param">path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_AnnotatedGEM.html#AnnotatedGEM.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.AnnotatedGEM.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save as a netcdf (.nc) to the file at <cite>path</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>path</strong> – The filepath to save to. This should use the <cite>.nc</cite> extension.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The path to which the file was saved.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.script_repr">
+<code class="sig-name descname">script_repr</code><span class="sig-paren">(</span><em class="sig-param">imports=[]</em>, <em class="sig-param">prefix='    '</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.script_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant of __repr__ designed for generating a runnable script.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.set_default">
+<em class="property">classmethod </em><code class="sig-name descname">set_default</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.set_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.set_default method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.set_dynamic_time_fn">
+<code class="sig-name descname">set_dynamic_time_fn</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.set_dynamic_time_fn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.AnnotatedGEM.set_param">
+<code class="sig-name descname">set_param</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._AnnotatedGEM.AnnotatedGEM'&gt;)</em><a class="headerlink" href="#GSForge.models.AnnotatedGEM.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.state_pop">
+<code class="sig-name descname">state_pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.state_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the most recently saved state.</p>
+<p>See state_push() for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.state_push">
+<code class="sig-name descname">state_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.state_push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this instance’s state.</p>
+<p>For Parameterized instances, this includes the state of
+dynamically generated values.</p>
+<p>Subclasses that maintain short-term state should additionally
+save and restore that state using state_push() and
+state_pop().</p>
+<p>Generally, this method is used by operations that need to test
+something without permanently altering the objects’ state.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.verbose method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.AnnotatedGEM.warning">
+<code class="sig-name descname">warning</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.AnnotatedGEM.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.warning method for the full docstring</p>
+</dd></dl>
+</dd></dl>
+<dl class="class">
+<dt id="GSForge.models.GeneSet">
+<em class="property">class </em><code class="sig-prename descclassname">GSForge.models.</code><code class="sig-name descname">GeneSet</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">param.parameterized.Parameterized</span></code></p>
+<p>A data class for a the result of a gene selection or analysis.</p>
+<p>A GeneSet can also be a measurement or ranking of a set of genes,
+and this could include all of the ‘available’ genes. In such cases
+a boolean array ‘support’ indicates membership in the GeneSet.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">data</span></code> = param.Parameter()</dt><dd><p>Contains a gene-index <cite>Xarray.Dataset</cite> object, it should have
+only those genes that are considered ‘within’ the GeneSet
+in the index, or a boolean variable named ‘support’.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">support_index_name</span></code> = param.String(default=’support’)</dt><dd><p>This parameter controls which variable should be considered to be the
+(boolean) variable indicating membership in this GeneSet.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_index_name</span></code> = param.String(default=’Gene’)</dt><dd><p>This parameter controls which variable from the <cite>Xarray.Dataset</cite> should be 
+considered to be the ‘gene index’ coordinate.
+Consider using this if you require different coordinate names.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.debug method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.defaults">
+<code class="sig-name descname">defaults</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.defaults method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.force_new_dynamic_value">
+<code class="sig-name descname">force_new_dynamic_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.force_new_dynamic_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.from_GeneSets">
+<em class="property">classmethod </em><code class="sig-name descname">from_GeneSets</code><span class="sig-paren">(</span><em class="sig-param">*gene_sets</em>, <em class="sig-param">mode: str = 'union'</em>, <em class="sig-param">attrs=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.from_GeneSets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.from_GeneSets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new GeneSet by combining all the genes in the given GeneSets.</p>
+<p>No variables or attributes from the original GeneSets are maintained in this process.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.from_netcdf">
+<em class="property">classmethod </em><code class="sig-name descname">from_netcdf</code><span class="sig-paren">(</span><em class="sig-param">path</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.from_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.from_netcdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a <cite>GeneSet</cite> object from a <cite>netcdf</cite> file path.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.gene_index">
+<em class="property">property </em><code class="sig-name descname">gene_index</code><a class="headerlink" href="#GSForge.models.GeneSet.gene_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the entire gene index of this GeneSet object as an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
+<p>The variable or coordinate that this returns is controlled by the <code class="docutils literal notranslate"><span class="pre">gene_index_name</span></code>
+parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The entire gene index of this GeneSet as an <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.gene_support">
+<code class="sig-name descname">gene_support</code><span class="sig-paren">(</span><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.gene_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.gene_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the list of genes ‘supported in this GeneSet.</p>
+<p>The value that this return is (by default) controlled by the self.support_index_name
+parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A numpy array of the genes ‘supported’ by this GeneSet.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.get_param_values">
+<code class="sig-name descname">get_param_values</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.get_param_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.get_value_generator">
+<code class="sig-name descname">get_value_generator</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.get_value_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.inspect_value">
+<code class="sig-name descname">inspect_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.inspect_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.k_best_genes">
+<code class="sig-name descname">k_best_genes</code><span class="sig-paren">(</span><em class="sig-param">k=100</em>, <em class="sig-param">score_name=None</em><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.k_best_genes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.k_best_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Select the highest scoring genes from the ‘score_name’ variable.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>k</strong> – The number of genes to return.</p></li>
+<li><p><strong>score_name</strong> – The variable name to rank genes by.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array of the top k genes based on their scores in <cite>score_name</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.message method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.params">
+<code class="sig-name descname">params</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.parse_GeneSets">
+<em class="property">static </em><code class="sig-name descname">parse_GeneSets</code><span class="sig-paren">(</span><em class="sig-param">*gene_sets</em>, <em class="sig-param">mode: str = 'union'</em>, <em class="sig-param">attrs=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.parse_GeneSets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.parse_GeneSets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Combines the GeneSet objects given using <code class="docutils literal notranslate"><span class="pre">mode</span></code> to create a single new
+GeneSet object.</p>
+<p>Since the complete gene index is not necessarily known, it must minimally
+be the union of all genes included in the provided gene sets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>gene_sets</strong> – One or more <code class="docutils literal notranslate"><span class="pre">GSForge.GeneSet</span></code> objects.</p></li>
+<li><p><strong>mode</strong> – Mode by which the gene_sets should be combined. Options are “union”
+or “intersection”.</p></li>
+<li><p><strong>attrs</strong> – Optional attributes for the combined GeneSet. These attributes are
+added to the <code class="docutils literal notranslate"><span class="pre">GeneSet.data.attrs</span></code> attribute.</p></li>
+<li><p><strong>params</strong> – Keyword parameters for the GeneSet object to be initialized with.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A new GeneSet object that contains genes from the provided <code class="docutils literal notranslate"><span class="pre">gene_sets</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.parse_pandas">
+<em class="property">static </em><code class="sig-name descname">parse_pandas</code><span class="sig-paren">(</span><em class="sig-param">dataframe</em>, <em class="sig-param">genes=None</em>, <em class="sig-param">attrs=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.parse_pandas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.parse_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse a <cite>pandas.DataFrame</cite> for use in a GeneSet.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.pprint">
+<code class="sig-name descname">pprint</code><span class="sig-paren">(</span><em class="sig-param">imports=None</em>, <em class="sig-param">prefix=' '</em>, <em class="sig-param">unknown_value='&lt;?&gt;'</em>, <em class="sig-param">qualify=False</em>, <em class="sig-param">separator=''</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Experimental) Pretty printed representation that may be
+evaluated with eval. See pprint() function for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.print_param_defaults">
+<em class="property">classmethod </em><code class="sig-name descname">print_param_defaults</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.print_param_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_defaults method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.print_param_values">
+<code class="sig-name descname">print_param_values</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.print_param_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_values method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.q_best_genes">
+<code class="sig-name descname">q_best_genes</code><span class="sig-paren">(</span><em class="sig-param">q=0.999</em>, <em class="sig-param">score_name=None</em><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.q_best_genes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.q_best_genes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a numpy array of the q best genes based on the quantile <cite>q</cite>,
+and the target variable <cite>score_name</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>q</strong> – The quantile cutoff.</p></li>
+<li><p><strong>score_name</strong> – The target variable to judge the genes by.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array of the top <cite>q</cite> quantile genes based on <cite>score_name</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.save_as_netcdf">
+<code class="sig-name descname">save_as_netcdf</code><span class="sig-paren">(</span><em class="sig-param">target_dir=None</em>, <em class="sig-param">name=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.save_as_netcdf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.save_as_netcdf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this GeneSet as a netcdf (.nc) file in the <cite>target_dir</cite> directory.</p>
+<p>The default filename will be: <cite>{GeneSet.name}.nc</cite>, if the GeneSet does not
+have a name, one must be provided via the <cite>name</cite> argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_dir</strong> – The directory to place the saved GeneSet into.</p></li>
+<li><p><strong>name</strong> – The name to give the GeneSet upon saving.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns output_path</dt>
+<dd class="field-even"><p>The path to which the file was saved.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.script_repr">
+<code class="sig-name descname">script_repr</code><span class="sig-paren">(</span><em class="sig-param">imports=[]</em>, <em class="sig-param">prefix='    '</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.script_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant of __repr__ designed for generating a runnable script.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.set_default">
+<em class="property">classmethod </em><code class="sig-name descname">set_default</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.set_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.set_default method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.set_dynamic_time_fn">
+<code class="sig-name descname">set_dynamic_time_fn</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.set_dynamic_time_fn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.set_gene_support">
+<code class="sig-name descname">set_gene_support</code><span class="sig-paren">(</span><em class="sig-param">genes</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSet.html#GeneSet.set_gene_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSet.set_gene_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set this GeneSet support to the given genes.</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSet.set_param">
+<code class="sig-name descname">set_param</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSet.GeneSet'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSet.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.state_pop">
+<code class="sig-name descname">state_pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.state_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the most recently saved state.</p>
+<p>See state_push() for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.state_push">
+<code class="sig-name descname">state_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.state_push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this instance’s state.</p>
+<p>For Parameterized instances, this includes the state of
+dynamically generated values.</p>
+<p>Subclasses that maintain short-term state should additionally
+save and restore that state using state_push() and
+state_pop().</p>
+<p>Generally, this method is used by operations that need to test
+something without permanently altering the objects’ state.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.verbose method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSet.warning">
+<code class="sig-name descname">warning</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSet.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.warning method for the full docstring</p>
+</dd></dl>
+</dd></dl>
+<dl class="class">
+<dt id="GSForge.models.GeneSetCollection">
+<em class="property">class </em><code class="sig-prename descclassname">GSForge.models.</code><code class="sig-name descname">GeneSetCollection</code><span class="sig-paren">(</span><em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">param.parameterized.Parameterized</span></code></p>
+<p>A data class that holds an AnnotatedGEM and a dictionary of associated
+GeneSet objects.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">gem</span></code> = param.ClassSelector(class_=&lt;class ‘GSForge.models._AnnotatedGEM.AnnotatedGEM’&gt;)</dt><dd><p>A Gene Expression Matrix (GEM) object.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_sets</span></code> = param.Dict(class_=&lt;class ‘dict’&gt;)</dt><dd><p>A dictionary of {key: xarray.DataArray}, boolean arrays indicating
+support for a given gene.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.as_dict">
+<code class="sig-name descname">as_dict</code><span class="sig-paren">(</span><em class="sig-param">keys=None</em>, <em class="sig-param">exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.as_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.as_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a dictionary of {name: supported_genes} for each gene set, or those specified
+by the <cite>keys</cite> argument.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>keys</strong> – The list of <cite>GeneSet</cite> keys to be included in the returned dictionary.</p></li>
+<li><p><strong>exclude</strong> – A list of <cite>GeneSet</cite> keys to exclude from the returned dictionary.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.debug method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.defaults">
+<code class="sig-name descname">defaults</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.defaults method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.force_new_dynamic_value">
+<code class="sig-name descname">force_new_dynamic_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.force_new_dynamic_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.from_folder">
+<em class="property">classmethod </em><code class="sig-name descname">from_folder</code><span class="sig-paren">(</span><em class="sig-param">gem</em>, <em class="sig-param">target_dir</em>, <em class="sig-param">glob_filter='*.nc'</em>, <em class="sig-param">filter_func=None</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.from_folder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.from_folder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a <cite>CompoundFacet</cite> from a list of file paths. The base file names
+will be used as the key values.</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.get_param_values">
+<code class="sig-name descname">get_param_values</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.get_param_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.get_support">
+<code class="sig-name descname">get_support</code><span class="sig-paren">(</span><em class="sig-param">key</em><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.get_support"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.get_support" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the support array for a given key.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key</strong> – The GeneSet from which to get the gene support.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A <cite>numpy</cite> array of the genes that make up the support of this <cite>GeneSet</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.get_value_generator">
+<code class="sig-name descname">get_value_generator</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.get_value_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.inspect_value">
+<code class="sig-name descname">inspect_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.inspect_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.intersection">
+<code class="sig-name descname">intersection</code><span class="sig-paren">(</span><em class="sig-param">keys=None</em>, <em class="sig-param">exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.intersection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the intersection of supported genes in this GeneSet collection.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.message method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.pairwise_percent_intersection">
+<code class="sig-name descname">pairwise_percent_intersection</code><span class="sig-paren">(</span><em class="sig-param">keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.pairwise_percent_intersection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.pairwise_percent_intersection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the normalized intersection length of each facet combination.</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.params">
+<code class="sig-name descname">params</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.pprint">
+<code class="sig-name descname">pprint</code><span class="sig-paren">(</span><em class="sig-param">imports=None</em>, <em class="sig-param">prefix=' '</em>, <em class="sig-param">unknown_value='&lt;?&gt;'</em>, <em class="sig-param">qualify=False</em>, <em class="sig-param">separator=''</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Experimental) Pretty printed representation that may be
+evaluated with eval. See pprint() function for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.print_param_defaults">
+<em class="property">classmethod </em><code class="sig-name descname">print_param_defaults</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.print_param_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_defaults method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.print_param_values">
+<code class="sig-name descname">print_param_values</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.print_param_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_values method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.save">
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param">target_dir</em>, <em class="sig-param">keys=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save  this collection to <cite>target_dir</cite>. Each <cite>GeneSet</cite> will be saved as a separate
+.netcdf file within this directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target_dir</strong> – The path to which the ‘GeneSet’ <cite>xarray.Dataset</cite> .netcdf files will be written.</p></li>
+<li><p><strong>keys</strong> – The list of <cite>GeneSet</cite> keys that should be saved. If this is not provided, all
+<cite>GeneSet</cite> objects are saved.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.script_repr">
+<code class="sig-name descname">script_repr</code><span class="sig-paren">(</span><em class="sig-param">imports=[]</em>, <em class="sig-param">prefix='    '</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.script_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant of __repr__ designed for generating a runnable script.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.set_default">
+<em class="property">classmethod </em><code class="sig-name descname">set_default</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.set_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.set_default method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.set_dynamic_time_fn">
+<code class="sig-name descname">set_dynamic_time_fn</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.set_dynamic_time_fn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.GeneSetCollection.set_param">
+<code class="sig-name descname">set_param</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._GeneSetCollection.GeneSetCollection'&gt;)</em><a class="headerlink" href="#GSForge.models.GeneSetCollection.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.state_pop">
+<code class="sig-name descname">state_pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.state_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the most recently saved state.</p>
+<p>See state_push() for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.state_push">
+<code class="sig-name descname">state_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.state_push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this instance’s state.</p>
+<p>For Parameterized instances, this includes the state of
+dynamically generated values.</p>
+<p>Subclasses that maintain short-term state should additionally
+save and restore that state using state_push() and
+state_pop().</p>
+<p>Generally, this method is used by operations that need to test
+something without permanently altering the objects’ state.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.union">
+<code class="sig-name descname">union</code><span class="sig-paren">(</span><em class="sig-param">keys=None</em>, <em class="sig-param">exclude=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_GeneSetCollection.html#GeneSetCollection.union"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.GeneSetCollection.union" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the union of supported genes in this GeneSet collection.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.verbose method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.GeneSetCollection.warning">
+<code class="sig-name descname">warning</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.GeneSetCollection.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.warning method for the full docstring</p>
+</dd></dl>
+</dd></dl>
+<dl class="class">
+<dt id="GSForge.models.Interface">
+<em class="property">class </em><code class="sig-prename descclassname">GSForge.models.</code><code class="sig-name descname">Interface</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_Interface.html#Interface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.Interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">param.parameterized.Parameterized</span></code></p>
+<p>The Interface provides common API access for interacting with the <cite>AnnotatedGEM</cite> and
+<cite>GeneSetCollection</cite> objects. It also accepts an <cite>AnnotatedGEM</cite> and a single <cite>GeneSet</cite>
+for subset selection.</p>
+<p>For updating default parameters within subclasses, use the following, although it may
+cause ‘watching’ parameters to fire.</p>
+<p><code class="docutils literal notranslate"><span class="pre">`</span>
+<span class="pre">self.set_param(key=value)</span>
+<span class="pre">`</span></code></p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">gem</span></code> = param.ClassSelector(class_=&lt;class ‘GSForge.models._AnnotatedGEM.AnnotatedGEM’&gt;)</dt><dd><p>An AnnotatedGEM object.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_set_collection</span></code> = param.ClassSelector(class_=&lt;class ‘GSForge.models._GeneSetCollection.GeneSetCollection’&gt;)</dt><dd><p>A GeneSetCollection object.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">selected_gene_sets</span></code> = param.ListSelector(default=[None], objects=[])</dt><dd><p>A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
+that are to be used for selecting sets of genes from the count matrix.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">selected_genes</span></code> = param.Parameter()</dt><dd><p>A list of genes to use in indexing from the count matrix. This parameter takes
+priority over all other gene selecting methods. That means that selected
+lineaments (or combinations thereof) will have no effect.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_set_mode</span></code> = param.ObjectSelector(default=’union’, objects=[‘complete’, ‘union’, ‘intersection’])</dt><dd><p>Controls how any selected gene sets are returned by the interface.
++ complete
+    Returns the entire gene set of the AnnotatedGEM.
++ union
+    Returns the union of the selected gene sets support.
++ intersection
+    Returns the intersection of the selected gene sets support.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sample_subset</span></code> = param.Parameter()</dt><dd><p>A list of samples to use in a given operation. These can be supplied
+directly as a list of genes, or can be drawn from a given GeneSet.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_variable</span></code> = param.String()</dt><dd><p>The name of the count matrix used.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">annotation_variables</span></code> = param.Parameter()</dt><dd><p>The name of the active annotation variable(s). These are the annotation columns that will
+be control the subset returned by <cite>y_annotation_data</cite>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_mask</span></code> = param.ObjectSelector(default=’complete’, objects=[‘complete’, ‘masked’, ‘dropped’])</dt><dd><p>The type of mask to use for the count matrix.
+    + ‘complete’ returns the entire count matrix as numbers.
+    + ‘masked’ returns the entire count matrix with zero or missing as NaN values.
+    + ‘dropped’ returns the count matrix without genes that have zero or missing values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">annotation_mask</span></code> = param.ObjectSelector(default=’complete’, objects=[‘complete’, ‘dropped’])</dt><dd><p>The type of mask to use for the target array.
+    + ‘complete’ returns the entire target array.
+    + ‘masked’ returns the entire target array with zero or missing as NaN values.
+    + ‘dropped’ returns the target array without samples that have zero or missing values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_transform</span></code> = param.Callable()</dt><dd><p>A transform that will be run on the x_data that is supplied by this Interface. 
+The transform runs on the subset of the matrix that has been selected.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.active_count_variable">
+<em class="property">property </em><code class="sig-name descname">active_count_variable</code><a class="headerlink" href="#GSForge.models.Interface.active_count_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the currently active count matrix.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.debug method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.defaults">
+<code class="sig-name descname">defaults</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.defaults method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.force_new_dynamic_value">
+<code class="sig-name descname">force_new_dynamic_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.force_new_dynamic_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.gene_index_name">
+<em class="property">property </em><code class="sig-name descname">gene_index_name</code><a class="headerlink" href="#GSForge.models.Interface.gene_index_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the gene index.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.get_gene_index">
+<code class="sig-name descname">get_gene_index</code><span class="sig-paren">(</span><em class="sig-param">count_variable=None</em><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="reference internal" href="../_modules/GSForge/models/_Interface.html#Interface.get_gene_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.Interface.get_gene_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the currently selected gene index as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>count_variable</strong> – The variable to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array of the currently selected genes.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.get_param_values">
+<code class="sig-name descname">get_param_values</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.get_param_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.get_sample_index">
+<code class="sig-name descname">get_sample_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="reference internal" href="../_modules/GSForge/models/_Interface.html#Interface.get_sample_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.Interface.get_sample_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the currently selected sample index as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A numpy array of the currently selected samples.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.get_selection_indexes">
+<code class="sig-name descname">get_selection_indexes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> → dict<a class="reference internal" href="../_modules/GSForge/models/_Interface.html#Interface.get_selection_indexes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.Interface.get_selection_indexes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected indexes as a dictionary.</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.get_value_generator">
+<code class="sig-name descname">get_value_generator</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.get_value_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.inspect_value">
+<code class="sig-name descname">inspect_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.inspect_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.message method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.params">
+<code class="sig-name descname">params</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.pprint">
+<code class="sig-name descname">pprint</code><span class="sig-paren">(</span><em class="sig-param">imports=None</em>, <em class="sig-param">prefix=' '</em>, <em class="sig-param">unknown_value='&lt;?&gt;'</em>, <em class="sig-param">qualify=False</em>, <em class="sig-param">separator=''</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Experimental) Pretty printed representation that may be
+evaluated with eval. See pprint() function for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.print_param_defaults">
+<em class="property">classmethod </em><code class="sig-name descname">print_param_defaults</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.print_param_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_defaults method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.print_param_values">
+<code class="sig-name descname">print_param_values</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.print_param_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_values method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.sample_index_name">
+<em class="property">property </em><code class="sig-name descname">sample_index_name</code><a class="headerlink" href="#GSForge.models.Interface.sample_index_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the sample index.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.script_repr">
+<code class="sig-name descname">script_repr</code><span class="sig-paren">(</span><em class="sig-param">imports=[]</em>, <em class="sig-param">prefix='    '</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.script_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Variant of __repr__ designed for generating a runnable script.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.selection">
+<em class="property">property </em><code class="sig-name descname">selection</code><a class="headerlink" href="#GSForge.models.Interface.selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected data.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.set_default">
+<em class="property">classmethod </em><code class="sig-name descname">set_default</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.set_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.set_default method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.set_dynamic_time_fn">
+<code class="sig-name descname">set_dynamic_time_fn</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.set_dynamic_time_fn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.Interface.set_param">
+<code class="sig-name descname">set_param</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._Interface.Interface'&gt;)</em><a class="headerlink" href="#GSForge.models.Interface.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.state_pop">
+<code class="sig-name descname">state_pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.state_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the most recently saved state.</p>
+<p>See state_push() for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.state_push">
+<code class="sig-name descname">state_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.state_push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this instance’s state.</p>
+<p>For Parameterized instances, this includes the state of
+dynamically generated values.</p>
+<p>Subclasses that maintain short-term state should additionally
+save and restore that state using state_push() and
+state_pop().</p>
+<p>Generally, this method is used by operations that need to test
+something without permanently altering the objects’ state.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.verbose method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.warning">
+<code class="sig-name descname">warning</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.Interface.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.warning method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.x_count_data">
+<em class="property">property </em><code class="sig-name descname">x_count_data</code><a class="headerlink" href="#GSForge.models.Interface.x_count_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected ‘x_data’. Usually this will be a subset of the
+active count array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An Xarray.Dataset selection of the currently active ‘x_data’.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.Interface.y_annotation_data">
+<em class="property">property </em><code class="sig-name descname">y_annotation_data</code><a class="headerlink" href="#GSForge.models.Interface.y_annotation_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected ‘y_data’, or None, based on the
+<code class="docutils literal notranslate"><span class="pre">selected_annotation_variables</span></code> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> object of the currently selected y_data.</p>
+</dd>
+</dl>
+</dd></dl>
+</dd></dl>
+<dl class="class">
+<dt id="GSForge.models.OperationInterface">
+<em class="property">class </em><code class="sig-prename descclassname">GSForge.models.</code><code class="sig-name descname">OperationInterface</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_OperationInterface.html#OperationInterface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.OperationInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">GSForge.models._Interface.Interface</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">param.parameterized.ParameterizedFunction</span></code></p>
+<p>Abstract class for a GEMOperation.</p>
+<p>Every GEMOperation undergoes some argument parsing, then calls self.process(),
+which must be implemented by implemented classes.</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">gem</span></code> = param.ClassSelector(class_=&lt;class ‘GSForge.models._AnnotatedGEM.AnnotatedGEM’&gt;)</dt><dd><p>An AnnotatedGEM object.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_set_collection</span></code> = param.ClassSelector(class_=&lt;class ‘GSForge.models._GeneSetCollection.GeneSetCollection’&gt;)</dt><dd><p>A GeneSetCollection object.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">selected_gene_sets</span></code> = param.ListSelector(default=[None], objects=[])</dt><dd><p>A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
+that are to be used for selecting sets of genes from the count matrix.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">selected_genes</span></code> = param.Parameter()</dt><dd><p>A list of genes to use in indexing from the count matrix. This parameter takes
+priority over all other gene selecting methods. That means that selected
+lineaments (or combinations thereof) will have no effect.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">gene_set_mode</span></code> = param.ObjectSelector(default=’union’, objects=[‘complete’, ‘union’, ‘intersection’])</dt><dd><p>Controls how any selected gene sets are returned by the interface.
++ complete
+    Returns the entire gene set of the AnnotatedGEM.
++ union
+    Returns the union of the selected gene sets support.
++ intersection
+    Returns the intersection of the selected gene sets support.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sample_subset</span></code> = param.Parameter()</dt><dd><p>A list of samples to use in a given operation. These can be supplied
+directly as a list of genes, or can be drawn from a given GeneSet.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_variable</span></code> = param.String()</dt><dd><p>The name of the count matrix used.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">annotation_variables</span></code> = param.Parameter()</dt><dd><p>The name of the active annotation variable(s). These are the annotation columns that will
+be control the subset returned by <cite>y_annotation_data</cite>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_mask</span></code> = param.ObjectSelector(default=’complete’, objects=[‘complete’, ‘masked’, ‘dropped’])</dt><dd><p>The type of mask to use for the count matrix.
+    + ‘complete’ returns the entire count matrix as numbers.
+    + ‘masked’ returns the entire count matrix with zero or missing as NaN values.
+    + ‘dropped’ returns the count matrix without genes that have zero or missing values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">annotation_mask</span></code> = param.ObjectSelector(default=’complete’, objects=[‘complete’, ‘dropped’])</dt><dd><p>The type of mask to use for the target array.
+    + ‘complete’ returns the entire target array.
+    + ‘masked’ returns the entire target array with zero or missing as NaN values.
+    + ‘dropped’ returns the target array without samples that have zero or missing values.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">count_transform</span></code> = param.Callable()</dt><dd><p>A transform that will be run on the x_data that is supplied by this Interface. 
+The transform runs on the subset of the matrix that has been selected.</p>
+</dd>
+</dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.active_count_variable">
+<em class="property">property </em><code class="sig-name descname">active_count_variable</code><a class="headerlink" href="#GSForge.models.OperationInterface.active_count_variable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the currently active count matrix.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.debug">
+<code class="sig-name descname">debug</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.debug" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.debug method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.defaults">
+<code class="sig-name descname">defaults</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.defaults method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.force_new_dynamic_value">
+<code class="sig-name descname">force_new_dynamic_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.force_new_dynamic_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.gene_index_name">
+<em class="property">property </em><code class="sig-name descname">gene_index_name</code><a class="headerlink" href="#GSForge.models.OperationInterface.gene_index_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the gene index.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.get_gene_index">
+<code class="sig-name descname">get_gene_index</code><span class="sig-paren">(</span><em class="sig-param">count_variable=None</em><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="headerlink" href="#GSForge.models.OperationInterface.get_gene_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the currently selected gene index as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>count_variable</strong> – The variable to be retrieved.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A numpy array of the currently selected genes.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.get_param_values">
+<code class="sig-name descname">get_param_values</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.get_param_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.get_sample_index">
+<code class="sig-name descname">get_sample_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span> → numpy.core.multiarray.array<a class="headerlink" href="#GSForge.models.OperationInterface.get_sample_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the currently selected sample index as a numpy array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>A numpy array of the currently selected samples.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.get_selection_indexes">
+<code class="sig-name descname">get_selection_indexes</code><span class="sig-paren">(</span><span class="sig-paren">)</span> → dict<a class="headerlink" href="#GSForge.models.OperationInterface.get_selection_indexes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected indexes as a dictionary.</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.get_value_generator">
+<code class="sig-name descname">get_value_generator</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.get_value_generator" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.inspect_value">
+<code class="sig-name descname">inspect_value</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.inspect_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.instance">
+<code class="sig-name descname">instance</code><em class="property"> = functools.partial(&lt;function ParameterizedFunction.instance&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.instance" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.message">
+<code class="sig-name descname">message</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.message method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.params">
+<code class="sig-name descname">params</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.pprint">
+<code class="sig-name descname">pprint</code><span class="sig-paren">(</span><em class="sig-param">imports=None</em>, <em class="sig-param">prefix='\n    '</em>, <em class="sig-param">unknown_value='&lt;?&gt;'</em>, <em class="sig-param">qualify=False</em>, <em class="sig-param">separator=''</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.pprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as Parameterized.pprint, except that X.classname(Y
+is replaced with X.classname.instance(Y</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.print_param_defaults">
+<em class="property">classmethod </em><code class="sig-name descname">print_param_defaults</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.print_param_defaults" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_defaults method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.print_param_values">
+<code class="sig-name descname">print_param_values</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.print_param_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.print_param_values method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.process">
+<code class="sig-name descname">process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/GSForge/models/_OperationInterface.html#OperationInterface.process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#GSForge.models.OperationInterface.process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Abstract process.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.sample_index_name">
+<em class="property">property </em><code class="sig-name descname">sample_index_name</code><a class="headerlink" href="#GSForge.models.OperationInterface.sample_index_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the name of the sample index.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.script_repr">
+<code class="sig-name descname">script_repr</code><span class="sig-paren">(</span><em class="sig-param">imports=[]</em>, <em class="sig-param">prefix='    '</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.script_repr" title="Permalink to this definition">¶</a></dt>
+<dd><p>Same as Parameterized.script_repr, except that X.classname(Y
+is replaced with X.classname.instance(Y</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.selection">
+<em class="property">property </em><code class="sig-name descname">selection</code><a class="headerlink" href="#GSForge.models.OperationInterface.selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected data.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.set_default">
+<em class="property">classmethod </em><code class="sig-name descname">set_default</code><span class="sig-paren">(</span><em class="sig-param">*args</em>, <em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.set_default" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.set_default method for the full docstring</p>
+</dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.set_dynamic_time_fn">
+<code class="sig-name descname">set_dynamic_time_fn</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.set_dynamic_time_fn" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="attribute">
+<dt id="GSForge.models.OperationInterface.set_param">
+<code class="sig-name descname">set_param</code><em class="property"> = functools.partial(&lt;function Parameters.deprecate.&lt;locals&gt;.inner&gt;, &lt;class 'GSForge.models._OperationInterface.OperationInterface'&gt;)</em><a class="headerlink" href="#GSForge.models.OperationInterface.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.state_pop">
+<code class="sig-name descname">state_pop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.state_pop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the most recently saved state.</p>
+<p>See state_push() for more details.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.state_push">
+<code class="sig-name descname">state_push</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.state_push" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save this instance’s state.</p>
+<p>For Parameterized instances, this includes the state of
+dynamically generated values.</p>
+<p>Subclasses that maintain short-term state should additionally
+save and restore that state using state_push() and
+state_pop().</p>
+<p>Generally, this method is used by operations that need to test
+something without permanently altering the objects’ state.</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.verbose">
+<code class="sig-name descname">verbose</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.verbose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.verbose method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.warning">
+<code class="sig-name descname">warning</code><span class="sig-paren">(</span><em class="sig-param">**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#GSForge.models.OperationInterface.warning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inspect .param.warning method for the full docstring</p>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.x_count_data">
+<em class="property">property </em><code class="sig-name descname">x_count_data</code><a class="headerlink" href="#GSForge.models.OperationInterface.x_count_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected ‘x_data’. Usually this will be a subset of the
+active count array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An Xarray.Dataset selection of the currently active ‘x_data’.</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="method">
+<dt id="GSForge.models.OperationInterface.y_annotation_data">
+<em class="property">property </em><code class="sig-name descname">y_annotation_data</code><a class="headerlink" href="#GSForge.models.OperationInterface.y_annotation_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the currently selected ‘y_data’, or None, based on the
+<code class="docutils literal notranslate"><span class="pre">selected_annotation_variables</span></code> parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>An <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> or <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> object of the currently selected y_data.</p>
+</dd>
+</dl>
+</dd></dl>
+</dd></dl>
+<hr class="docutils"/>
+</div>
+</div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../Welcome.html">Welcome</a></li>
+<li><a href="../user_guide/index.html">User Guide</a></li>
+<li><a href="index.html">API</a></li>
+<li><a href="../Development.html">Developer Guide</a></li>
+<li><a href="../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

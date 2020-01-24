@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>Development — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="_static/css/main.css" rel="stylesheet"/>
+<link href="_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="_static/js/main.js"></script>
+<script src="_static/nbsite.js"></script>
+<script src="_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/Development.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="index.html">
+<img alt="Logo" src="_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="#">Developer Guide</a></li>
+<li class="nav-link"><a href="About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<div class="section" id="development">
+<h1>Development<a class="headerlink" href="#development" title="Permalink to this headline">¶</a></h1>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h3 id="Overview">Overview<a class="anchor-link" href="#Overview">¶</a></h3><p>Maintaining GSForge involves:</p>
+<ul>
+<li>PyPi package index.</li>
+<li>Documentation website <ul>
+<li>hosted by github pages</li>
+<li>Built with <a href="https://nbsite.holoviz.org/"><code>nbsite</code></a>, a version of <code>sphinx</code> which is used by Readthedocs.</li>
+</ul>
+</li>
+<li>Docker images<ul>
+<li>Interactive image, this is likely to be the source for a future 'SciAPP' as well.</li>
+<li>Workflow images.</li>
+</ul>
+</li>
+</ul>
+<p>The above repositories and websites are all kept up-to-date using travis ci.</p>
+<h3 id="Travis-CI">Travis CI<a class="anchor-link" href="#Travis-CI">¶</a></h3><p>Travis integration is setup through the <code>.travis.yml</code> file.</p>
+<h3 id="Generating-the-Documentation">Generating the Documentation<a class="anchor-link" href="#Generating-the-Documentation">¶</a></h3><p><strong>Prerequisites:</strong></p>
+<ul>
+<li><a href="https://github.com/pyviz-dev/nbsite"><code>nbsite</code></a> <em>This is a requirement for the classes defined based upon <code>param.Parameterized</code> to render nicely.</em>
+<code>nbsite</code> is essentially a wrapper for a call to <code>sphinx-build</code>,
+  with some additional tools to handle jupyter notebooks.
+  This means that <a href="https://www.sphinx-doc.org/en/master/usage/configuration.html">sphinx</a> can be used as normal, 
+  including being configured via <code>doc/conf.py</code>.</li>
+<li><a href="https://github.com/pyviz-dev/nbsmoke"><code>nbsmoke</code></a>
+  For basic notebook checks.</li>
+</ul>
+<p><strong>Initial setup notes:</strong></p>
+<p>The documentation is generated per the <a href="https://nbsite.holoviz.org/Usage.html">usage docs</a> of <code>nbsite</code>.
+See the <code>.travis.yml</code> file to see how <code>nbsite</code> is called to build the docs.</p>
+<h3 id="Maintaining-the-Docs">Maintaining the Docs<a class="anchor-link" href="#Maintaining-the-Docs">¶</a></h3><ol>
+<li>Ensure that all <code>.rst</code> files have their table of contents (toc) updated.</li>
+<li><strong>Notebooks</strong><ul>
+<li>If a notebook is removed, ensure the corresponding <code>.rst</code> file is no longer in the repository.</li>
+<li>Notebooks are evaluated upon each update to the documentation, 
+unless the evaluated notebook is found locally, or an <code>.rst</code> directive declares <code>:skip_execute: True</code>.
+Therefor <code>.rst</code> files that must have non-default directives must be added to the repository.</li>
+</ul>
+</li>
+<li><strong>API</strong><ul>
+<li>The docstrings within <code>GSForge</code> are written with <a href="https://docutils.sourceforge.io/rst.html">RestructuredText</a>.</li>
+<li>The core classes are built upon <code>param.Parameterized</code>, ensure parameters are documented.</li>
+</ul>
+</li>
+</ol>
+<h4 id="More-on-Notebooks">More on Notebooks<a class="anchor-link" href="#More-on-Notebooks">¶</a></h4><p>Normally notebooks are viewed by an restructured text directive.
+These container files are constructed automatically during the travis build via:</p>
+<div class="highlight"><pre><span></span>nbsite generate-rst --org SystemsGenetics --project-name GSForge
+</pre></div>
+<p>If a notebook should not be run by travis for whatever reason, 
+the containing .rst file should be generated using the above command.
+Then the directive can be modified by setting the skip_execute option to <code>True</code>.</p>
+<pre><code>.. notebook:: GSForge ../relative/path/to/notebook.ipynb
+    :offset: 0
+    :skip_execute: True</code></pre>
+<p>The <code>offset</code> option controls how many cells are to be skipped.
+This is there since the default uses the notebook name as the displayed title.</p>
+<p><strong>Testing Notebooks</strong> <em>(optional)</em></p>
+<p>You can test if all of the example notebooks run with <code>nbsmoke</code> (this is what the travis ci will do) to check if they all run.</p>
+<div class="highlight"><pre><span></span>pytest --nbsmoke-run examples/**/*.ipynb
+</pre></div>
+<h3 id="Maintaining-Docker-Images">Maintaining Docker Images<a class="anchor-link" href="#Maintaining-Docker-Images">¶</a></h3><p>The docker images used by <code>GSForge</code> are based on the <a href="https://jupyter-docker-stacks.readthedocs.io/en/latest/index.html">Jupyter Docker Stacks</a>.</p>
+</div>
+</div>
+</div>
+<hr class="docutils"/>
+<p><a class="reference external" href="https://raw.githubusercontent.com/SystemsGenetics/GSForge/master/examples/Development.ipynb">Right click to download this notebook from GitHub.</a></p>
+</div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="Welcome.html">Welcome</a></li>
+<li><a href="user_guide/index.html">User Guide</a></li>
+<li><a href="Reference_Manual/index.html">API</a></li>
+<li><a href="#">Developer Guide</a></li>
+<li><a href="About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

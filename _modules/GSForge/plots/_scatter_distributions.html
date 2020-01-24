@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>GSForge.plots._scatter_distributions — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/css/main.css" rel="stylesheet"/>
+<link href="../../../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../../../_static/js/main.js"></script>
+<script src="../../../_static/nbsite.js"></script>
+<script src="../../../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/_modules/GSForge/plots/_scatter_distributions.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../../../index.html">
+<img alt="Logo" src="../../../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../../../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../../../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="../../../user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="../../../Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="../../../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../../../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../../../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<h1>Source code for GSForge.plots._scatter_distributions</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">param</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">holoviews</span> <span class="k">as</span> <span class="nn">hv</span>
+<span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="n">OperationInterface</span>
+
+<span class="kn">from</span> <span class="nn">holoviews.operation.stats</span> <span class="kn">import</span> <span class="n">univariate_kde</span>
+<span class="kn">from</span> <span class="nn">holoviews.operation.datashader</span> <span class="kn">import</span> <span class="n">datashade</span><span class="p">,</span> <span class="n">dynspread</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"ScatterDistributionBase"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="ScatterDistributionBase"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.plots.html#GSForge.plots.ScatterDistributionBase">[docs]</a><span class="k">class</span> <span class="nc">ScatterDistributionBase</span><span class="p">(</span><span class="n">OperationInterface</span><span class="p">):</span>
+
+    <span class="n">datashade_</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Boolean</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">dynspread_</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Boolean</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="n">log_scale</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Boolean</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">x_axis_selector</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">ObjectSelector</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"mean"</span><span class="p">)</span>
+    <span class="n">y_axis_selector</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">ObjectSelector</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"variance"</span><span class="p">)</span>
+
+    <span class="n">axis_transform</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="k">lambda</span> <span class="n">ds</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">log2</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">ds</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)))</span>
+
+    <span class="n">backend</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">ObjectSelector</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"bokeh"</span><span class="p">,</span> <span class="n">objects</span><span class="o">=</span><span class="p">[</span><span class="s2">"bokeh"</span><span class="p">,</span> <span class="s2">"matplotlib"</span><span class="p">])</span>
+
+    <span class="n">axis_functions</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"frequency"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="p">(</span><span class="n">counts</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span> <span class="o">/</span> <span class="n">counts</span><span class="p">[</span><span class="n">dim</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+        <span class="s2">"mean"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+        <span class="s2">"variance"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+        <span class="s2">"standard_dev"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+        <span class="s2">"fano"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span> <span class="o">/</span> <span class="n">counts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">),</span>
+        <span class="s2">"mean_rank"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="s2">"Gene"</span><span class="p">),</span>
+        <span class="s2">"cv_squared"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">counts</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="n">counts</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span> <span class="o">/</span> <span class="n">counts</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="p">}</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">hv_scatter_dist</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">x_kdims</span><span class="p">,</span> <span class="n">y_kdims</span><span class="p">,</span>
+                        <span class="n">datashade_</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">dynspread_</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">dynspread_</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">datashade_</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">"Dynspread can only be used with datashade, setting both to true."</span><span class="p">)</span>
+            <span class="n">datashade_</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">dataset</span><span class="p">[[</span><span class="n">x_kdims</span><span class="p">,</span> <span class="n">y_kdims</span><span class="p">]]</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">hv</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="n">x_kdims</span><span class="p">,</span> <span class="n">y_kdims</span><span class="p">])</span>
+
+        <span class="n">dist_x</span> <span class="o">=</span> <span class="n">univariate_kde</span><span class="p">(</span><span class="n">hv</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="n">y_kdims</span><span class="p">],</span> <span class="n">group</span><span class="o">=</span><span class="s2">"dist_x"</span><span class="p">),</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+        <span class="n">dist_y</span> <span class="o">=</span> <span class="n">univariate_kde</span><span class="p">(</span><span class="n">hv</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="n">x_kdims</span><span class="p">],</span> <span class="n">group</span><span class="o">=</span><span class="s2">"dist_y"</span><span class="p">),</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">datashade_</span><span class="p">:</span>
+            <span class="n">points</span> <span class="o">=</span> <span class="n">datashade</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dynspread_</span><span class="p">:</span>
+                <span class="n">points</span> <span class="o">=</span> <span class="n">dynspread</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">points</span> <span class="o">&lt;&lt;</span> <span class="n">dist_x</span> <span class="o">&lt;&lt;</span> <span class="n">dist_y</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">scatter_dist_by_mappings</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">x_kdims</span><span class="p">,</span> <span class="n">y_kdims</span><span class="p">,</span>
+                                 <span class="n">mappings</span><span class="p">,</span>
+                                 <span class="n">selection_dim</span><span class="o">=</span><span class="s2">"Gene"</span><span class="p">,</span>
+                                 <span class="n">datashade_</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                 <span class="n">dynspread_</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                 <span class="p">):</span>
+
+        <span class="n">data_groups</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">dataset</span><span class="o">.</span><span class="n">sel</span><span class="p">({</span><span class="n">selection_dim</span><span class="p">:</span> <span class="n">genes</span><span class="p">})</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">genes</span> <span class="ow">in</span> <span class="n">mappings</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">data_group_dfs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="p">[[</span><span class="n">x_kdims</span><span class="p">,</span> <span class="n">y_kdims</span><span class="p">]]</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">data_groups</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">points</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">hv</span><span class="o">.</span><span class="n">Points</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="n">x_kdims</span><span class="p">,</span> <span class="n">y_kdims</span><span class="p">])</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">data_group_dfs</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="n">dist_x</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">univariate_kde</span><span class="p">(</span><span class="n">hv</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="n">y_kdims</span><span class="p">],</span> <span class="n">group</span><span class="o">=</span><span class="s2">"dist_x"</span><span class="p">),</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">dist_y</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">univariate_kde</span><span class="p">(</span><span class="n">hv</span><span class="o">.</span><span class="n">Distribution</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">kdims</span><span class="o">=</span><span class="p">[</span><span class="n">x_kdims</span><span class="p">],</span> <span class="n">group</span><span class="o">=</span><span class="s2">"dist_y"</span><span class="p">),</span> <span class="n">n_samples</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+        <span class="k">if</span> <span class="n">datashade_</span><span class="p">:</span>
+            <span class="n">points_overlay</span> <span class="o">=</span> <span class="n">datashade</span><span class="p">(</span><span class="n">hv</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span><span class="n">points</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">dynspread_</span><span class="p">:</span>
+                <span class="n">points_overlay</span> <span class="o">=</span> <span class="n">dynspread</span><span class="p">(</span><span class="n">points_overlay</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">points_overlay</span> <span class="o">=</span> <span class="n">hv</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">points_overlay</span> <span class="o">&lt;&lt;</span> <span class="n">hv</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span><span class="n">dist_x</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">hv</span><span class="o">.</span><span class="n">NdOverlay</span><span class="p">(</span><span class="n">dist_y</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScatterDistributionBase.process"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.plots.html#GSForge.plots.ScatterDistributionBase.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">counts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_count_data</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">({</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">x_axis_selector</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_functions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x_axis_selector</span><span class="p">](</span><span class="n">counts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_index_name</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">y_axis_selector</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_functions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">y_axis_selector</span><span class="p">](</span><span class="n">counts</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_index_name</span><span class="p">),</span>
+        <span class="p">})</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_transform</span><span class="p">:</span>
+            <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">axis_transform</span><span class="p">(</span><span class="n">dataset</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected_gene_sets</span> <span class="o">==</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">gene_set_collection</span><span class="p">:</span>
+
+            <span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hv_scatter_dist</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">x_kdims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_axis_selector</span><span class="p">,</span>
+                <span class="n">y_kdims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_axis_selector</span><span class="p">,</span>
+                <span class="n">datashade_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datashade_</span><span class="p">,</span>
+                <span class="n">dynspread_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dynspread_</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mappings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gene_set_collection</span><span class="o">.</span><span class="n">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">selected_gene_sets</span><span class="p">)</span>
+
+            <span class="n">plot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scatter_dist_by_mappings</span><span class="p">(</span>
+                <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">,</span>
+                <span class="n">x_kdims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">x_axis_selector</span><span class="p">,</span>
+                <span class="n">y_kdims</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">y_axis_selector</span><span class="p">,</span>
+                <span class="n">mappings</span><span class="o">=</span><span class="n">mappings</span><span class="p">,</span>
+                <span class="n">datashade_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">datashade_</span><span class="p">,</span>
+                <span class="n">dynspread_</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dynspread_</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">plot</span></div></div>
+</pre></div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../../../Welcome.html">Welcome</a></li>
+<li><a href="../../../user_guide/index.html">User Guide</a></li>
+<li><a href="../../../Reference_Manual/index.html">API</a></li>
+<li><a href="../../../Development.html">Developer Guide</a></li>
+<li><a href="../../../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

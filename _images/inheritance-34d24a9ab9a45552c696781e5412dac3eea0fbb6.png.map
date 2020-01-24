@@ -1,0 +1,9 @@
+<map id="inheritance104356ee40" name="inheritance104356ee40">
+<area shape="rect" id="node1" title="The Interface provides common API access for interacting with the `AnnotatedGEM` and" alt="" coords="268,23,469,43"/>
+<area shape="rect" id="node3" title="Abstract class for a GEMOperation." alt="" coords="529,43,830,63"/>
+<area shape="rect" id="node2" title="params(name=String)" alt="" coords="4,43,208,63"/>
+<area shape="rect" id="node4" title="params(name=String)" alt="" coords="246,62,491,82"/>
+<area shape="rect" id="node5" href="#GSForge.operations.analytics.mProbes" target="_top" title="mProbes [method_compare]_ works by randomly permuting the feature values in the supplied data." alt="" coords="901,4,1114,24"/>
+<area shape="rect" id="node6" href="#GSForge.operations.analytics.nFDR" target="_top" title="nFDR (False Discovery Rate) [method_compare]_." alt="" coords="910,43,1105,63"/>
+<area shape="rect" id="node7" href="#GSForge.operations.analytics.rank_genes_by_model" target="_top" title="Given some machine learning model, this operation runs n_iterations" alt="" coords="867,82,1148,102"/>
+</map>

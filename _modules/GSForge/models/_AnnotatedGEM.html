@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>GSForge.models._AnnotatedGEM — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/css/main.css" rel="stylesheet"/>
+<link href="../../../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../../../_static/js/main.js"></script>
+<script src="../../../_static/nbsite.js"></script>
+<script src="../../../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/_modules/GSForge/models/_AnnotatedGEM.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../../../index.html">
+<img alt="Logo" src="../../../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../../../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../../../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="../../../user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="../../../Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="../../../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../../../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../../../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<h1>Source code for GSForge.models._AnnotatedGEM</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">param</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">dedent</span>
+
+<span class="kn">from</span> <span class="nn">._utils</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">infer_xarray_variables</span><span class="p">,</span>
+    <span class="n">xrarray_gem_from_pandas</span><span class="p">,</span>
+    <span class="n">load_count_df</span><span class="p">,</span>
+    <span class="n">load_label_df</span><span class="p">,</span>
+<span class="p">)</span>
+
+
+<div class="viewcode-block" id="AnnotatedGEM"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.AnnotatedGEM">[docs]</a><span class="k">class</span> <span class="nc">AnnotatedGEM</span><span class="p">(</span><span class="n">param</span><span class="o">.</span><span class="n">Parameterized</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    A data class for a gene expression matrix and any associated sample or</span>
+<span class="sd">    gene annotations.</span>
+
+<span class="sd">    This model holds the count expression matrix, and any associated labels</span>
+<span class="sd">    or annotations as an ``xarray.Dataset`` object under the ``.data`` attribute.</span>
+<span class="sd">    By default this dataset will be expected to have its indexes named "Gene"</span>
+<span class="sd">    and "Sample", although there are parameters to override those arrays and</span>
+<span class="sd">    index names used.</span>
+
+<span class="sd">    An AnnotatedGEM object can be created with one of the class methods:</span>
+
+<span class="sd">    ``from_files()``</span>
+<span class="sd">      A helper function for loading disparate GEM and annotation files through</span>
+<span class="sd">      pandas.read_csv().</span>
+
+<span class="sd">    ``from_pandas()``</span>
+<span class="sd">      Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These</span>
+<span class="sd">      must share the same sample index.</span>
+
+<span class="sd">    ``from_netcdf()``</span>
+<span class="sd">      Reads in from a .nc filepath. Usually this means loading a previously</span>
+<span class="sd">      created AnnotatedGEM.</span>
+
+
+<span class="sd">    **Randomly generate a demo AnnotatedGEM**</span>
+
+<span class="sd">    # &gt;&gt;&gt; from sklearn.datasets import make_multilabel_classification</span>
+<span class="sd">    # &gt;&gt;&gt; data, labels = make_multilabel_classification()</span>
+<span class="sd">    # &gt;&gt;&gt; agem = AnnotatedGEM.from_pandas(pd.DataFrame(data), pd.DataFrame(labels), name="Generated GEM")</span>
+
+
+<span class="sd">    # &gt;&gt;&gt; agem</span>
+<span class="sd">    # &lt;GSForge.AnnotatedGEM&gt;</span>
+<span class="sd">    # Name: Generated GEM</span>
+<span class="sd">    # Selected GEM Variable: 'counts'</span>
+<span class="sd">    #     Gene   100</span>
+<span class="sd">    #     Sample 100</span>
+
+<span class="sd">    **View the entire gene or sample index:**</span>
+
+<span class="sd">    # &gt;&gt;&gt; agem.gene_index</span>
+<span class="sd">    # &lt;xarray.DataArray 'Gene' (Gene: 100)&gt;...</span>
+
+<span class="sd">    # &gt;&gt;&gt; agem.sample_index</span>
+<span class="sd">    # &lt;xarray.DataArray 'Sample' (Sample: 100)&gt;...</span>
+
+<span class="sd">    # &gt;&gt;&gt; agem.infer_variables()</span>
+<span class="sd">    # {'all_labels': ...</span>
+
+<span class="sd">    """</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">ClassSelector</span><span class="p">(</span><span class="n">class_</span><span class="o">=</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    An ``xarray.Dataset`` object that contains the Gene Expression Matrix, and any </span>
+<span class="s2">    needed annotations. This `xarray.Dataset` object is expected to have a count </span>
+<span class="s2">    array named 'counts', that has coordinates ('Gene', 'Sample')."""</span><span class="p">))</span>
+
+    <span class="n">count_array_name</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"counts"</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    This parameter controls which variable from the `xarray.Dataset` should be</span>
+<span class="s2">    considered to be the 'count' variable.</span>
+<span class="s2">    Consider using this if you require different index names, or wish to control </span>
+<span class="s2">    which count array among many should be used by default."""</span><span class="p">))</span>
+
+    <span class="n">sample_index_name</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"Sample"</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    This parameter controls which variable from the `xarray.Dataset` should be</span>
+<span class="s2">    considered to be the 'sample' coordinate.</span>
+<span class="s2">    Consider using this if you require different coordinate names."""</span><span class="p">))</span>
+
+    <span class="n">gene_index_name</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="s2">"Gene"</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    This parameter controls which variable from the `Xarray.Dataset` should be </span>
+<span class="s2">    considered to be the 'gene index' coordinate.</span>
+<span class="s2">    Consider using this if you require different coordinate names."""</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="n">_annotated_gem_dispatch</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="c1"># TODO: Ensure that a data object exists in params.</span>
+        <span class="c1">#       Give an invalid input warning to the user.</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">"""Display a summary of this AnnotatedGEM."""</span>
+        <span class="n">summary</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"&lt;GSForge.{type(self).__name__}&gt;"</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"Name: </span><span class="si">{self.name}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"Selected GEM Variable: '</span><span class="si">{self.count_array_name}</span><span class="s2">'"</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"    </span><span class="si">{self.gene_index_name}</span><span class="s2">   </span><span class="si">{self.data[self.gene_index_name].shape[0]}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="n">summary</span> <span class="o">+=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">"    </span><span class="si">{self.sample_index_name}</span><span class="s2"> </span><span class="si">{self.data[self.sample_index_name].shape[0]}</span><span class="s2">"</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gene_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">"""</span>
+<span class="sd">        Returns the entire gene index of this AnnotatedGEM object as an ``xarray.DataArray``.</span>
+
+<span class="sd">        The actual variable or coordinate that this returns is controlled by the</span>
+<span class="sd">        ``gene_index_name`` parameter.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sample_index</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">:</span>
+        <span class="sd">"""</span>
+<span class="sd">        Returns the entire sample index of this AnnotatedGEM object as an ``xarray.DataArray``.</span>
+
+<span class="sd">        The actual variable or coordinate that this returns is controlled by the</span>
+<span class="sd">        ``sample_index_name`` parameter.</span>
+<span class="sd">        """</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_index_name</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">count_array_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+        <span class="sd">"""</span>
+<span class="sd">        Returns a list of all available count arrays contained within this AnnotatedGEM object.</span>
+
+<span class="sd">        This is done simply by returning all data variables that have the same dimension set</span>
+<span class="sd">        as the default count array.</span>
+<span class="sd">        """</span>
+        <span class="n">default_dims</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">count_array_name</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">==</span> <span class="n">default_dims</span><span class="p">]</span>
+
+<div class="viewcode-block" id="AnnotatedGEM.infer_variables"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.AnnotatedGEM.infer_variables">[docs]</a>    <span class="k">def</span> <span class="nf">infer_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">quantile_size</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+        <span class="sd">"""</span>
+<span class="sd">        Infer categories for the variables in the AnnotatedGEM's labels.</span>
+
+<span class="sd">        :param quantile_size: The maximum number of unique elements before a variable is no</span>
+<span class="sd">            longer considered as a `quantile-able` set of values.</span>
+
+<span class="sd">        :param skip: The variables to be skipped.</span>
+
+<span class="sd">        :return: A dictionary of the inferred value types.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">skip</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">skip</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_array_names</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_index_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]</span>
+
+        <span class="n">sample_dim</span> <span class="o">=</span> <span class="p">{</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_index_name</span><span class="p">}</span>
+        <span class="n">gene_annots</span> <span class="o">=</span> <span class="p">[</span><span class="n">var</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">data_vars</span> <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">.</span><span class="n">dims</span><span class="p">)</span> <span class="o">!=</span> <span class="n">sample_dim</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">gene_annots</span><span class="p">:</span>
+            <span class="n">skip</span> <span class="o">+=</span> <span class="n">gene_annots</span>
+
+        <span class="k">return</span> <span class="n">infer_xarray_variables</span><span class="p">(</span><span class="n">xr_dataset</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                                      <span class="n">quantile_size</span><span class="o">=</span><span class="n">quantile_size</span><span class="p">,</span>
+                                      <span class="n">skip</span><span class="o">=</span><span class="n">skip</span><span class="p">)</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_xarray_dataset</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">existing_params</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"__GSForge.AnnotatedGEM.params"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">existing_params</span><span class="p">:</span>
+            <span class="n">existing_params</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">existing_params</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">existing_params</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_netcdf_path</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">netcdf_path</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_xarray_dataset</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">netcdf_path</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">netcdf_path</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+<div class="viewcode-block" id="AnnotatedGEM.from_netcdf"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.AnnotatedGEM.from_netcdf">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_netcdf</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">netcdf_path</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Construct a ``GEM`` object from a ``netcdf`` (.nc) file path.</span>
+
+<span class="sd">        :param netcdf_path: A path to a ``netcdf`` file. If this file has different</span>
+<span class="sd">            index names than default (Gene, Sample, counts), be sure to explicitly set those</span>
+<span class="sd">            parameters (``gene_index_name``, ``sample_index_name``, ``count_array_name``).</span>
+<span class="sd">        """</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_xarray_dataset</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">open_dataset</span><span class="p">(</span><span class="n">netcdf_path</span><span class="p">),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_pandas</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">count_df</span><span class="p">,</span> <span class="n">label_df</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xrarray_gem_from_pandas</span><span class="p">(</span><span class="n">count_df</span><span class="o">=</span><span class="n">count_df</span><span class="p">,</span> <span class="n">label_df</span><span class="o">=</span><span class="n">label_df</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+<div class="viewcode-block" id="AnnotatedGEM.from_pandas"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.AnnotatedGEM.from_pandas">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_pandas</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                    <span class="n">count_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+                    <span class="n">label_df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Construct a `GEM` object from `pandas.DataFrame` objects.</span>
+
+<span class="sd">        :param count_df: The gene expression matrix as a `pandas.DataFrame`.</span>
+<span class="sd">            This file is assumed to have genes as rows and samples as columns.</span>
+
+<span class="sd">        :param label_df: The gene annotation data as a `pandas.DataFrame`.</span>
+<span class="sd">            This file is assumed to have samples as rows and annotation observations</span>
+<span class="sd">            as columns.</span>
+
+<span class="sd">        :return: An instance of the `GEM` class.</span>
+<span class="sd">        """</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xrarray_gem_from_pandas</span><span class="p">(</span><span class="n">count_df</span><span class="o">=</span><span class="n">count_df</span><span class="p">,</span> <span class="n">label_df</span><span class="o">=</span><span class="n">label_df</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">instance</span></div>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">_parse_files</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">count_path</span><span class="p">,</span> <span class="n">label_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">count_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label_kwargs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">count_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">count_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># Expand and resolve the given paths.</span>
+        <span class="n">count_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">count_path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">label_path</span><span class="p">:</span>
+            <span class="n">label_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">label_path</span><span class="p">)</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+
+        <span class="n">count_df</span> <span class="o">=</span> <span class="n">load_count_df</span><span class="p">(</span><span class="n">count_path</span><span class="o">=</span><span class="n">count_path</span><span class="p">,</span> <span class="o">**</span><span class="n">count_kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">label_path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">label_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">label_kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">index_col</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">label_df</span> <span class="o">=</span> <span class="n">load_label_df</span><span class="p">(</span><span class="n">label_path</span><span class="o">=</span><span class="n">label_path</span><span class="p">,</span> <span class="o">**</span><span class="n">label_kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">label_df</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Check to ensure the indexes match.</span>
+        <span class="k">if</span> <span class="n">label_path</span> <span class="ow">and</span> <span class="nb">all</span><span class="p">(</span><span class="n">label_sample</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">count_df</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+                              <span class="k">for</span> <span class="n">label_sample</span> <span class="ow">in</span> <span class="n">label_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""Files cannot be automatically processed, please</span>
+<span class="s2">            load your data in to `pandas.DataFrame` objects and provide them to the</span>
+<span class="s2">            `AnnotatedGEM.from_pandas` constructor instead."""</span><span class="p">))</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xrarray_gem_from_pandas</span><span class="p">(</span><span class="n">count_df</span><span class="p">,</span> <span class="n">label_df</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">{</span><span class="s2">"data"</span><span class="p">:</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">}</span>
+
+<div class="viewcode-block" id="AnnotatedGEM.from_files"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.AnnotatedGEM.from_files">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_files</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span>
+                   <span class="n">count_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                   <span class="n">label_path</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">count_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">label_kwargs</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Construct a `GEM` object from file paths and optional parsing arguments.</span>
+
+<span class="sd">        :param count_path: The path to the gene expression matrix.</span>
+
+<span class="sd">        :param label_path: The path to the gene annotation data.</span>
+
+<span class="sd">        :param count_kwargs: Arguments to be passed to `pandas.read_csv` for the count matrix.</span>
+
+<span class="sd">        :param label_kwargs: Arguments to be passed to `pandas.read_csv` for the annotations.</span>
+
+<span class="sd">        :return: An instance of the `GEM` class.</span>
+<span class="sd">        """</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_parse_files</span><span class="p">(</span><span class="n">count_path</span><span class="o">=</span><span class="n">count_path</span><span class="p">,</span> <span class="n">label_path</span><span class="o">=</span><span class="n">label_path</span><span class="p">,</span>
+                                  <span class="n">count_kwargs</span><span class="o">=</span><span class="n">count_kwargs</span><span class="p">,</span> <span class="n">label_kwargs</span><span class="o">=</span><span class="n">label_kwargs</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AnnotatedGEM.save"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.models.html#GSForge.models.AnnotatedGEM.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">"""</span>
+<span class="sd">        Save as a netcdf (.nc) to the file at `path`.</span>
+
+<span class="sd">        :param path: The filepath to save to. This should use the `.nc` extension.</span>
+
+<span class="sd">        :return: The path to which the file was saved.</span>
+<span class="sd">        """</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{self.name}</span><span class="s2">.nc"</span>
+
+        <span class="c1"># Save some parameters that may be unique to this instance.</span>
+        <span class="n">params_to_save</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">value</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param_values</span><span class="p">()</span>
+                          <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">)}</span>
+        <span class="n">params_str</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">params_to_save</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s2">"__GSForge.AnnotatedGEM.params"</span><span class="p">:</span> <span class="n">params_str</span><span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">to_netcdf</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">"w"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">path</span></div></div>
+
+
+<span class="c1"># Python 3.8 will let us move this code into the class body, and add</span>
+<span class="c1"># # add register the @classmethod functions.</span>
+<span class="nd">@functools</span><span class="o">.</span><span class="n">singledispatch</span>
+<span class="k">def</span> <span class="nf">_annotated_gem_dispatch</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Source of type: {type(args[0])} not supported."</span><span class="p">)</span>
+
+
+<span class="n">_annotated_gem_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">,</span> <span class="n">AnnotatedGEM</span><span class="o">.</span><span class="n">_parse_xarray_dataset</span><span class="p">)</span>
+<span class="n">_annotated_gem_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">AnnotatedGEM</span><span class="o">.</span><span class="n">_parse_netcdf_path</span><span class="p">)</span>
+<span class="n">_annotated_gem_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">pathlib</span><span class="o">.</span><span class="n">PosixPath</span><span class="p">,</span> <span class="n">AnnotatedGEM</span><span class="o">.</span><span class="n">_parse_netcdf_path</span><span class="p">)</span>
+<span class="n">_annotated_gem_dispatch</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span> <span class="n">AnnotatedGEM</span><span class="o">.</span><span class="n">_parse_pandas</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../../../Welcome.html">Welcome</a></li>
+<li><a href="../../../user_guide/index.html">User Guide</a></li>
+<li><a href="../../../Reference_Manual/index.html">API</a></li>
+<li><a href="../../../Development.html">Developer Guide</a></li>
+<li><a href="../../../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

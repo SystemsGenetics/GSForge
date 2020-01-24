@@ -1,0 +1,10 @@
+<map id="inheritance83df0d43f1" name="inheritance83df0d43f1">
+<area shape="rect" id="node1" title="The Interface provides common API access for interacting with the `AnnotatedGEM` and" alt="" coords="260,42,454,61"/>
+<area shape="rect" id="node3" title="Abstract class for a GEMOperation." alt="" coords="513,61,804,80"/>
+<area shape="rect" id="node2" title="params(name=String)" alt="" coords="4,61,201,80"/>
+<area shape="rect" id="node4" title="params(name=String)" alt="" coords="238,79,476,99"/>
+<area shape="rect" id="node5" href="#GSForge.operations.prospectors.boruta_prospector" target="_top" title="Runs a single instance of BorutaPy feature selection." alt="" coords="860,4,1128,23"/>
+<area shape="rect" id="node6" title="Compute chi&#45;squared stats between each non&#45;negative feature and class." alt="" coords="863,42,1125,61"/>
+<area shape="rect" id="node7" href="#GSForge.operations.prospectors.create_random_lineament" target="_top" title="Creates a random lineament of size ``k``." alt="" coords="841,79,1148,99"/>
+<area shape="rect" id="node8" title="Compute the ANOVA F&#45;value for the provided sample." alt="" coords="858,117,1131,136"/>
+</map>

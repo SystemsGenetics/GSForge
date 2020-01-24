@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>GSForge.utils.R_interface — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/css/main.css" rel="stylesheet"/>
+<link href="../../../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../../../_static/js/main.js"></script>
+<script src="../../../_static/nbsite.js"></script>
+<script src="../../../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/_modules/GSForge/utils/R_interface.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../../../index.html">
+<img alt="Logo" src="../../../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../../../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../../../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="../../../user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="../../../Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="../../../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../../../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../../../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<h1>Source code for GSForge.utils.R_interface</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">This module contains functions for preparing data for transfer to and from the R programming language.</span>
+
+<span class="sd">Such functionality is powered by the `rpy2 &lt;https://rpy2.readthedocs.io/en/version_2.8.x/&gt;`_ library.</span>
+
+<span class="sd">No conversion function is needed for preparing labels, as one can use the builtin ``pandas.DataFrame``</span>
+<span class="sd">function ``to_dataframe``.::</span>
+
+<span class="sd">    label_df = labels.to_dataframe()</span>
+
+<span class="sd">"""</span>
+
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"Py_counts_to_R"</span><span class="p">,</span>
+    <span class="s2">"R_counts_to_Py_counts"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="Py_counts_to_R"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.utils.html#GSForge.utils.R_interface.Py_counts_to_R">[docs]</a><span class="k">def</span> <span class="nf">Py_counts_to_R</span><span class="p">(</span><span class="n">counts</span><span class="p">:</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Prepare a count ``xarray.DataArray`` as a ``pandas.DataFrame`` for transfer to the R programming language.</span>
+
+<span class="sd">    This function transposes the data to have genes as rows and samples as columns.</span>
+<span class="sd">    It then converts to a ``pandas.DataFrame`` and removes extraneous index levels.</span>
+
+<span class="sd">    The inverse of this function is ``R_counts_to_Py_counts``.</span>
+
+<span class="sd">    :param counts:</span>
+<span class="sd">        An ``xr.DataArray`` count matrix.</span>
+
+<span class="sd">    :returns count_df:</span>
+<span class="sd">        A ``pandas.DataFrame`` ready to transfer to an R environment.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Get a copy and stack the data so it is no longer flat.</span>
+    <span class="n">count_df</span> <span class="o">=</span> <span class="n">counts</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">unstack</span><span class="p">()</span>
+    <span class="c1"># Since we are stacking a named array, the outer level index will remain.</span>
+    <span class="c1"># Remove this index level via:</span>
+    <span class="n">count_df</span> <span class="o">=</span> <span class="n">count_df</span><span class="o">.</span><span class="n">droplevel</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">count_df</span></div>
+
+
+<div class="viewcode-block" id="R_counts_to_Py_counts"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.utils.html#GSForge.utils.R_interface.R_counts_to_Py_counts">[docs]</a><span class="k">def</span> <span class="nf">R_counts_to_Py_counts</span><span class="p">(</span><span class="n">r_count_array</span><span class="p">,</span> <span class="n">original_count_array</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Prepares a ``numpy`` array (count matrix) for use in ``GSForge``.</span>
+
+<span class="sd">    This function transposes the data (so that it has samples as rows and genes as columns).</span>
+
+<span class="sd">    Inverts the conversion provided by ``Py_counts_to_R``.</span>
+
+<span class="sd">    :param r_count_array:</span>
+<span class="sd">        A ``numpy`` array of count values. Presumed to be oriented with genes as rows,</span>
+<span class="sd">        and samples as columns.</span>
+
+<span class="sd">    :param original_count_array:</span>
+<span class="sd">        A copy of the original count array from which coordinates will be drawn.</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">        An ``xarray.DataArray`` of the count values.</span>
+<span class="sd">    """</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">r_count_array</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">original_count_array</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span></div>
+</pre></div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../../../Welcome.html">Welcome</a></li>
+<li><a href="../../../user_guide/index.html">User Guide</a></li>
+<li><a href="../../../Reference_Manual/index.html">API</a></li>
+<li><a href="../../../Development.html">Developer Guide</a></li>
+<li><a href="../../../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>

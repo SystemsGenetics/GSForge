@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta charset="utf-8"/>
+<title>GSForge.operations.prospectors — GSForge 0.0.1 documentation</title>
+<meta content="Short description for html meta description." name="description"/>
+<meta content="Tyler Biggs" name="author"/>
+<!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<!-- FONT
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.16/webfont.js"></script>
+<script>
+    WebFont.load({
+      google: {
+        families: ['Source Sans Pro']
+      }
+    });
+  </script>
+<!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/css/main.css" rel="stylesheet"/>
+<link href="../../../_static/nbsite.css" rel="stylesheet"/>
+<!-- Scripts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML" type="text/javascript">
+</script>
+<script src="../../../_static/js/main.js"></script>
+<script src="../../../_static/nbsite.js"></script>
+<script src="../../../_static/require.js"></script>
+<!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="../../../_static/images/favicon.ico" rel="icon" type="image/png"/>
+<!-- Canonical
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+<link href="/_modules/GSForge/operations/prospectors.html" rel="canonical">
+</link></head>
+<body class="">
+<header class="navigation">
+<div class="wrapper">
+<a class="logo" href="../../../index.html">
+<img alt="Logo" src="../../../_static/images/logo.png"/>
+</a>
+<a class="navigation-menu logo-text" href="../../../index.html">GSForge</a>
+<a class="navigation-menu-button" href="javascript:void(0)" id="js-mobile-menu">Menu</a>
+<nav>
+<ul class="navigation-menu show" id="js-navigation-menu">
+<li class="nav-link"><a href="../../../Welcome.html">Welcome</a></li>
+<li class="nav-link"><a href="../../../user_guide/index.html">User Guide</a></li>
+<li class="nav-link"><a href="../../../Reference_Manual/index.html">API</a></li>
+<li class="nav-link"><a href="../../../Development.html">Developer Guide</a></li>
+<li class="nav-link"><a href="../../../About.html">About</a></li>
+<li class="nav-link"><div style="display:inline-block;vertical-align: middle;"><div class="search-bar"><form action="../../../search.html" method="get" role="search">
+<input name="q" placeholder="Search" type="search"/>
+<button type="submit">
+<img alt="Search Icon" src="https://raw.githubusercontent.com/thoughtbot/refills/master/source/images/search-icon-black.png"/>
+</button>
+</form>
+</div></div></li>
+</ul>
+</nav>
+</div>
+</header>
+<!-- MAIN BODY OF DOCS –––––––––––––––––– -->
+<div class="docs section">
+<div id="hacketyhackhack"> <!-- style="width:20%;margin-right: 100px;"> --> <!--style="display: none;"> style="display:none;"> -->
+<div class="toc" style="width:15%; margin-right:20px;">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../user_guide/index.html">User Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Reference_Manual/index.html">API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../Development.html">Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../About.html">About</a></li>
+</ul>
+</div>
+</div>
+<div class="content"> <!-- style="max-width:80%;margin-left:auto;margin-right: auto;">-->
+<h1>Source code for GSForge.operations.prospectors</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""</span>
+<span class="sd">``Prospector`` operations return either boolean support arrays or arrays of selected genes.</span>
+<span class="sd">Prospector operations differ from analytics, in that they are not required to return a 'result' for every gene,</span>
+<span class="sd">or return the same result each call.</span>
+<span class="sd">"""</span>
+
+<span class="kn">import</span> <span class="nn">enum</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">textwrap</span> <span class="kn">import</span> <span class="n">dedent</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">param</span>
+<span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
+<span class="kn">from</span> <span class="nn">boruta</span> <span class="kn">import</span> <span class="n">boruta_py</span>
+<span class="kn">from</span> <span class="nn">sklearn.feature_selection</span> <span class="kn">import</span> <span class="n">chi2</span><span class="p">,</span> <span class="n">f_classif</span>
+
+<span class="kn">from</span> <span class="nn">..models</span> <span class="kn">import</span> <span class="n">OperationInterface</span>
+<span class="kn">from</span> <span class="nn">..utils</span> <span class="kn">import</span> <span class="n">kwargs_overlap</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">"create_random_lineament"</span><span class="p">,</span>
+    <span class="s2">"parse_boruta_model"</span><span class="p">,</span>
+    <span class="s2">"boruta_prospector"</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">chi_squared_test</span><span class="p">(</span><span class="n">OperationInterface</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Compute chi-squared stats between each non-negative feature and class.</span>
+<span class="sd">    See the `Scikit-learn documentation &lt;https://scikit-learn.org/&gt;`_</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># TODO: Note that this uses the OperationInterface.</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_count_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_annotation_data</span>
+
+        <span class="n">chi2_scores</span><span class="p">,</span> <span class="n">chi2_pvals</span> <span class="o">=</span> <span class="n">chi2</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">x_data</span><span class="p">),</span> <span class="n">y_data</span><span class="p">)</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Method"</span><span class="p">:</span> <span class="s2">"Chi-Squared"</span><span class="p">,</span>
+                 <span class="s2">"x_variable"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_variable</span><span class="p">,</span>
+                 <span class="s2">"y_variables"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_variables</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">({</span><span class="s2">"chi2_scores"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">chi2_scores</span><span class="p">),</span>
+                           <span class="s2">"chi2_pvals"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">chi2_pvals</span><span class="p">)},</span>
+                          <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"Gene"</span><span class="p">:</span> <span class="n">x_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gem</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]},</span>
+                          <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+
+<span class="k">class</span> <span class="nc">f_classification_test</span><span class="p">(</span><span class="n">OperationInterface</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Compute the ANOVA F-value for the provided sample.</span>
+<span class="sd">    See the `Scikit-learn documentation &lt;https://scikit-learn.org/&gt;`_</span>
+<span class="sd">    """</span>
+
+    <span class="c1"># TODO: Note that this uses the OperationInterface.</span>
+
+    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_count_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_annotation_data</span>
+
+        <span class="n">f_scores</span><span class="p">,</span> <span class="n">f_pvals</span> <span class="o">=</span> <span class="n">f_classif</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan_to_num</span><span class="p">(</span><span class="n">x_data</span><span class="p">),</span> <span class="n">y_data</span><span class="p">)</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Method"</span><span class="p">:</span> <span class="s2">"ANOVA F-value"</span><span class="p">,</span>
+                 <span class="s2">"x_variable"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_variable</span><span class="p">,</span>
+                 <span class="s2">"y_variables"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_variables</span><span class="p">}</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">({</span><span class="s2">"f_scores"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">f_scores</span><span class="p">),</span>
+                           <span class="s2">"f_pvals"</span><span class="p">:</span> <span class="p">([</span><span class="s2">"Gene"</span><span class="p">],</span> <span class="n">f_pvals</span><span class="p">)},</span>
+                          <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="s2">"Gene"</span><span class="p">:</span> <span class="n">x_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gem</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">]},</span>
+                          <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+
+<div class="viewcode-block" id="create_random_lineament"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.operations.html#GSForge.operations.prospectors.create_random_lineament">[docs]</a><span class="k">class</span> <span class="nc">create_random_lineament</span><span class="p">(</span><span class="n">OperationInterface</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Creates a random lineament of size ``k``.</span>
+
+<span class="sd">    Picks from the gene index defined by the ``Interface`` options.</span>
+<span class="sd">    """</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<div class="viewcode-block" id="create_random_lineament.process"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.operations.html#GSForge.operations.prospectors.create_random_lineament.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">random_genes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">random_genes</span><span class="p">,</span> <span class="p">{</span><span class="s2">"random_size"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">k</span><span class="p">}</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_model_parsers</span><span class="p">(</span><span class="n">enum</span><span class="o">.</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">boruta</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"support"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="p">([</span><span class="n">d</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">"support_"</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)),</span>
+        <span class="s2">"support_weak"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="p">([</span><span class="n">d</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">"support_weak_"</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)),</span>
+        <span class="s2">"ranking"</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">,</span> <span class="n">m</span><span class="p">:</span> <span class="p">([</span><span class="n">d</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="s2">"ranking_"</span><span class="p">))),</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_parse_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_type</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
+    <span class="sd">"""Parse a model into a dictionary appropriate for constructing an ``xarray.Dataset``.</span>
+
+<span class="sd">    :param model: The model object to be parsed.</span>
+
+<span class="sd">    :param model_type: The key to the Enum ``_model_parsers``.</span>
+
+<span class="sd">    :param dim:</span>
+
+<span class="sd">    :return:</span>
+<span class="sd">    """</span>
+    <span class="n">parsing_dict</span> <span class="o">=</span> <span class="n">_model_parsers</span><span class="p">[</span><span class="n">model_type</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">func</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="n">model</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">parsing_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+
+
+<div class="viewcode-block" id="parse_boruta_model"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.operations.html#GSForge.operations.prospectors.parse_boruta_model">[docs]</a><span class="k">def</span> <span class="nf">parse_boruta_model</span><span class="p">(</span><span class="n">boruta_model</span><span class="p">,</span> <span class="n">gene_coords</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">"Gene"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">:</span>
+    <span class="sd">"""Convert a boruta model into an ``xarray.Dataset`` object.</span>
+
+<span class="sd">    :param boruta_model: A boruta_py model.</span>
+
+<span class="sd">    :param attrs: A dictionary to be assigned to the output dataset attrs.</span>
+
+<span class="sd">    :param gene_coords: An array (index) of the genes passed to the boruta_model.</span>
+
+<span class="sd">    :param dim: The name of the coordinate dimension.</span>
+
+<span class="sd">    :return: An ``xarray.Dataset`` object.</span>
+<span class="sd">    """</span>
+    <span class="n">model_data</span> <span class="o">=</span> <span class="n">_parse_model</span><span class="p">(</span><span class="n">boruta_model</span><span class="p">,</span> <span class="s2">"boruta"</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">(</span><span class="n">model_data</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="n">gene_coords</span><span class="p">},</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">)</span></div>
+
+
+<span class="c1"># TODO: Consider a direct to GeneSet object option.</span>
+<div class="viewcode-block" id="boruta_prospector"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.operations.html#GSForge.operations.prospectors.boruta_prospector">[docs]</a><span class="k">class</span> <span class="nc">boruta_prospector</span><span class="p">(</span><span class="n">OperationInterface</span><span class="p">):</span>
+    <span class="sd">"""Runs a single instance of BorutaPy feature selection.</span>
+
+<span class="sd">    This is just a simple wrapper for a boruta model that produces an</span>
+<span class="sd">    ``xarray.Dataset`` object suitable for use in the creation of a</span>
+<span class="sd">    ``GSForge.GeneSet`` object."""</span>
+
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    A supervised learning estimator, with a 'fit' method that returns the</span>
+<span class="s2">    ``feature_importances_`` attribute. Important features must correspond to</span>
+<span class="s2">    high absolute values in the `feature_importances_`."""</span><span class="p">))</span>
+
+    <span class="n">n_estimators</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    If int sets the number of estimators in the chosen ensemble method.</span>
+<span class="s2">    If 'auto' this is determined automatically based on the size of the</span>
+<span class="s2">    dataset. The other parameters of the used estimators need to be set</span>
+<span class="s2">    with initialisation."""</span><span class="p">))</span>
+
+    <span class="n">perc</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    Instead of the max we use the percentile defined by the user, to pick</span>
+<span class="s2">    our threshold for comparison between shadow and real features. The max</span>
+<span class="s2">    tend to be too stringent. This provides a finer control over this. The</span>
+<span class="s2">    lower perc is the more false positives will be picked as relevant but</span>
+<span class="s2">    also the less relevant features will be left out. The usual trade-off.</span>
+<span class="s2">    The default is essentially the vanilla Boruta corresponding to the max.</span>
+<span class="s2">    """</span><span class="p">))</span>
+
+    <span class="n">alpha</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Number</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    Level at which the corrected p-values will get rejected in both</span>
+<span class="s2">    correction steps."""</span><span class="p">))</span>
+
+    <span class="n">two_step</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Boolean</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    If you want to use the original implementation of Boruta with Bonferroni</span>
+<span class="s2">    correction only set this to False."""</span><span class="p">))</span>
+
+    <span class="n">max_iter</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    The number of maximum iterations to perform."""</span><span class="p">))</span>
+
+    <span class="n">random_state</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    If int, random_state is the seed used by the random number generator;</span>
+<span class="s2">    If RandomState instance, random_state is the random number generator;</span>
+<span class="s2">    If None, the random number generator is the RandomState instance used</span>
+<span class="s2">    by ``np.random``."""</span><span class="p">))</span>
+
+    <span class="n">verbose</span> <span class="o">=</span> <span class="n">param</span><span class="o">.</span><span class="n">Integer</span><span class="p">(</span><span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="n">dedent</span><span class="p">(</span><span class="s2">"""</span><span class="se">\</span>
+<span class="s2">    Controls verbosity of output:</span>
+<span class="s2">    - 0: no output</span>
+<span class="s2">    - 1: displays iteration number</span>
+<span class="s2">    - 2: which features have been selected already"""</span><span class="p">))</span>
+
+<div class="viewcode-block" id="boruta_prospector.process"><a class="viewcode-back" href="../../../Reference_Manual/GSForge.operations.html#GSForge.operations.prospectors.boruta_prospector.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_count_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y_annotation_data</span>
+        <span class="n">boruta_kwargs</span> <span class="o">=</span> <span class="n">kwargs_overlap</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">boruta_py</span><span class="o">.</span><span class="n">BorutaPy</span><span class="p">)</span>
+        <span class="n">boruta_model</span> <span class="o">=</span> <span class="n">boruta_py</span><span class="o">.</span><span class="n">BorutaPy</span><span class="p">(</span><span class="o">**</span><span class="n">boruta_kwargs</span><span class="p">)</span>
+        <span class="n">boruta_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span> <span class="n">y_data</span><span class="p">)</span>
+
+        <span class="c1"># Convert attribute dictionaries to .json format.</span>
+        <span class="c1"># We can't store nested dictionaries in the attrs.</span>
+        <span class="n">boruta_json_attrs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">boruta_kwargs</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="s1">'&lt;not serializable&gt;'</span><span class="p">)</span>
+        <span class="n">ranking_model_json_attrs</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">get_params</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="k">lambda</span> <span class="n">o</span><span class="p">:</span> <span class="s1">'&lt;not serializable&gt;'</span><span class="p">)</span>
+
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">'boruta_model'</span><span class="p">:</span> <span class="n">boruta_json_attrs</span><span class="p">,</span>
+                 <span class="s1">'ranking_model'</span><span class="p">:</span> <span class="n">ranking_model_json_attrs</span><span class="p">,</span>
+                 <span class="s2">"selected_count_variable"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">count_variable</span><span class="p">,</span>
+                 <span class="s2">"selected_annotation_variables"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">annotation_variables</span><span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">parse_boruta_model</span><span class="p">(</span><span class="n">boruta_model</span><span class="p">,</span> <span class="n">attrs</span><span class="o">=</span><span class="n">attrs</span><span class="p">,</span> <span class="n">gene_coords</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">get_gene_index</span><span class="p">(),</span>
+                                  <span class="n">dim</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">gem</span><span class="o">.</span><span class="n">gene_index_name</span><span class="p">)</span></div></div>
+
+<span class="c1"># class boruta_one_vs_rest_prospector(boruta_prospector):</span>
+<span class="c1">#     def process(self):</span>
+<span class="c1">#         pass</span>
+</pre></div>
+</div>
+</div>
+<!-- END MAIN BODY OF DOCS ––––––––––––– -->
+<footer class="footer">
+<div class="footer-links">
+<ul>
+<li><span class="footer-title">Links</span></li>
+<li><a href="../../../Welcome.html">Welcome</a></li>
+<li><a href="../../../user_guide/index.html">User Guide</a></li>
+<li><a href="../../../Reference_Manual/index.html">API</a></li>
+<li><a href="../../../Development.html">Developer Guide</a></li>
+<li><a href="../../../About.html">About</a></li>
+</ul>
+<ul>
+<li><span class="footer-title">Join Us</span></li>
+<li><a href="https://github.com/SystemsGenetics/GSForge">Github</a></li>
+</ul>
+<ul class="copyright">
+<li>2019 Tyler Biggs</li>
+</ul>
+</div>
+</footer>
+<!-- Google Analytics -->
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-61554933-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+<!-- MathJax Config -->
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
+<!-- End Document
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+</body>
+</html>
