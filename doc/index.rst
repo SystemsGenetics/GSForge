@@ -4,6 +4,9 @@ GSForge
 
 Welcome to the **GSForge** documentation!
 
+.. note::
+    This is a pre-release version of GSForge, and some features and function names may not yet be stable.
+
 GSForge is a Python software package that assists researchers in the selection of gene sets with potential association
 to an experimental condition or phenotypic trait, which offers new potential hypotheses for gene-trait causality.
 

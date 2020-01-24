@@ -29,17 +29,44 @@ class AnnotatedGEM(param.Parameterized):
 
     An AnnotatedGEM object can be created with one of the class methods:
 
-    from_files()
+    ``from_files()``
       A helper function for loading disparate GEM and annotation files through
       pandas.read_csv().
 
-    from_pandas()
+    ``from_pandas()``
       Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
       must share the same sample index.
 
-    from_netcdf()
+    ``from_netcdf()``
       Reads in from a .nc filepath. Usually this means loading a previously
       created AnnotatedGEM.
+
+
+    **Randomly generate a demo AnnotatedGEM**
+
+    # >>> from sklearn.datasets import make_multilabel_classification
+    # >>> data, labels = make_multilabel_classification()
+    # >>> agem = AnnotatedGEM.from_pandas(pd.DataFrame(data), pd.DataFrame(labels), name="Generated GEM")
+
+
+    # >>> agem
+    # <GSForge.AnnotatedGEM>
+    # Name: Generated GEM
+    # Selected GEM Variable: 'counts'
+    #     Gene   100
+    #     Sample 100
+
+    **View the entire gene or sample index:**
+
+    # >>> agem.gene_index
+    # <xarray.DataArray 'Gene' (Gene: 100)>...
+
+    # >>> agem.sample_index
+    # <xarray.DataArray 'Sample' (Sample: 100)>...
+
+    # >>> agem.infer_variables()
+    # {'all_labels': ...
+
     """
 
     data = param.ClassSelector(class_=xr.Dataset, doc=dedent("""\
@@ -66,6 +93,8 @@ class AnnotatedGEM(param.Parameterized):
     def __init__(self, *args, **params):
         if args:
             params = _annotated_gem_dispatch(*args, **params)
+        # TODO: Ensure that a data object exists in params.
+        #       Give an invalid input warning to the user.
         super().__init__(**params)
 
     def __repr__(self) -> str:
@@ -79,7 +108,8 @@ class AnnotatedGEM(param.Parameterized):
 
     @property
     def gene_index(self) -> xr.DataArray:
-        """Returns the entire gene index of this AnnotatedGEM object as an ``xarray.DataArray``.
+        """
+        Returns the entire gene index of this AnnotatedGEM object as an ``xarray.DataArray``.
 
         The actual variable or coordinate that this returns is controlled by the
         ``gene_index_name`` parameter.
@@ -88,7 +118,8 @@ class AnnotatedGEM(param.Parameterized):
 
     @property
     def sample_index(self) -> xr.DataArray:
-        """Returns the entire sample index of this AnnotatedGEM object as an ``xarray.DataArray``.
+        """
+        Returns the entire sample index of this AnnotatedGEM object as an ``xarray.DataArray``.
 
         The actual variable or coordinate that this returns is controlled by the
         ``sample_index_name`` parameter.
@@ -97,7 +128,8 @@ class AnnotatedGEM(param.Parameterized):
 
     @property
     def count_array_names(self) -> list:
-        """Returns a list of all available count arrays contained within this AnnotatedGEM object.
+        """
+        Returns a list of all available count arrays contained within this AnnotatedGEM object.
 
         This is done simply by returning all data variables that have the same dimension set
         as the default count array.
@@ -106,7 +138,8 @@ class AnnotatedGEM(param.Parameterized):
         return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
 
     def infer_variables(self, quantile_size=10, skip=None) -> dict:
-        """Infer categories for the variables in the AnnotatedGEM's labels.
+        """
+        Infer categories for the variables in the AnnotatedGEM's labels.
 
         :param quantile_size: The maximum number of unique elements before a variable is no
             longer considered as a `quantile-able` set of values.
@@ -142,7 +175,13 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def from_netcdf(cls, netcdf_path, **params):
-        """Construct a ``GEM`` object from a ``netcdf`` (.nc) file path."""
+        """
+        Construct a ``GEM`` object from a ``netcdf`` (.nc) file path.
+
+        :param netcdf_path: A path to a ``netcdf`` file. If this file has different
+            index names than default (Gene, Sample, counts), be sure to explicitly set those
+            parameters (``gene_index_name``, ``sample_index_name``, ``count_array_name``).
+        """
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return cls(**params)
 
@@ -156,7 +195,8 @@ class AnnotatedGEM(param.Parameterized):
                     count_df: pd.DataFrame,
                     label_df: pd.DataFrame = None,
                     **params):
-        """Construct a `GEM` object from `pandas.DataFrame` objects.
+        """
+        Construct a `GEM` object from `pandas.DataFrame` objects.
 
         :param count_df: The gene expression matrix as a `pandas.DataFrame`.
             This file is assumed to have genes as rows and samples as columns.
@@ -211,7 +251,8 @@ class AnnotatedGEM(param.Parameterized):
                    count_kwargs: dict = None,
                    label_kwargs: dict = None,
                    **params):
-        """Construct a `GEM` object from file paths and optional parsing arguments.
+        """
+        Construct a `GEM` object from file paths and optional parsing arguments.
 
         :param count_path: The path to the gene expression matrix.
 
@@ -228,7 +269,8 @@ class AnnotatedGEM(param.Parameterized):
         return cls(**params)
 
     def save(self, path):
-        """Save as a netcdf (.nc) to the file at `path`.
+        """
+        Save as a netcdf (.nc) to the file at `path`.
 
         :param path: The filepath to save to. This should use the `.nc` extension.
 
