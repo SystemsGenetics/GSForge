@@ -25,7 +25,7 @@ class GenesVsCounts(OperationInterface):
         return scatter
 
     def process(self):
-        hues = [item for item in [self.annotation_variables, self.hue] if item is not None]
+        hues = [item for item in self.annotation_variables + [self.hue] if item is not None]
         modes = {"scatter": self.genewise_scatter,
                  # "violin": self.genewise_violin,
                  }
