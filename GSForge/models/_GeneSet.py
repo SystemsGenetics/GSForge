@@ -11,16 +11,6 @@ import numpy as np
 from textwrap import dedent
 
 
-# Local imports.
-# from .. import utils
-
-
-# TODO: Feature: Automatic GeneSet replicate combination?
-#       + From name or some hash, and by:
-#       + By membership
-#       + By filter_function(variables)
-# TODO: Add support inference?
-#       Create the boolean support array from a variable in the given data parameter.
 class GeneSet(param.Parameterized):
     """
     A data class for a the result of a gene selection or analysis.
@@ -31,7 +21,7 @@ class GeneSet(param.Parameterized):
     """
 
     data = param.Parameter(allow_None=False, doc=dedent("""\
-    Contains a gene-index `Xarray.Dataset` object, it should have
+    Contains a gene-index `xarray.Dataset` object, it should have
     only those genes that are considered 'within' the GeneSet
     in the index, or a boolean variable named 'support'."""))
 
@@ -40,7 +30,7 @@ class GeneSet(param.Parameterized):
     (boolean) variable indicating membership in this GeneSet."""))
 
     gene_index_name = param.String(default="Gene", doc=dedent("""\
-    This parameter controls which variable from the `Xarray.Dataset` should be 
+    This parameter controls which variable from the `xarray.Dataset` should be 
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names."""))
 
@@ -128,60 +118,6 @@ class GeneSet(param.Parameterized):
 
         return selected_mode(data, n)
 
-    # def k_abs_best_genes(self, k=100, score_name=None):
-    #     #     Fixes Issue #1240: NaNs can't be properly compared, so change them to the
-    #     #     smallest value of scores's dtype. -inf seems to be unreliable.
-    #     scores = self.data[score_name].values.copy()
-    #     scores[np.isnan(scores)] = np.finfo(scores.dtype).min
-    #
-    #     top_k_indexes = np.argsort(np.abs(scores))[-k:]
-    #     top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes})[self.gene_index_name].values.copy()
-    #     return top_k_genes
-
-    # def k_best_genes(self, k=100, score_name=None) -> np.array:
-    #     """Select the highest scoring genes from the 'score_name' variable.
-    #
-    #     :param k: The number of genes to return.
-    #
-    #     :param score_name: The variable name to rank genes by.
-    #
-    #     :return: A numpy array of the top k genes based on their scores in `score_name`.
-    #     """
-    #     # Look for a variable name that ends in "_score" if none is given.
-    #     if score_name is None:
-    #         for var_name in list(self.data.variables.keys()):
-    #             if "_scores" in var_name:
-    #                 score_name = var_name
-    #                 break  # Use the first match.
-    #
-    #     scores = self.data[score_name].values.copy()
-    #     scores = scores[np.isnan(scores)] = np.finfo(scores.dtype).min
-    #     top_k_indexes = np.argsort(scores)[-k:]
-    #     top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes}).Gene.values.copy()
-    #     return top_k_genes
-    #
-    # def q_best_genes(self, q=0.999, score_name=None) -> np.array:
-    #     """Returns a numpy array of the q best genes based on the quantile `q`,
-    #     and the target variable `score_name`.
-    #
-    #     :param q: The quantile cutoff.
-    #
-    #     :param score_name: The target variable to judge the genes by.
-    #
-    #     :return: A numpy array of the top `q` quantile genes based on `score_name`.
-    #     """
-    #     if score_name is None:
-    #         for var_name in list(self.data.variables.keys()):
-    #             if "_scores" in var_name:
-    #                 score_name = var_name
-    #                 break  # Use the first match.
-    #
-    #     quantile_score = self.data[score_name].quantile(q=q)
-    #     quantile_selection = (self.data[score_name] >= quantile_score)
-    #     top_q_genes = self.data.sel({"Gene": quantile_selection}).Gene.values.copy()
-    #     return top_q_genes
-
-    # TODO: Ensure 'attrs' get added to the dataset if they are found in params.
     @staticmethod
     def parse_xarray_dataset(data, **params):
         existing_params = data.attrs.get("__GSForge.GeneSet.params")

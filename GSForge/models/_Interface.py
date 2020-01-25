@@ -66,7 +66,7 @@ class Interface(param.Parameterized):
     count_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
     The name of the count matrix used."""))
 
-    annotation_variables = param.Parameter(doc=dedent("""\
+    annotation_variables = param.List(doc=dedent("""\
     The name of the active annotation variable(s). These are the annotation columns that will
     be control the subset returned by `y_annotation_data`."""), precedence=-1.0, default=None)
 
@@ -213,15 +213,21 @@ class Interface(param.Parameterized):
 
     @property
     def selection(self) -> xr.Dataset:
-        """Returns the currently selected data."""
+        """Returns the currently selected data as an ``xarray.Dataset`` object.."""
         selected_variables = [self.active_count_variable]
 
         if self.annotation_variables is not None:
             selected_variables += self.annotation_variables
 
-        return self.gem.data[selected_variables].sel({
+        selection = self.gem.data[selected_variables].sel({
             self.gem.gene_index_name: self.get_gene_index(),
             self.gem.sample_index_name: self.get_sample_index()})
+
+        # Optional transform.
+        if self.count_transform is not None:
+            selection = self.count_transform(selection)
+
+        return selection
 
     @property
     def x_count_data(self) -> xr.Dataset:
@@ -260,8 +266,8 @@ class Interface(param.Parameterized):
 
     @property
     def y_annotation_data(self):
-        """Returns the currently selected 'y_data', or None, based on the
-        ``selected_annotation_variables`` parameter.
+        """
+        Returns the currently selected 'y_data', or None, based on the ``selected_annotation_variables`` parameter.
 
         :return: An ``xarray.Dataset`` or ``xarray.DataArray`` object of the currently selected y_data.
         """

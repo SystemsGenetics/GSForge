@@ -19,9 +19,7 @@ from ._GeneSet import GeneSet
 #     + Add a `get_support(key)` function.
 class GeneSetCollection(param.Parameterized):
     """
-    A data class that holds an AnnotatedGEM and a dictionary of associated
-    GeneSet objects.
-
+    An interface class which contains an AnnotatedGEM and a dictionary of GeneSet objects.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
@@ -69,7 +67,7 @@ class GeneSetCollection(param.Parameterized):
         :param keys: The list of `GeneSet` keys that should be saved. If this is not provided, all
             `GeneSet` objects are saved.
 
-        :return:
+        :return: None
         """
         # Save all the gene sets in this collection in the target_dir path.
         if keys is None:
@@ -84,7 +82,8 @@ class GeneSetCollection(param.Parameterized):
             print(save_path)
 
     def as_dict(self, keys=None, exclude=None):
-        """Returns a dictionary of {name: supported_genes} for each gene set, or those specified
+        """
+        Returns a dictionary of {name: supported_genes} for each gene set, or those specified
         by the `keys` argument.
 
         :param keys: The list of `GeneSet` keys to be included in the returned dictionary.
@@ -101,16 +100,35 @@ class GeneSetCollection(param.Parameterized):
         return {k: v.gene_support() for k, v in gene_sets.items()}
 
     def intersection(self, keys=None, exclude=None):
-        """Get the intersection of supported genes in this GeneSet collection."""
+        """
+        Get the intersection of supported genes in this GeneSet collection.
+
+        :param keys: The list of `GeneSet` keys to be included in the returned dictionary.
+
+        :param exclude: A list of `GeneSet` keys to exclude from the returned dictionary.
+        """
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.intersect1d, gene_set_dict.values())
 
     def union(self, keys=None, exclude=None):
-        """Get the union of supported genes in this GeneSet collection."""
+        """
+        Get the union of supported genes in this GeneSet collection.
+
+        :param keys: The list of `GeneSet` keys to be included in the returned dictionary.
+
+        :param exclude: A list of `GeneSet` keys to exclude from the returned dictionary.
+        """
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.union1d, gene_set_dict.values())
 
     def difference(self, keys=None, exclude=None):
+        """
+        Get the difference of supported genes in this GeneSet collection.
+
+        :param keys: The list of `GeneSet` keys to be included in the returned dictionary.
+
+        :param exclude: A list of `GeneSet` keys to exclude from the returned dictionary.
+        """
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.setdiff1d, gene_set_dict.values())
 
@@ -134,6 +152,26 @@ class GeneSetCollection(param.Parameterized):
         return [(ak, bk, len(np.intersect1d(av, bv)) / len(av))
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
                 if ak != bk]
+
+    def get_gene_sets_data(self, variables: list, keys=None):
+        """
+        Extracts variables from each Dataset, and returns them as a dictionary.
+
+        If you need these to be collated into a dataset, use ...
+
+        :param variables:
+        :param keys:
+        :return:
+        """
+        keys = self.gene_sets.keys() if keys is None else keys
+        return {key: self.gene_sets[key].gene_support()[variables] for key in keys}
+
+    def collate_gene_sets_data(self, variables: list, keys=None) -> xr.Dataset:
+        keys = self.gene_sets.keys() if keys is None else keys
+        data_dict = self.get_gene_sets_data(variables, keys)
+        key_ds = xr.concat(data_dict.values(), dim="gene_set")
+        key_ds["gene_set"] = keys
+        return key_ds
 
     @classmethod
     def from_folder(cls, gem, target_dir, glob_filter="*.nc", filter_func=None, **params):

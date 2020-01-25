@@ -53,17 +53,10 @@ class GenesVsCounts(OperationInterface):
     #     return violin
 
     def process(self):
-
-        # self.set_param(gene_set_mode="intersection")
-
-        # if self.gene_set_collection is not None:
-        #     self.set_param(selected_gene_sets=list(self.gene_set_collection.gene_sets.keys()))
-
-        plotting_dims = [self.count_variable]
         if self.hue:
-            plotting_dims += [self.hue]
+            self.set_param(annotation_variables=self.annotation_variables + [self.hue])
 
-        selected_subset = self.gem.data[plotting_dims].sel(self.get_selection_indexes())
+        selected_subset = self.selection
 
         modes = {
             "scatter": self.genewise_scatter,
