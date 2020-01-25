@@ -100,58 +100,86 @@ class GeneSet(param.Parameterized):
         self.data[self.support_index_name] = ((self.gene_index_name,), support)
 
     # TODO: Combine with k_best_genes as a mode or option.
-    def k_abs_best_genes(self, k=100, score_name=None):
-        #     Fixes Issue #1240: NaNs can't be properly compared, so change them to the
-        #     smallest value of scores's dtype. -inf seems to be unreliable.
-        scores = self.data[score_name].values.copy()
-        scores[np.isnan(scores)] = np.finfo(scores.dtype).min
+    def get_n_top_genes(self, score_variable=None, n=50, mode="absolute_largest", within_support: bool = True):
 
-        top_k_indexes = np.argsort(np.abs(scores))[-k:]
-        top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes})[self.gene_index_name].values.copy()
-        return top_k_genes
+        def _abs_largest(scores: xr.DataArray, nn: int):
+            top_idx = np.argsort(np.abs(scores.values))[::-1][:nn]
+            return scores.isel({self.gene_index_name: top_idx})[self.gene_index_name].values.copy()
 
-    def k_best_genes(self, k=100, score_name=None) -> np.array:
-        """Select the highest scoring genes from the 'score_name' variable.
+        modes = {
+            "absolute_largest": _abs_largest,
+        }
 
-        :param k: The number of genes to return.
+        selected_mode = modes[mode]
 
-        :param score_name: The variable name to rank genes by.
-
-        :return: A numpy array of the top k genes based on their scores in `score_name`.
-        """
         # Look for a variable name that ends in "_score" if none is given.
-        if score_name is None:
+        score_name = score_variable
+        if score_variable is None:
             for var_name in list(self.data.variables.keys()):
                 if "_scores" in var_name:
                     score_name = var_name
                     break  # Use the first match.
-
-        scores = self.data[score_name].values.copy()
-        scores = scores[np.isnan(scores)] = np.finfo(scores.dtype).min
-        top_k_indexes = np.argsort(scores)[-k:]
-        top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes}).Gene.values.copy()
-        return top_k_genes
-
-    def q_best_genes(self, q=0.999, score_name=None) -> np.array:
-        """Returns a numpy array of the q best genes based on the quantile `q`,
-        and the target variable `score_name`.
-
-        :param q: The quantile cutoff.
-
-        :param score_name: The target variable to judge the genes by.
-
-        :return: A numpy array of the top `q` quantile genes based on `score_name`.
-        """
         if score_name is None:
-            for var_name in list(self.data.variables.keys()):
-                if "_scores" in var_name:
-                    score_name = var_name
-                    break  # Use the first match.
+            raise ValueError("A score variable could not be automatically identified, please specify one.")
 
-        quantile_score = self.data[score_name].quantile(q=q)
-        quantile_selection = (self.data[score_name] >= quantile_score)
-        top_q_genes = self.data.sel({"Gene": quantile_selection}).Gene.values.copy()
-        return top_q_genes
+        data = self.data.sel({self.gene_index_name: self.gene_support()})[score_variable] \
+            if within_support \
+            else self.data[score_variable]
+
+        return selected_mode(data, n)
+
+    # def k_abs_best_genes(self, k=100, score_name=None):
+    #     #     Fixes Issue #1240: NaNs can't be properly compared, so change them to the
+    #     #     smallest value of scores's dtype. -inf seems to be unreliable.
+    #     scores = self.data[score_name].values.copy()
+    #     scores[np.isnan(scores)] = np.finfo(scores.dtype).min
+    #
+    #     top_k_indexes = np.argsort(np.abs(scores))[-k:]
+    #     top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes})[self.gene_index_name].values.copy()
+    #     return top_k_genes
+
+    # def k_best_genes(self, k=100, score_name=None) -> np.array:
+    #     """Select the highest scoring genes from the 'score_name' variable.
+    #
+    #     :param k: The number of genes to return.
+    #
+    #     :param score_name: The variable name to rank genes by.
+    #
+    #     :return: A numpy array of the top k genes based on their scores in `score_name`.
+    #     """
+    #     # Look for a variable name that ends in "_score" if none is given.
+    #     if score_name is None:
+    #         for var_name in list(self.data.variables.keys()):
+    #             if "_scores" in var_name:
+    #                 score_name = var_name
+    #                 break  # Use the first match.
+    #
+    #     scores = self.data[score_name].values.copy()
+    #     scores = scores[np.isnan(scores)] = np.finfo(scores.dtype).min
+    #     top_k_indexes = np.argsort(scores)[-k:]
+    #     top_k_genes = self.data.isel({self.gene_index_name: top_k_indexes}).Gene.values.copy()
+    #     return top_k_genes
+    #
+    # def q_best_genes(self, q=0.999, score_name=None) -> np.array:
+    #     """Returns a numpy array of the q best genes based on the quantile `q`,
+    #     and the target variable `score_name`.
+    #
+    #     :param q: The quantile cutoff.
+    #
+    #     :param score_name: The target variable to judge the genes by.
+    #
+    #     :return: A numpy array of the top `q` quantile genes based on `score_name`.
+    #     """
+    #     if score_name is None:
+    #         for var_name in list(self.data.variables.keys()):
+    #             if "_scores" in var_name:
+    #                 score_name = var_name
+    #                 break  # Use the first match.
+    #
+    #     quantile_score = self.data[score_name].quantile(q=q)
+    #     quantile_selection = (self.data[score_name] >= quantile_score)
+    #     top_q_genes = self.data.sel({"Gene": quantile_selection}).Gene.values.copy()
+    #     return top_q_genes
 
     # TODO: Ensure 'attrs' get added to the dataset if they are found in params.
     @staticmethod

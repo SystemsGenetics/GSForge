@@ -1,9 +1,9 @@
 # Much of this setup is borrowed or inspired from the travis.yml files
 # of the param, holoviews and related packages.
 
-#branches:
-#  only:
-#    - master
+branches:
+  only:
+    - master
 
 addons:
   apt:

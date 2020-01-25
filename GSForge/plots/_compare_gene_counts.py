@@ -54,10 +54,10 @@ class GenesVsCounts(OperationInterface):
 
     def process(self):
 
-        self.set_param(gene_set_mode="intersection")
+        # self.set_param(gene_set_mode="intersection")
 
-        if self.gene_set_collection is not None:
-            self.set_param(selected_gene_sets=list(self.gene_set_collection.gene_sets.keys()))
+        # if self.gene_set_collection is not None:
+        #     self.set_param(selected_gene_sets=list(self.gene_set_collection.gene_sets.keys()))
 
         plotting_dims = [self.count_variable]
         if self.hue:
