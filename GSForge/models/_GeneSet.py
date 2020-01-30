@@ -168,8 +168,12 @@ class GeneSet(param.Parameterized):
         params = cls.parse_pandas(dataframe=dataframe, genes=genes, attrs=attrs, **params)
         return cls(**params)
 
+    def to_dataframe(self, only_supported: bool = True) -> pd.DataFrame:
+        selection = self.gene_support() if only_supported else self.gene_index
+        return self.data.sel(Gene=selection).to_dataframe()
+
     @staticmethod
-    def parse_gene_array(selected_gene_array: np.ndarray, complete_gene_index=None, attrs=None, **params):
+    def parse_gene_array(selected_gene_array: np.ndarray, complete_gene_index=None, attrs=None, **params) -> dict:
         coords = selected_gene_array if complete_gene_index is None else complete_gene_index
 
         data = xr.Dataset({"support": (["Gene"], np.isin(coords, selected_gene_array))}, coords={"Gene": coords})

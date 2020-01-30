@@ -1,6 +1,7 @@
 import pathlib
 import param
 import os
+import pandas as pd
 import itertools
 import xarray as xr
 import numpy as np
@@ -12,11 +13,6 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 
 
-# TODO:
-#     + Create default GeneSets on initialization (These should
-#       probably not be saved). "total" and "zero_dropped".
-#       Consider a `basic_GeneSets` function.
-#     + Add a `get_support(key)` function.
 class GeneSetCollection(param.Parameterized):
     """
     An interface class which contains an AnnotatedGEM and a dictionary of GeneSet objects.
@@ -59,7 +55,8 @@ class GeneSetCollection(param.Parameterized):
         return self.gene_sets[key].gene_support()
 
     def save(self, target_dir, keys=None):
-        """Save  this collection to `target_dir`. Each `GeneSet` will be saved as a separate
+        """
+        Save  this collection to `target_dir`. Each `GeneSet` will be saved as a separate
         .netcdf file within this directory.
 
         :param target_dir: The path to which the 'GeneSet' `xarray.Dataset` .netcdf files will be written.
@@ -80,6 +77,28 @@ class GeneSetCollection(param.Parameterized):
         for key in keys:
             save_path = self.gene_sets[key].save_as_netcdf(target_dir)
             print(save_path)
+
+    def gene_sets_to_dataframes(self, keys=None, only_supported: bool = True) -> dict:
+        keys = self.gene_sets.keys() if keys is None else keys
+        return {key: self.gene_sets[key].to_dataframe(only_supported) for key in keys}
+
+    # TODO: Consider overwrite protection.
+    def gene_sets_to_csv_files(self, target_dir=None, keys=None, only_supported: bool = True):
+        keys = self.gene_sets.keys() if keys is None else keys
+        target_dir = self.name if target_dir is None else target_dir
+        data_frames = self.gene_sets_to_dataframes(keys, only_supported)
+        os.makedirs(target_dir, exist_ok=True)
+        for name, df in data_frames.items():
+            df.to_csv(f"{target_dir}/{name}.csv")
+
+    # TODO: Consider overwrite protection.
+    def gene_sets_to_excel_sheet(self, name: str = None, keys=None, only_supported: bool = True):
+        keys = self.gene_sets.keys() if keys is None else keys
+        name = f'{self.name}.xlsx' if name is None else f'{name}.xlsx'
+        data_frames = self.gene_sets_to_dataframes(keys, only_supported)
+        with pd.ExcelWriter(name) as writer:
+            for set_name, df in data_frames.items():
+                df.to_excel(writer, sheet_name=set_name)
 
     def as_dict(self, keys=None, exclude=None):
         """
@@ -200,4 +219,3 @@ class GeneSetCollection(param.Parameterized):
             gene_sets[name] = new_gene_set
 
         return cls(gem=gem, gene_sets=gene_sets, **params)
-
