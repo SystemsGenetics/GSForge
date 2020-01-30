@@ -130,6 +130,12 @@ def main(gem_netcdf,
 
     boruta_results.to_netcdf(output_filename)
     click.echo(f"Results saved to: {output_filename}")
+
+    with mlflow.start_run():
+        mlflow.log_param("x", 1)
+        mlflow.log_metric("y", 2)
+
+
     exit(0)
 
 

@@ -50,6 +50,13 @@ process boruta {
     output:
         file ('*.nc') optional true
 
+    beforeScript:
+    """
+    # Set the mlflow experiment.
+    export MLFLOW_EXPERIMENT_NAME=${EXP_NAME}
+    # mlflow experiments create --experiment-name ${EXP_NAME}
+    """
+
     script:
     """
     boruta_multiclass.py --gem_netcdf ${gem_netcdf} \
@@ -59,5 +66,14 @@ process boruta {
                   --ranking_model ${model} \
                   --ranking_model_opts '${JsonOutput.toJson(model_opts)}' \
                   --append_wd
+    """
+
+    afterScript:
+    """
+    #!/usr/bin/python
+    # Record mlflow params.
+    with mlflow.start_run():
+        mlflow.log_param("a", 1)
+        mlflow.log_metric("b", 2)
     """
 }
