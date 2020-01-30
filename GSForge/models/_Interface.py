@@ -225,7 +225,7 @@ class Interface(param.Parameterized):
 
         # Optional transform.
         if self.count_transform is not None:
-            selection = self.count_transform(selection)
+            selection[self.count_variable] = self.count_transform(selection[self.count_variable])
 
         return selection
 

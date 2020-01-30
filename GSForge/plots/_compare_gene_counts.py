@@ -12,7 +12,6 @@ class GenesVsCounts(OperationInterface):
     def genewise_scatter(data, hue=None,
                          gene_dim="Gene", sample_dim="Sample", count_dim="counts"):
         hvds = hv.Dataset(data.to_dataframe().reset_index())
-
         kdims = [gene_dim, count_dim]
         vdims = [sample_dim] if hue is None else [sample_dim, hue]
 
@@ -25,9 +24,8 @@ class GenesVsCounts(OperationInterface):
         return scatter
 
     def process(self):
-        hues = [item for item in self.annotation_variables + [self.hue] if item is not None]
         modes = {"scatter": self.genewise_scatter,
                  # "violin": self.genewise_violin,
                  }
-
-        return modes[self.mode](self.selection, hues)
+        self.set_param(annotation_variables=[self.hue])
+        return modes[self.mode](self.selection, self.hue)
