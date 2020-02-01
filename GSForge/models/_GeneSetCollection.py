@@ -1,5 +1,5 @@
 from typing import Dict, Tuple, List, TypeVar, Type, Union
-from os import PathLike
+# from os import PathLike
 
 import pathlib
 import param
@@ -20,7 +20,7 @@ from ._GeneSet import GeneSet
 # They are used by third party tools and linters.
 # In python 3.8 we can use forward references.
 TypeGSC = TypeVar("TypeGSC", bound="GeneSetCollection")
-TypePath = Union[str, PathLike[str]]
+TypePath = Union[str, 'PathLike[Any]']
 
 
 class GeneSetCollection(param.Parameterized):
@@ -109,6 +109,7 @@ class GeneSetCollection(param.Parameterized):
             A dictionary of {key: pd.DataFrame} of the `GeneSet.data`.
         """
         keys = self.gene_sets.keys() if keys is None else keys
+        keys = [key for key in keys if self.gene_sets[key].support_exists]
         return {key: self.gene_sets[key].to_dataframe(only_supported) for key in keys}
 
     # TODO: Consider overwrite protection.
@@ -132,6 +133,7 @@ class GeneSetCollection(param.Parameterized):
         :return: None
         """
         keys = self.gene_sets.keys() if keys is None else keys
+        keys = [key for key in keys if self.gene_sets[key].support_exists]
         target_dir = self.name if target_dir is None else target_dir
         data_frames = self.gene_sets_to_dataframes(keys, only_supported)
         os.makedirs(target_dir, exist_ok=True)
@@ -158,13 +160,15 @@ class GeneSetCollection(param.Parameterized):
         :return: None
         """
         keys = self.gene_sets.keys() if keys is None else keys
+        keys = [key for key in keys if self.gene_sets[key].support_exists]
         name = f'{self.name}.xlsx' if name is None else f'{name}.xlsx'
         data_frames = self.gene_sets_to_dataframes(keys, only_supported)
         with pd.ExcelWriter(name) as writer:
             for set_name, df in data_frames.items():
                 df.to_excel(writer, sheet_name=set_name)
 
-    def as_dict(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[str, np.ndarray]:
+    def as_dict(self, keys: List[str] = None, exclude: List[str] = None,
+                empty_supports: bool = False) -> Dict[str, np.ndarray]:
         """
         Returns a dictionary of {name: supported_genes} for each GeneSet, or those specified
         by the `keys` argument.
@@ -175,18 +179,22 @@ class GeneSetCollection(param.Parameterized):
         :param exclude:
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
+        :param empty_supports:
+            Whether to include GeneSets that have no support array, or no genes supported within
+            the support array.
+
         :return:
             Dictionary of {name: supported_genes} for each GeneSet.
         """
-        if keys is None:
-            keys = self.gene_sets.keys()
-        # TODO: This is not how support should be checked!
-        #       Consider checking if .gene_support() gives an array with 1+ element within?
-        keys = [key for key in keys if "support" in self.gene_sets[key].data]
+        keys = self.gene_sets.keys() if keys is None else keys
+
+        if empty_supports is False:
+            keys = [key for key in keys if self.gene_sets[key].support_exists]
+
         if exclude is not None:
             keys = [key for key in keys if key not in exclude]
-        gene_sets = {k: self.gene_sets[k] for k in keys}
-        return {k: v.gene_support() for k, v in gene_sets.items()}
+
+        return {key: self.gene_sets[key].gene_support() for key in keys}
 
     def intersection(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
@@ -289,40 +297,60 @@ class GeneSetCollection(param.Parameterized):
         :return:
             A dictionary of `{GeneSet.Name, GeneSet.name): percent gene intersection}`.
         """
-        gene_set_dict = self.as_dict(keys)
+        gene_set_dict = self.as_dict(keys, exclude)
         zero_filtered_dict = {k: v for k, v in gene_set_dict.items()
                               if len(v) > 0}
         return [(ak, bk, len(np.intersect1d(av, bv)) / len(av))
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
                 if ak != bk]
 
-    def get_gene_sets_data(self, variables: list, keys=None) -> Dict[str, np.ndarray]:
-        """
-        Extracts variables from each Dataset, and returns them as a dictionary.
+    # def get_gene_sets_data(self, variables: list, keys=None) -> Dict[str, np.ndarray]:
+    #     """
+    #     Extracts variables from each Dataset, and returns them as a dictionary.
+    #
+    #     If you need these to be collated into a dataset, use `collate_gene_sets_data()`.
+    #
+    #     :param variables:
+    #     :param keys:
+    #     :return:
+    #     """
+    #     keys = self.gene_sets.keys() if keys is None else keys
+    #     return {key: self.gene_sets[key].gene_support()[variables] for key in keys}
 
-        If you need these to be collated into a dataset, use `collate_gene_sets_data()`.
-
-        :param variables:
-        :param keys:
-        :return:
-        """
-        keys = self.gene_sets.keys() if keys is None else keys
-        return {key: self.gene_sets[key].gene_support()[variables] for key in keys}
-
-    def collate_gene_sets_data(self, variables: list, keys=None) -> xr.Dataset:
-        keys = self.gene_sets.keys() if keys is None else keys
-        data_dict = self.get_gene_sets_data(variables, keys)
-        key_ds = xr.concat(data_dict.values(), dim="gene_set")
-        key_ds["gene_set"] = keys
-        return key_ds
+    # def collate_gene_sets_data(self, variables: list, keys=None) -> xr.Dataset:
+    #     keys = self.gene_sets.keys() if keys is None else keys
+    #     data_dict = self.get_gene_sets_data(variables, keys)
+    #     # TODO: Change this call to ensure that it returns an xr.Dataset.
+    #     key_ds = xr.concat(data_dict.values(), dim="gene_set")
+    #     key_ds["gene_set"] = keys
+    #     return key_ds
 
     @classmethod
     def from_folder(cls: Type[TypeGSC], gem: AnnotatedGEM, target_dir, glob_filter="*.nc", filter_func=None,
                     **params) -> TypeGSC:
         """
-        Create a `GeneSetCollection` from a list of file paths.
+        Create a `GeneSetCollection` from a directory of saved GeneSet objects.
 
-        The base file names will be used as the key values.
+        The file name of each gene_set.nc file will be used as the key in the `gene_sets` dictionary.
+
+        :param gem:
+            A `GSForge.AnnotatedGEM` object.
+
+        :param target_dir:
+            The directory which contains the saved GeneSet .netcdf files.
+
+        :param glob_filter:
+            A glob by which to restrict the files found within `target_dir`.
+
+        :param filter_func:
+             A function by which to filter which `xarray.Dataset` objects are included.
+             This function should take an `xarray.Dataset` and return a boolean.
+
+        :param params:
+            Parameters to configure the GeneSetCollection.
+
+        :return:
+            A new GeneSetCollection.
         """
         # TODO: Add a warning if the glob returns nothing.
         gene_sets = dict()

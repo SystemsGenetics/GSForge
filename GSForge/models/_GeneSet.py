@@ -1,3 +1,6 @@
+from typing import Dict, Tuple, List, TypeVar, Type, Union, Any
+from os import PathLike
+
 import json
 import pathlib
 import param
@@ -10,14 +13,20 @@ import numpy as np
 
 from textwrap import dedent
 
+# Declare typing hints.
+# Typing hints are not used by the Python runtime in any way.
+# They are used by third party tools and linters.
+# In python 3.8 we can use forward references.
+TypeGS = TypeVar("TypeGS", bound="GeneSet")
+TypePath = Union[str, 'PathLike[Any]']
+
 
 class GeneSet(param.Parameterized):
     """
     A data class for a the result of a gene selection or analysis.
 
-    A GeneSet can also be a measurement or ranking of a set of genes,
-    and this could include all of the 'available' genes. In such cases
-    a boolean array 'support' indicates membership in the GeneSet.
+    A GeneSet can also be a measurement or ranking of a set of genes, and this could include all of
+    the 'available' genes. In such cases a boolean array 'support' indicates membership in the GeneSet.
     """
 
     data = param.Parameter(allow_None=False, doc=dedent("""\
@@ -39,8 +48,10 @@ class GeneSet(param.Parameterized):
             params = _geneset_dispatch(*args, **params)
         super().__init__(**params)
 
-    def __repr__(self):
-        """Display a summary of this GeneSet."""
+    def __repr__(self) -> str:
+        """
+        Display a summary of this GeneSet.
+        """
         support_size = self.gene_support().shape[0]
         percent_support = support_size / self.data['Gene'].shape[0]
         summary = [f"<GSForge.{type(self).__name__}>"]
@@ -50,7 +61,7 @@ class GeneSet(param.Parameterized):
         return "\n".join(summary)
 
     @property
-    def gene_index(self):
+    def gene_index(self) -> np.ndarray:
         """
         Returns the entire gene index of this GeneSet object as an ``xarray.DataArray``.
 
@@ -60,9 +71,9 @@ class GeneSet(param.Parameterized):
         :return:
             The entire gene index of this GeneSet as an ``xarray.DataArray``.
         """
-        return self.data[self.gene_index_name].copy(deep=True)
+        return self.data[self.gene_index_name].copy()
 
-    def gene_support(self) -> np.array:
+    def gene_support(self) -> np.ndarray:
         """
         Returns the list of genes 'supported in this GeneSet.
 
@@ -81,32 +92,111 @@ class GeneSet(param.Parameterized):
                     "set of genes in this GeneSet.")
             return self.data[self.gene_index_name].values.copy()
 
-    def set_gene_support(self, genes):
-        """Set this GeneSet support to the given genes."""
-        self.data[self.support_index_name] = ((self.gene_index_name,), np.isin(self.data.Gene.values, genes))
+    @property
+    def support_exists(self) -> bool:
+        """
+        Returns True if a support array exists, and that it has at least one member within, returns
+        False otherwise.
+        """
+        if self.support_index_name not in self.data:
+            return False
+        if self.gene_support().shape[0] > 0:
+            return True
+        return False
 
-    def set_boolean_support(self, variable):
-        support = np.array(self.data[variable], dtype=bool)
-        self.data[self.support_index_name] = ((self.gene_index_name,), support)
+    # TODO: Consider having this return a 'copy' of itself, an not overwriting the current support.
+    # Rename: set_support_by_genes
+    def set_gene_support(self, genes: np.ndarray) -> None:
+        """
+        Set this GeneSet support to the given genes. This function calculates the boolean support
+        array for the gene index via `np.isin(gene_index, genes)`.
 
-    # TODO: Combine with k_best_genes as a mode or option.
-    def get_n_top_genes(self, score_variable=None, n=50, mode="absolute_largest", within_support: bool = True):
+        :param genes:
+            An array of genes which represent the "supported" subset within the entire gene index.
 
-        def _abs_largest(scores: xr.DataArray, nn: int):
+        :return:
+            None. This function modifies the current object in place.
+        """
+        # Ensure the genes given are a numpy array.
+        genes = np.asarray(genes)
+        # Set the support array.
+        self.data[self.support_index_name] = ((self.gene_index_name,), np.isin(self.gene_index, genes))
+
+    # TODO: Consider having this return a 'copy' of itself, an not overwriting the current support.
+    def set_support_from_boolean_array(self, boolean_array) -> None:
+        """
+
+        :param boolean_array:
+            A boolean `numpy.ndarray` or an `xarray.DataArray`.
+
+        :return:
+        """
+        self.data[self.support_index_name] = ((self.gene_index_name,), np.asarray(boolean_array, dtype=bool))
+
+    # TODO: Allow this to take a user-given callable function. Document with an example.
+    def get_n_top_genes(self, score_variable: str = None, mode: str = "absolute_largest",
+                        within_support: bool = True, **mode_kwargs) -> np.ndarray:
+        """
+        Get the top n genes as an array, selected via `mode` by using `score_variable` from the GeneSet.data variables.
+
+        **Available modes**:
+
+        `absolute_largest`
+            Returns the n absolute largest values per the `score_variable` variable.
+            Useful for selecting the absolute largest log-fold-change, regardless of the sign.
+
+        :param score_variable:
+            The name of the score variable to use. If this is not given some common score variable names are
+            used, and the first found is used.
+
+        :param mode:
+            The mode by which to calculate how genes are ranked.
+
+        :param within_support:
+            Whether to limit the genes returned to those within the "support" of this GeneSet. Defaults to True.
+
+        :param mode_kwargs:
+            Remaining keyword arguments are passed to the 'mode' function.
+
+        # TODO: Comment mode functions and their arguments clearly. Include how to write such a function.
+
+        :return:
+            An array of n, top-ranked, genes.
+        """
+
+        # TODO: Consider moving these functions to utilities?
+        def _abs_largest(scores: xr.DataArray, **kwargs):
+            nn = kwargs["n"]
             top_idx = np.argsort(np.abs(scores.values))[::-1][:nn]
             return scores.isel({self.gene_index_name: top_idx})[self.gene_index_name].values.copy()
 
+        def _above_threshold(scores: xr.DataArray, **kwargs):
+            threshold = kwargs["threshold"]
+            return scores.isel({self.gene_index_name: scores.values > threshold})[self.gene_index_name].values.copy()
+
+        def _above_absolute_threshold(scores: xr.DataArray, **kwargs):
+            threshold = kwargs["threshold"]
+            return scores.isel({self.gene_index_name: np.abs(scores.values) > threshold})[
+                self.gene_index_name].values.copy()
+
         modes = {
             "absolute_largest": _abs_largest,
+            "above_threshold": _above_threshold,
+            "above_absolute_threshold": _above_absolute_threshold,
         }
 
-        selected_mode = modes[mode]
+        SCORE_VARIABLES = [
+            "score",
+            "logFC",  # from EdgeR.
+        ]
 
+        # TODO: Convert this to an internal helper function.
         # Look for a variable name that ends in "_score" if none is given.
         score_name = score_variable
         if score_variable is None:
             for var_name in list(self.data.variables.keys()):
-                if "_scores" in var_name:
+                # TODO: Check more common 'score' variable names. Convert to a variable somewhere...
+                if "score" in var_name:
                     score_name = var_name
                     break  # Use the first match.
         if score_name is None:
@@ -116,10 +206,28 @@ class GeneSet(param.Parameterized):
             if within_support \
             else self.data[score_variable]
 
-        return selected_mode(data, n)
+        # Assign the selected mode function.
+        selected_mode = modes.get(mode)
+        if selected_mode is None:
+            raise ValueError(f"Given mode selection: {mode} is not a valid mode. Choose from:\n{modes.keys()}")
+
+        return selected_mode(data, **mode_kwargs)
 
     @staticmethod
-    def parse_xarray_dataset(data, **params):
+    def _parse_xarray_dataset(data: xr.Dataset, **params) -> dict:
+        """
+        Parses an argument set containing an `xarray.Dataset`, combines with given params and
+        returns a parameter dictionary.
+
+        :param data:
+            An `xarray.Dataset` passed by the user.
+
+        :param params:
+            Keyword-value arguments.
+
+        :return:
+            A parsed parameter dictionary.
+        """
         existing_params = data.attrs.get("__GSForge.GeneSet.params")
         if existing_params:
             existing_params = json.loads(existing_params)
@@ -127,25 +235,79 @@ class GeneSet(param.Parameterized):
         return {"data": data, **params}
 
     @classmethod
-    def parse_netcdf_path(cls, netcdf_path, **params):
+    def _parse_netcdf_path(cls: Type[TypeGS], netcdf_path: TypePath, **params) -> dict:
+        """
+        Parses an argument set containing an `xarray.Dataset`, combines with given params and
+        returns a parameter dictionary.
+
+        :param netcdf_path:
+            The path to the .netcdf file to be used.
+
+        :param params:
+            Keyword-value arguments.
+
+        :return:
+            A parsed parameter dictionary.
+        """
         params = cls.parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return {"data": xr.open_dataset(netcdf_path), **params}
 
     @classmethod
-    def from_xarray_dataset(cls, data, **params):
-        params = cls.parse_xarray_dataset(data, **params)
+    def from_xarray_dataset(cls, data: xr.Dataset, **params) -> TypeGS:
+        """
+        Create a GeneSet from an `xarray.Dataset`.
+
+        :param data:
+            An `xarray.Dataset` object. See the `.data` parameter of this class.
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A new instance of a GeneSet.
+        """
+        params = cls._parse_xarray_dataset(data, **params)
         return cls(**params)
 
     @classmethod
     def from_netcdf(cls, path, **params):
-        """Construct a `GeneSet` object from a `netcdf` file path."""
+        """
+        Create a `GeneSet` object from a `netcdf` file path.
+
+        :param path:
+            The path to the .netcdf file to be used.
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A new instance of a GeneSet.
+        """
         path = str(pathlib.Path(path).expanduser().resolve())
-        params = cls.parse_xarray_dataset(xr.open_dataset(path), **params)
+        params = cls._parse_xarray_dataset(xr.open_dataset(path), **params)
         return cls(**params)
 
     @staticmethod
-    def parse_pandas(dataframe, genes=None, attrs=None, **params):
-        """Parse a `pandas.DataFrame` for use in a GeneSet."""
+    def _parse_pandas(dataframe, genes: np.ndarray = None, attrs: dict = None, **params) -> dict:
+        """
+        Parse a `pandas.DataFrame` for use in a GeneSet.
+
+        :param dataframe:
+            A `pandas.DataFrame` object. Assumed to be indexed by genes names.
+
+        :param genes:
+            If you have a separate (but ordered the same!) gene array that corresponds to your data,
+            it can be passed here to be set as the index appropriately.
+
+        :param attrs:
+            A dictionary of attributes to be added to the `xarray.Dataset.attrs` attribute.
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A parsed parameter dictionary.
+        """
 
         if genes is not None:
             dataframe["Gene"] = genes
@@ -165,15 +327,52 @@ class GeneSet(param.Parameterized):
 
     @classmethod
     def from_pandas(cls, dataframe: pd.DataFrame, genes=None, attrs=None, **params):
-        params = cls.parse_pandas(dataframe=dataframe, genes=genes, attrs=attrs, **params)
+        """
+        Create a GeneSet from a `pandas.DataFrame`.
+
+        :param dataframe:
+            A `pandas.DataFrame` object. Assumed to be indexed by genes names.
+
+        :param genes:
+            If you have a separate (but ordered the same!) gene array that corresponds to your data,
+            it can be passed here to be set as the index appropriately.
+
+        :param attrs:
+            A dictionary of attributes to be added to the `xarray.Dataset.attrs` attribute.
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A new GeneSet object.
+        """
+        params = cls._parse_pandas(dataframe=dataframe, genes=genes, attrs=attrs, **params)
         return cls(**params)
 
     def to_dataframe(self, only_supported: bool = True) -> pd.DataFrame:
+        """
+        Convert this GeneSet.data attribute to a `pandas.DataFrame`. This restricts the data
+        returned to include only those genes that are returned by `GeneSet.gene_support()`.
+
+        :param only_supported:
+            Defaults to True, set to False if you want all GeneSet data to be in the DataFrame returned.
+
+        :return:
+            A `pandas.DataFrame` of this `GeneSet.data` attribute.
+        """
         selection = self.gene_support() if only_supported else self.gene_index
         return self.data.sel(Gene=selection).to_dataframe()
 
     @staticmethod
-    def parse_gene_array(selected_gene_array: np.ndarray, complete_gene_index=None, attrs=None, **params) -> dict:
+    def _parse_gene_array(selected_gene_array: np.ndarray, complete_gene_index=None, attrs=None, **params) -> dict:
+        """
+
+        :param selected_gene_array:
+        :param complete_gene_index:
+        :param attrs:
+        :param params:
+        :return:
+        """
         coords = selected_gene_array if complete_gene_index is None else complete_gene_index
 
         data = xr.Dataset({"support": (["Gene"], np.isin(coords, selected_gene_array))}, coords={"Gene": coords})
@@ -185,13 +384,13 @@ class GeneSet(param.Parameterized):
 
     @classmethod
     def from_gene_array(cls, selected_gene_array: np.ndarray, complete_gene_index=None, attrs=None, **params):
-        params = cls.parse_gene_array(selected_gene_array=selected_gene_array,
-                                      complete_gene_index=complete_gene_index,
-                                      attrs=attrs, **params)
+        params = cls._parse_gene_array(selected_gene_array=selected_gene_array,
+                                       complete_gene_index=complete_gene_index,
+                                       attrs=attrs, **params)
         return cls(**params)
 
     @staticmethod
-    def parse_GeneSets(*gene_sets, mode: str = "union", attrs=None, **params):
+    def _parse_GeneSets(*gene_sets, mode: str = "union", attrs=None, **params):
         """
         Combines the GeneSet objects given using ``mode`` to create a single new
         GeneSet object.
@@ -244,10 +443,10 @@ class GeneSet(param.Parameterized):
 
         No variables or attributes from the original GeneSets are maintained in this process.
         """
-        params = cls.parse_GeneSets(*gene_sets,
-                                    mode=mode,
-                                    attrs=attrs,
-                                    **params)
+        params = cls._parse_GeneSets(*gene_sets,
+                                     mode=mode,
+                                     attrs=attrs,
+                                     **params)
         return cls(**params)
 
     @classmethod
@@ -260,16 +459,20 @@ class GeneSet(param.Parameterized):
 
     # TODO: Consider overwrite protection?
     def save_as_netcdf(self, target_dir=None, name=None):
-        """Save this GeneSet as a netcdf (.nc) file in the `target_dir` directory.
+        """
+        Save this GeneSet as a netcdf (.nc) file in the `target_dir` directory.
 
         The default filename will be: `{GeneSet.name}.nc`, if the GeneSet does not
         have a name, one must be provided via the `name` argument.
 
-        :param target_dir: The directory to place the saved GeneSet into.
+        :param target_dir:
+            The directory to place the saved GeneSet into.
 
-        :param name: The name to give the GeneSet upon saving.
+        :param name:
+            The name to give the GeneSet upon saving.
 
-        :returns output_path: The path to which the file was saved.
+        :returns output_path:
+            The path to which the file was saved.
         """
         target_dir = os.getcwd() if target_dir is None else target_dir
 
@@ -303,9 +506,9 @@ def _geneset_dispatch(*args, **params):
     raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
 
-_geneset_dispatch.register(str, GeneSet.parse_netcdf_path)
-_geneset_dispatch.register(pathlib.PosixPath, GeneSet.parse_netcdf_path)
-_geneset_dispatch.register(xr.Dataset, GeneSet.parse_xarray_dataset)
-_geneset_dispatch.register(pd.DataFrame, GeneSet.parse_pandas)
-_geneset_dispatch.register(np.ndarray, GeneSet.parse_gene_array)
-_geneset_dispatch.register(list, GeneSet.parse_gene_array)
+_geneset_dispatch.register(str, GeneSet._parse_netcdf_path)
+_geneset_dispatch.register(pathlib.PosixPath, GeneSet._parse_netcdf_path)
+_geneset_dispatch.register(xr.Dataset, GeneSet._parse_xarray_dataset)
+_geneset_dispatch.register(pd.DataFrame, GeneSet._parse_pandas)
+_geneset_dispatch.register(np.ndarray, GeneSet._parse_gene_array)
+_geneset_dispatch.register(list, GeneSet._parse_gene_array)

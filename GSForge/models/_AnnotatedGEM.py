@@ -1,3 +1,5 @@
+from typing import List, TypeVar, Union
+
 import pathlib
 import json
 import param
@@ -14,6 +16,13 @@ from ._utils import (
     load_count_df,
     load_label_df,
 )
+
+# Declare typing hints.
+# Typing hints are not used by the Python runtime in any way.
+# They are used by third party tools and linters.
+# In python 3.8 we can use forward references.
+TypeAGEM = TypeVar("TypeAGEM", bound="AnnotatedGEM")
+TypePath = Union[str, 'PathLike[Any]']
 
 
 class AnnotatedGEM(param.Parameterized):
@@ -90,7 +99,7 @@ class AnnotatedGEM(param.Parameterized):
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names."""))
 
-    def __init__(self, *args, **params):
+    def __init__(self, *args, **params) -> None:
         if args:
             params = _annotated_gem_dispatch(*args, **params)
         # TODO: Ensure that a data object exists in params.
@@ -98,7 +107,9 @@ class AnnotatedGEM(param.Parameterized):
         super().__init__(**params)
 
     def __repr__(self) -> str:
-        """Display a summary of this AnnotatedGEM."""
+        """
+        Display a summary of this AnnotatedGEM.
+        """
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"Selected GEM Variable: '{self.count_array_name}'"]
@@ -127,7 +138,7 @@ class AnnotatedGEM(param.Parameterized):
         return self.data[self.sample_index_name].copy(deep=True)
 
     @property
-    def count_array_names(self) -> list:
+    def count_array_names(self) -> List[str]:
         """
         Returns a list of all available count arrays contained within this AnnotatedGEM object.
 
@@ -137,16 +148,19 @@ class AnnotatedGEM(param.Parameterized):
         default_dims = set(self.data[self.count_array_name].dims)
         return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
 
-    def infer_variables(self, quantile_size=10, skip=None) -> dict:
+    def infer_variables(self, quantile_size: int = 10, skip: bool = None) -> dict:
         """
         Infer categories for the variables in the AnnotatedGEM's labels.
 
-        :param quantile_size: The maximum number of unique elements before a variable is no
+        :param quantile_size:
+            The maximum number of unique elements before a variable is no
             longer considered as a `quantile-able` set of values.
 
-        :param skip: The variables to be skipped.
+        :param skip:
+            The variables to be skipped.
 
-        :return: A dictionary of the inferred value types.
+        :return:
+            A dictionary of the inferred value types.
         """
         if skip is None:
             skip = self.count_array_names + [self.sample_index_name, self.gene_index_name]
@@ -156,12 +170,24 @@ class AnnotatedGEM(param.Parameterized):
         if gene_annots:
             skip += gene_annots
 
-        return infer_xarray_variables(xr_dataset=self.data,
-                                      quantile_size=quantile_size,
-                                      skip=skip)
+        return infer_xarray_variables(xr_dataset=self.data, quantile_size=quantile_size, skip=skip)
 
     @staticmethod
-    def _parse_xarray_dataset(data, **params):
+    def _parse_xarray_dataset(data: xr.Dataset, **params) -> dict:
+        """
+        Parse arguments for AnnotatedGEM creation via an `xarray.Dataset`.
+
+        :param data:
+            An `xarray.Dataset` if this dataset has different index names than default
+            (Gene, Sample, counts), be sure to explicitly set those parameters
+            (`gene_index_name`, `sample_index_name`, `count_array_name`).
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A parsed parameter dictionary.
+        """
         existing_params = data.attrs.get("__GSForge.AnnotatedGEM.params")
         if existing_params:
             existing_params = json.loads(existing_params)
@@ -170,51 +196,81 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def _parse_netcdf_path(cls, netcdf_path, **params):
+        """
+        Parse arguments for AnnotatedGEM creation via a path to an `xarray.Dataset` saved as a .netcdf file.
+
+        :param netcdf_path:
+            A path to a `netcdf` file. If this file has different index names than default
+            (Gene, Sample, counts), be sure to explicitly set those parameters
+            (`gene_index_name`, `sample_index_name`, `count_array_name`).
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A parsed parameter dictionary.
+        """
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return {"data": xr.open_dataset(netcdf_path), **params}
 
     @classmethod
-    def from_netcdf(cls, netcdf_path, **params):
+    def from_netcdf(cls, netcdf_path: TypePath, **params) -> TypeAGEM:
         """
-        Construct a ``GEM`` object from a ``netcdf`` (.nc) file path.
+        Construct an `AnnotatedGEM` object from a `netcdf` (.nc) file path.
 
-        :param netcdf_path: A path to a ``netcdf`` file. If this file has different
-            index names than default (Gene, Sample, counts), be sure to explicitly set those
-            parameters (``gene_index_name``, ``sample_index_name``, ``count_array_name``).
+        :param netcdf_path:
+            A path to a `netcdf` file. If this file has different index names than default
+            (Gene, Sample, counts), be sure to explicitly set those parameters
+            (`gene_index_name`, `sample_index_name`, `count_array_name`).
+
+        :return:
+            A new AnnotatedGEM.
         """
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return cls(**params)
 
     @classmethod
-    def _parse_pandas(cls, count_df, label_df, **params):
-        data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
-        return {"data": data, **params}
-
-    @classmethod
-    def from_pandas(cls,
-                    count_df: pd.DataFrame,
-                    label_df: pd.DataFrame = None,
-                    **params):
+    def _parse_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> dict:
         """
-        Construct a `GEM` object from `pandas.DataFrame` objects.
+        Parse arguments for the construction of an `AnnotatedGEM` object from `pandas.DataFrame` objects.
 
-        :param count_df: The gene expression matrix as a `pandas.DataFrame`.
+        :param count_df:
+            The gene expression matrix as a `pandas.DataFrame`.
             This file is assumed to have genes as rows and samples as columns.
 
         :param label_df: The gene annotation data as a `pandas.DataFrame`.
             This file is assumed to have samples as rows and annotation observations
             as columns.
 
-        :return: An instance of the `GEM` class.
+        :return:
+            A parsed parameter dictionary.
+        """
+        data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
+        return {"data": data, **params}
+
+    @classmethod
+    def from_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> TypeAGEM:
+        """
+        Construct a `GEM` object from `pandas.DataFrame` objects.
+
+        :param count_df:
+            The gene expression matrix as a `pandas.DataFrame`.
+            This file is assumed to have genes as rows and samples as columns.
+
+        :param label_df:
+            The gene annotation data as a `pandas.DataFrame`.
+            This file is assumed to have samples as rows and annotation observations
+            as columns.
+
+        :return:
+            An instance of the `GEM` class.
         """
         data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
-        instance = super().__new__(cls)
-        instance.set_param(**params)
-        return instance
+        return cls(**params)
 
     @classmethod
-    def _parse_files(cls, count_path, label_path=None, count_kwargs=None, label_kwargs=None, **params):
+    def _parse_files(cls, count_path, label_path=None, count_kwargs=None, label_kwargs=None, **params) -> dict:
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
 
