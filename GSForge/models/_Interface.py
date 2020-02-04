@@ -9,9 +9,9 @@ import numpy as np
 import xarray as xr
 import functools
 
-from ._AnnotatedGEM import AnnotatedGEM
+from ._AnnotatedGEM import AnnotatedGEM, TypeAGEM
 # from ._GeneSet import GeneSet
-from ._GeneSetCollection import GeneSetCollection
+from ._GeneSetCollection import GeneSetCollection, TypeGSC
 
 
 # TODO: Add GeneSet data access.
@@ -100,33 +100,66 @@ class Interface(param.Parameterized):
             self.param["selected_gene_sets"].objects = avail_mappings + [None]
 
     @staticmethod
-    def _parse_annotated_gem(annotated_gem, *args, **params):
+    def _parse_annotated_gem(annotated_gem: TypeAGEM, *args, **params) -> dict:
+        """
+        Parse arguments for creation of a new `Interface` instance from an `AnnotatedGEM`.
+
+        :param annotated_gem:
+            A `GSForge.AnnotatedGEM` object.
+
+        :param args:
+            Not used.
+
+        :param params:
+            Parameters to initialize this `Interface` with.
+
+        :return:
+            A parsed parameter dictionary.
+        """
         params = {"gem": annotated_gem,
                   "count_variable": annotated_gem.count_array_name,
                   **params}
-        if args:
-            params = _interface_dispatch(*args, **params)
+        # if args:
+        #     params = _interface_dispatch(*args, **params)
         return params
 
     @staticmethod
-    def _parse_gene_set_collection(gene_set_collection, *args, **params):
+    def _parse_gene_set_collection(gene_set_collection: TypeGSC, *args, **params) -> dict:
+        """
+        Parse arguments for creation of a new `Interface` instance from an `GeneSetCollection`.
+
+        :param gene_set_collection:
+            A `GSForge.GeneSetCollection` object.
+
+        :param args:
+            Not used.
+
+        :param params:
+            Parameters to initialize this `Interface` with.
+
+        :return:
+            A parsed parameter dictionary.
+        """
         if gene_set_collection.gem is not None:
             params = {"gem": gene_set_collection.gem,
                       "count_variable": gene_set_collection.gem.count_array_name,
                       **params}
         params = {"gene_set_collection": gene_set_collection, **params}
 
-        if args:
-            params = _interface_dispatch(*args, **params)
+        # if args:
+        #     params = _interface_dispatch(*args, **params)
 
         return params
 
     def get_gene_index(self, count_variable=None) -> np.array:
-        """Get the currently selected gene index as a numpy array.
+        """
+        Get the currently selected gene index as a numpy array.
 
-        :param count_variable: The variable to be retrieved.
+        :param count_variable:
+            Optional, for selecting alternate count arrays. The variable to be retrieved.
 
-        :return: A numpy array of the currently selected genes.
+        :return:
+            A numpy array of the currently selected genes.
         """
         gene_set_combinations = {
             "union": lambda sel_gs: self.gene_set_collection.union(sel_gs),
@@ -186,9 +219,11 @@ class Interface(param.Parameterized):
         return self.gem.sample_index_name
 
     def get_sample_index(self) -> np.array:
-        """Get the currently selected sample index as a numpy array.
+        """
+        Get the currently selected sample index as a numpy array.
 
-        :return: A numpy array of the currently selected samples.
+        :return:
+            A numpy array of the currently selected samples.
         """
 
         if self.sample_subset is not None:
@@ -231,10 +266,11 @@ class Interface(param.Parameterized):
 
     @property
     def x_count_data(self) -> xr.Dataset:
-        """Returns the currently selected 'x_data'. Usually this will be a subset of the
-        active count array.
+        """
+        Returns the currently selected 'x_data'. Usually this will be a subset of the active count array.
 
-        :return: An Xarray.Dataset selection of the currently active 'x_data'.
+        :return:
+            An `xarray.Dataset` selection of the currently active 'x_data'.
         """
         # TODO: Consider adding a copy option.
 
@@ -267,9 +303,10 @@ class Interface(param.Parameterized):
     @property
     def y_annotation_data(self):
         """
-        Returns the currently selected 'y_data', or None, based on the ``selected_annotation_variables`` parameter.
+        Returns the currently selected 'y_data', or None, based on the `selected_annotation_variables` parameter.
 
-        :return: An ``xarray.Dataset`` or ``xarray.DataArray`` object of the currently selected y_data.
+        :return:
+            An `xarray.Dataset` or `xarray.DataArray` object of the currently selected y_data.
         """
         # TODO: Consider enforcing list input for standardizing outputs to datasets.
         # TODO: Consider adding a copy option.

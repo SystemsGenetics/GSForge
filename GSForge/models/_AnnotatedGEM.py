@@ -263,7 +263,7 @@ class AnnotatedGEM(param.Parameterized):
             as columns.
 
         :return:
-            An instance of the `GEM` class.
+            An instance of the `AnnotatedGEM` class.
         """
         data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
@@ -306,19 +306,24 @@ class AnnotatedGEM(param.Parameterized):
                    label_path: str = None,
                    count_kwargs: dict = None,
                    label_kwargs: dict = None,
-                   **params):
+                   **params) -> TypeAGEM:
         """
-        Construct a `GEM` object from file paths and optional parsing arguments.
+        Construct a `AnnotatedGEM` object from file paths and optional parsing arguments.
 
-        :param count_path: The path to the gene expression matrix.
+        :param count_path:
+            The path to the gene expression matrix.
 
-        :param label_path: The path to the gene annotation data.
+        :param label_path:
+            The path to the gene annotation data.
 
-        :param count_kwargs: Arguments to be passed to `pandas.read_csv` for the count matrix.
+        :param count_kwargs:
+            Arguments to be passed to `pandas.read_csv` for the count matrix.
 
-        :param label_kwargs: Arguments to be passed to `pandas.read_csv` for the annotations.
+        :param label_kwargs:
+            Arguments to be passed to `pandas.read_csv` for the annotations.
 
-        :return: An instance of the `GEM` class.
+        :return:
+            An instance of the `AnnotatedGEM` class.
         """
         params = cls._parse_files(count_path=count_path, label_path=label_path,
                                   count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
@@ -328,9 +333,11 @@ class AnnotatedGEM(param.Parameterized):
         """
         Save as a netcdf (.nc) to the file at `path`.
 
-        :param path: The filepath to save to. This should use the `.nc` extension.
+        :param path:
+            The filepath to save to. This should use the `.nc` extension.
 
-        :return: The path to which the file was saved.
+        :return:
+            The path to which the file was saved.
         """
         if path is None:
             path = f"{self.name}.nc"
