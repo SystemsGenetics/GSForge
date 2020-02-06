@@ -5,7 +5,7 @@ import pandas as pd
 import itertools
 # import param
 
-from ..models import OperationInterface
+from GSForge.models import OperationInterface
 
 
 class RasterGEM(OperationInterface):

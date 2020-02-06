@@ -5,9 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib.patches as mpatches
 
-from ..models import OperationInterface
+from GSForge.models import OperationInterface
 
 
+# TODO: Convert to a holoviews-based function.
 class SampleWiseDistribution(OperationInterface):
 
     ax = param.Parameter()
@@ -17,13 +18,16 @@ class SampleWiseDistribution(OperationInterface):
         """
         Calculate and overlay kernel density estimates of the given count matrix on a per-sample basis.
 
-        If this gives a ValueError you may need to install statsmodels for a more robust kernel estimate.
+        If this gives a ValueError you may need to install `statsmodels` for a more robust kernel estimate.
 
-        :param numpy.ndarray counts:  The count matrix to be displayed.
-        :param numpy.ndarray labels: If provided the output density estimates will be colored by their
-            label membership.
+        :param numpy.ndarray counts:
+            The count matrix to be displayed.
 
-        :returns: matplotlib.axes with overlayed kernel density estimates.
+        :param numpy.ndarray labels:
+            If provided the output density estimates will be colored by their label membership.
+
+        :returns:
+            `matplotlib.axes` with per-sample kernel density estimates.
         """
 
         if ax is None:

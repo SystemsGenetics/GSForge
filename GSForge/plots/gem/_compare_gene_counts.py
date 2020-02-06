@@ -1,7 +1,7 @@
 import holoviews as hv
 import param
 
-from ..models import OperationInterface
+from GSForge.models import OperationInterface
 
 
 class GenesVsCounts(OperationInterface):

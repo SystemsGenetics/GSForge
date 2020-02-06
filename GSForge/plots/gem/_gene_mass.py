@@ -14,7 +14,8 @@ def _create_paths(count_array: np.ndarray):
 
     :param count_array:
 
-    :return: An iterable containing coordinate tuples (x, y) for the gene mass path.
+    :return:
+        An iterable containing coordinate tuples (x, y) for the gene mass path.
     """
     index_range = np.arange(count_array.shape[0])
     starting_coords = list(zip(index_range, np.zeros(index_range.shape)))
@@ -26,7 +27,8 @@ def plot_sample(sample: np.ndarray):
     """
     Plots the gene counts for the given sample array as a bar-plot like single-path element.
 
-    :param np.ndarray sample: An array containing the count values.
+    :param np.ndarray sample:
+        An array containing the count values.
 
     :return:
     """
@@ -39,9 +41,12 @@ def plot_sample_mass(sample: np.ndarray, lengths: np.ndarray):
     """
     Plots gene masses (counts * lengths) for the given sample array.
 
-    :param np.ndarray sample: An array containing the count values.
+    :param np.ndarray sample:
+        An array containing the count values.
 
-    :param np.ndarray lengths: An array containing the length values.
+    :param np.ndarray lengths:
+        An array containing the length values.
+
     :return:
     """
 
