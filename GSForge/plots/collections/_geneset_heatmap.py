@@ -2,10 +2,10 @@ import holoviews as hv
 
 import itertools
 
-hv.extension('bokeh', 'matplotlib')
+# hv.extension('bokeh', 'matplotlib')
 
 default_options = [
-    hv.opts.Heatmap(xrotation=45, width=450, height=450, labelled=[], colorbar=True)
+    hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[], colorbar=True)
 ]
 
 

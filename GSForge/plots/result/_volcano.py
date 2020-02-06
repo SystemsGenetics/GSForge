@@ -4,7 +4,7 @@ import xarray as xr
 
 import holoviews as hv
 
-hv.extension('bokeh', 'matplotlib')
+# hv.extension('bokeh', 'matplotlib')
 
 default_options = [
     # Point options.
