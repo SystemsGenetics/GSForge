@@ -4,6 +4,8 @@ import xarray as xr
 
 import holoviews as hv
 
+hv.extension('bokeh', 'matplotlib')
+
 default_options = [
     # Point options.
     hv.opts.Points(backend='bokeh', show_grid=True, invert_yaxis=True, padding=(0, 0.05), width=500, height=500),
