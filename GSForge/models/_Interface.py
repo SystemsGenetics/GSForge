@@ -2,7 +2,7 @@
 The GSForge interface model forms a basis for interacting with data
 stored in the `AnnotatedGEM` and `GeneSetCollection` objects.
 """
-
+from typing import Union
 import param
 from textwrap import dedent
 import numpy as np
@@ -265,7 +265,7 @@ class Interface(param.Parameterized):
         return selection
 
     @property
-    def x_count_data(self) -> xr.Dataset:
+    def x_count_data(self) -> xr.DataArray:
         """
         Returns the currently selected 'x_data'. Usually this will be a subset of the active count array.
 
@@ -301,7 +301,7 @@ class Interface(param.Parameterized):
         return data
 
     @property
-    def y_annotation_data(self):
+    def y_annotation_data(self) -> Union[xr.Dataset, None]:
         """
         Returns the currently selected 'y_data', or None, based on the `selected_annotation_variables` parameter.
 

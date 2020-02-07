@@ -3,30 +3,53 @@ import xarray as xr
 import numpy as np
 import holoviews as hv
 from GSForge.models import OperationInterface
+from textwrap import dedent
 
 from holoviews.operation.stats import univariate_kde
-from holoviews.operation.datashader import datashade, dynspread
+from holoviews.operation import datashader
 import warnings
 
-__all__ = [
-    "ScatterDistributionBase",
-]
 
+class genewise_aggregate_scatter(OperationInterface):
+    """
+    Displays the output of selected aggregations upon the count array on a scatter plot with optional
+    adjoined kernel density estimates. e.g. mean counts vs mean variance etc.
 
-class ScatterDistributionBase(OperationInterface):
+    This function is a `GSForge.OperationInterface` method, and shares those common parameters.
 
-    datashade_ = param.Boolean(default=False)
-    dynspread_ = param.Boolean(default=False)
+    Axis aggregation functions:
+        + frequency
+        + mean
+        + variance
+        + standard_dev
+        + fano
+        + mean_rank
+        + cv_squared
 
-    log_scale = param.Boolean(default=True)
+    Parameters specific to this function:
 
-    x_axis_selector = param.ObjectSelector(default="mean")
-    y_axis_selector = param.ObjectSelector(default="variance")
+    :param x_axis_selector:
+        Select from the available axis aggregation functions.
 
-    axis_transform = param.Parameter(default=lambda ds: np.log2(ds.where(ds > 0)))
+    :param y_axis_selector:
+        Select from the available axis aggregation functions.
 
-    backend = param.ObjectSelector(default="bokeh", objects=["bokeh", "matplotlib"])
+    :param datashade:
+        Whether to apply the datashader.datashade operation.
 
+    :param dynspread:
+        Whether to apply the datashader.dynspread operation.
+
+    :param backend:
+        The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"].
+
+    :param apply_default_opts:
+        Whether to apply the default styling.
+
+    :returns:
+        A `holoviews.Layout` object. The display of this object depends on the currently
+        selected backend.
+    """
     axis_functions = {
         "frequency": lambda counts, dim: (counts > 0).sum(dim=dim) / counts[dim].shape,
         "mean": lambda counts, dim: counts.mean(dim=dim),
@@ -37,14 +60,57 @@ class ScatterDistributionBase(OperationInterface):
         "cv_squared": lambda counts, dim: counts.var(dim=dim) / counts.mean(dim=dim) ** 2
     }
 
-    @staticmethod
-    def hv_scatter_dist(dataset, x_kdims, y_kdims,
-                        datashade_=False,
-                        dynspread_=False):
+    datashade = param.Boolean(default=False)
+    dynspread = param.Boolean(default=False)
 
-        if dynspread_ and not datashade_:
+    x_axis_selector = param.ObjectSelector(default="mean", doc="Select from the available axis aggregation functions.",
+                                           objects=axis_functions.keys())
+
+    y_axis_selector = param.ObjectSelector(default="variance",
+                                           doc="Select from the available axis aggregation functions.",
+                                           objects=axis_functions.keys())
+
+    axis_transform = param.Parameter(default=lambda ds: np.log2(ds.where(ds > 0)),
+                                     doc="A transform (usually log) for getting a viewable spread of the results.")
+
+    backend = param.ObjectSelector(default="bokeh", objects=["bokeh", "matplotlib"], doc=dedent("""\
+    The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"]."""))
+
+    apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc=dedent("""\
+    Whether to apply the default styling based on the current backend."""))
+
+
+
+    @staticmethod
+    def bokeh_options():
+        return [
+            hv.opts.Points(width=500, height=500, bgcolor="lightgrey", size=1.2, muted_alpha=0.05,
+                           show_grid=True),
+            hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25),
+            hv.opts.Area("dist_x", width=150),
+            hv.opts.Area("dist_y", height=150),
+            hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True),
+        ]
+
+    @staticmethod
+    def matplotlib_options():
+        return [
+            hv.opts.Points(fig_size=250, bgcolor="lightgrey", s=1.2, muted_alpha=0.05,
+                           show_grid=True),
+            hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25),
+            hv.opts.Area("dist_x", width=150),
+            hv.opts.Area("dist_y", height=150),
+            hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True),
+        ]
+
+    @staticmethod
+    def scatter_dist(dataset, x_kdims, y_kdims,
+                     datashade=False,
+                     dynspread=False):
+
+        if dynspread and not datashade:
             warnings.warn("Dynspread can only be used with datashade, setting both to true.")
-            datashade_ = True
+            datashade = True
 
         df = dataset[[x_kdims, y_kdims]].to_dataframe()
         points = hv.Points(df, kdims=[x_kdims, y_kdims])
@@ -52,10 +118,10 @@ class ScatterDistributionBase(OperationInterface):
         dist_x = univariate_kde(hv.Distribution(points, kdims=[y_kdims], group="dist_x"), n_samples=1000)
         dist_y = univariate_kde(hv.Distribution(points, kdims=[x_kdims], group="dist_y"), n_samples=1000)
 
-        if datashade_:
-            points = datashade(points)
-            if dynspread_:
-                points = dynspread(points)
+        if datashade:
+            points = datashader.datashade(points)
+            if dynspread:
+                points = datashader.dynspread(points)
 
         return points << dist_x << dist_y
 
@@ -63,8 +129,8 @@ class ScatterDistributionBase(OperationInterface):
     def scatter_dist_by_mappings(dataset, x_kdims, y_kdims,
                                  mappings,
                                  selection_dim="Gene",
-                                 datashade_=False,
-                                 dynspread_=False,
+                                 datashade=False,
+                                 dynspread=False,
                                  ):
 
         data_groups = {name: dataset.sel({selection_dim: genes}) for name, genes in mappings.items()}
@@ -77,10 +143,10 @@ class ScatterDistributionBase(OperationInterface):
         dist_y = {k: univariate_kde(hv.Distribution(p, kdims=[x_kdims], group="dist_y"), n_samples=1000)
                   for k, p in points.items()}
 
-        if datashade_:
-            points_overlay = datashade(hv.NdOverlay(points))
-            if dynspread_:
-                points_overlay = dynspread(points_overlay)
+        if datashade:
+            points_overlay = datashader.datashade(hv.NdOverlay(points))
+            if dynspread:
+                points_overlay = datashader.dynspread(points_overlay)
         else:
             points_overlay = hv.NdOverlay(points)
 
@@ -98,24 +164,28 @@ class ScatterDistributionBase(OperationInterface):
 
         if self.selected_gene_sets == [None] or not self.gene_set_collection:
 
-            plot = self.hv_scatter_dist(
+            layout = self.scatter_dist(
                 dataset=dataset,
                 x_kdims=self.x_axis_selector,
                 y_kdims=self.y_axis_selector,
-                datashade_=self.datashade_,
-                dynspread_=self.dynspread_,
+                datashade=self.datashade,
+                dynspread=self.dynspread,
             )
 
         else:
             mappings = self.gene_set_collection.as_dict(self.selected_gene_sets)
 
-            plot = self.scatter_dist_by_mappings(
+            layout = self.scatter_dist_by_mappings(
                 dataset=dataset,
                 x_kdims=self.x_axis_selector,
                 y_kdims=self.y_axis_selector,
                 mappings=mappings,
-                datashade_=self.datashade_,
-                dynspread_=self.dynspread_,
+                datashade=self.datashade,
+                dynspread=self.dynspread,
             )
 
-        return plot
+        options = {"bokeh": self.bokeh_options, "matplotlib": self.matplotlib_options}
+        if self.apply_default_opts:
+            default_options = options[self.backend]()
+            return layout.opts(default_options)
+        return layout

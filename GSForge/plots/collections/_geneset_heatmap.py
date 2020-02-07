@@ -1,15 +1,24 @@
 import holoviews as hv
-
 import itertools
 
-# hv.extension('bokeh', 'matplotlib')
 
-default_options = [
-    hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[], colorbar=True)
-]
+def bokeh_options():
+    return hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[], colorbar=True, backend="bokeh")
 
 
-def within_collection_overlap(gene_set_collection, keys=None, mode="overlap", apply_default_opts: bool = True):
+def matplotlib_options():
+    return hv.opts.HeatMap(
+        xrotation=45, fig_size=250,
+        labelled=[],
+        colorbar=True,
+        backend="matplotlib")
+
+
+__options = {"bokeh": bokeh_options, "matplotlib": matplotlib_options}
+
+
+def within_collection_overlap(gene_set_collection, keys=None, mode="overlap", backend: str = "bokeh",
+                              apply_default_opts: bool = True):
     gene_dict = gene_set_collection.as_dict(keys)
 
     modes = {"overlap": lambda va, vb: len(set.intersection(set(va), set(vb))),
@@ -31,12 +40,12 @@ def within_collection_overlap(gene_set_collection, keys=None, mode="overlap", ap
     layout = heatmap * hv.Labels(heatmap)
 
     if apply_default_opts:
-        return layout.opts(default_options)
+        return layout.opts(__options[backend]())
 
     return layout
 
 
-def between_collection_overlap(alpha: dict, beta: dict, apply_default_opts: bool = True):
+def between_collection_overlap(alpha: dict, beta: dict, backend: str = "bokeh", apply_default_opts: bool = True):
     """
     View the overlap (as a heatmap) of two GeneSetCollection dictionaries,
     as provided by gsc.as_dict().
@@ -45,6 +54,11 @@ def between_collection_overlap(alpha: dict, beta: dict, apply_default_opts: bool
     :param beta:
     :return:
     """
+
+    # TODO: Fix matplotlib implementation?
+    if backend == "matplotlib":
+        raise NotImplemented("Matplotlib backend not currently working for this.")
+
     overlap_dim = hv.Dimension("Overlap Count", value_format=lambda x: f"{x}")
 
     data = [(f"{ak}: {len(av)}", f"{bk}: {len(bv)}", len(set.intersection(set(av), set(bv))))
@@ -54,7 +68,7 @@ def between_collection_overlap(alpha: dict, beta: dict, apply_default_opts: bool
     layout = heatmap * hv.Labels(heatmap)
 
     if apply_default_opts:
-        return layout.opts(default_options)
+        return layout.opts(__options[backend]())
 
     return layout
 

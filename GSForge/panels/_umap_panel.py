@@ -83,6 +83,15 @@ class UMAP_Panel(param.Parameterized):
         default=None
     )
 
+    plot_options = param.Parameter(precedence=-1.0,
+                                   default=hv.opts.Points(
+                                       # cmap="Set1",
+                                       legend_position='right',
+                                       xaxis=None,
+                                       yaxis=None, padding=0.05, show_grid=True, bgcolor="lightgrey",
+                                       width=700, height=500, backend="bokeh"),
+                                   doc="Default plot styling options.")
+
     # Create a button so that the transform only occurs when clicked.
     update = param.Action(lambda self: self.param.trigger('update'))
 
@@ -134,12 +143,12 @@ class UMAP_Panel(param.Parameterized):
 
     @lru_cache()
     def cached_transform(self, gene_set, transform_state):
-        """A chached transform based on the genes and transform arguments selected."""
+        """A cached transform based on the genes and transform arguments selected."""
         return self.transform()
 
     @param.depends('update', 'hue')
-    def hvplot_view(self):
-        """A holoviews.Points plot of the selected transform."""
+    def view(self):
+        """A `holoviews.Points` plot of the selected transform."""
         df = self.interface.gem.data[self.data_var_cats["all_labels"]].to_dataframe().reset_index()
         gene_set = frozenset(self.interface.get_gene_index())
         transform_state = frozenset(self.get_transform_kwargs().items())
@@ -149,12 +158,16 @@ class UMAP_Panel(param.Parameterized):
         df["x"] = transform[:, 0]
         df["y"] = transform[:, 1]
 
-        plot = hv.Points(df, kdims=["x", "y"])
+        # vdims = [self.data_var_cats["all_labels"]]
+        # Providing the df, and not explicitly setting vdims lets all columns in that df
+        # pass through as vdims.
+        points = hv.Points(df, kdims=["x", "y"])
 
-        hue = self.hue if self.hue else "#3288bd"
+        if self.hue is not None:
+            points = hv.NdOverlay({key: points.select(**{self.hue: key})
+                                   for key in points.data[self.hue].unique()})
 
-        return plot.opts(tools=[hover], color=hue, cmap="Set1", legend_position='bottom', xaxis=None, yaxis=None,
-                         padding=0.05, show_grid=True, bgcolor="lightgrey", width=500, height=500)
+        return points.opts(self.plot_options).opts(tools=[hover])
 
     def panel(self):
         """Interactive panel application for transform exploration."""
@@ -163,7 +176,7 @@ class UMAP_Panel(param.Parameterized):
             'update': {'type': pn.widgets.Button, 'button_type': 'primary'},
         })
 
-        transform_layout = pn.Row(self.interface, self.hvplot_view, transform_controls)
+        transform_layout = pn.Row(self.interface, self.view, transform_controls)
         docs = generate_help_pane(self)
 
         tab_layout = pn.Tabs(("UMAP", transform_layout), ("Documentation", docs))
