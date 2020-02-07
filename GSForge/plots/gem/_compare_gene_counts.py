@@ -90,8 +90,8 @@ class gene_vs_count_scatter(OperationInterface):
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,
                                        count_dim=self.count_variable)
-        options = {"bokeh": self.bokeh_options, "matplotlib": self.matplotlib_options}
         if self.apply_default_opts:
+            options = {"bokeh": self.bokeh_options, "matplotlib": self.matplotlib_options}
             default_options = options[self.backend]()
             return layout.opts(default_options)
 

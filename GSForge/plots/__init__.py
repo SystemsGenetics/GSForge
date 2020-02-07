@@ -6,7 +6,7 @@ Plotting functions for GSForge.
 from . import annotations
 from . import collections
 from . import gem
-from . import result
+from . import results
 
 # from GSForge.plots.gem._gene_mass import plot_count_sum_mass, plot_sample_mass, plot_sample
 # from GSForge.plots.gem._scatter_distributions import genewise_aggregate_scatter
