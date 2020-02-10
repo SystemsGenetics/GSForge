@@ -158,7 +158,6 @@ class UMAP_Panel(param.Parameterized):
         df["x"] = transform[:, 0]
         df["y"] = transform[:, 1]
 
-        # vdims = [self.data_var_cats["all_labels"]]
         # Providing the df, and not explicitly setting vdims lets all columns in that df
         # pass through as vdims.
         points = hv.Points(df, kdims=["x", "y"])
