@@ -83,17 +83,21 @@ class UMAP_Panel(param.Parameterized):
         default=None
     )
 
-    plot_options = param.Parameter(precedence=-1.0,
-                                   default=hv.opts.Points(
-                                       # cmap="Set1",
-                                       legend_position='right',
-                                       xaxis=None,
-                                       yaxis=None, padding=0.05, show_grid=True, bgcolor="lightgrey",
-                                       width=700, height=500, backend="bokeh"),
-                                   doc="Default plot styling options.")
-
     # Create a button so that the transform only occurs when clicked.
     update = param.Action(lambda self: self.param.trigger('update'))
+
+    @staticmethod
+    def bokeh_opts():
+        return hv.opts.Points(
+            cmap="Set1",
+            legend_position='right',
+            xaxis=None,
+            yaxis=None, padding=0.05, show_grid=True, bgcolor="lightgrey",
+            width=700, height=500, backend="bokeh")
+
+    @staticmethod
+    def matplotlib_opts():
+        raise NotImplementedError("'matplotlib' options are not supported for this plotting function.")
 
     def __init__(self, source, interface_opts=None, **params):
         # Set up the Interface object.
@@ -166,7 +170,7 @@ class UMAP_Panel(param.Parameterized):
             points = hv.NdOverlay({key: points.select(**{self.hue: key})
                                    for key in points.data[self.hue].unique()})
 
-        return points.opts(self.plot_options).opts(tools=[hover])
+        return points.opts(self.bokeh_opts()).opts(tools=[hover])
 
     def panel(self):
         """Interactive panel application for transform exploration."""
