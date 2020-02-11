@@ -26,7 +26,7 @@ python:
 
 
 stages:
-  - test_and_build_docs
+#  - test_and_build_docs
 
   # Deploy to the real pypi repository. eg v1.1
   - name: pip_package
@@ -36,13 +36,19 @@ stages:
 
   # Upload to the pypi development repository. eg v1.a1
   - name: pip_dev_package
-    if: tag =~ ^v(\d+|\.)+[a-z]\d+$
+    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR (commit_message =~ travis_dev)
   - name: website_dev
-    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR tag = website_dev
+    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (tag = website_dev) OR (commit_message =~ travis_dev)
   - name: website_release
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
 
 
+install:
+  - sudo apt-get install graphviz
+  - pip install -r requirements.txt
+  - pip install -r doc/requirements.txt
+  - pip install .
+  - pip install osfclient
 
 
 jobs:
@@ -89,7 +95,6 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: pip_dev_package
-      install: skip
       deploy:
         provider: pypi
         server: https://test.pypi.org/legacy/
@@ -100,7 +105,6 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
-      install: skip
       deploy:
         provider: pypi
         distributions: "sdist bdist_wheel"
