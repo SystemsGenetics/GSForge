@@ -1,10 +1,10 @@
 # Much of this setup is borrowed or inspired from the travis.yml files
 # of the param, holoviews and related packages.
 
-branches:
-  only:
-    - master
-    - dev
+#branches:
+#  only:
+#    - master
+#    - dev
 
 addons:
   apt:
@@ -28,13 +28,13 @@ python:
 stages:
   - test_and_build_docs
 
-  # Deploy to the real pypi repository. eg 1.1
+  # Deploy to the real pypi repository. eg v1.1
   - name: pip_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: build_dockerfiles
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
 
-  # Upload to the pypi development repository. eg 1.a1
+  # Upload to the pypi development repository. eg v1.a1
   - name: pip_dev_package
     if: tag =~ ^v(\d+|\.)+[a-z]\d+$
   - name: website_dev
