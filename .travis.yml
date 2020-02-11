@@ -26,35 +26,27 @@ python:
 
 
 stages:
-#  - test_and_build_docs
-
-  # Deploy to the real pypi repository. eg v1.1
+  - name: website_dev
+    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (tag = website_dev) OR (commit_message =~ travis_dev)
+  - name: website_release
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
+  - name: pip_dev_package
+    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR (commit_message =~ travis_dev)
   - name: pip_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: build_dockerfiles
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
 
-  # Upload to the pypi development repository. eg v1.a1
-  - name: pip_dev_package
-    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR (commit_message =~ travis_dev)
-  - name: website_dev
-    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (tag = website_dev) OR (commit_message =~ travis_dev)
-  - name: website_release
-    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
-
-
-install:
-  - sudo apt-get install graphviz
-  - pip install -r requirements.txt
-  - pip install -r doc/requirements.txt
-  - pip install .
-  - pip install osfclient
-
-
 jobs:
   include:
 
     - stage: website_release
+      install:
+        - sudo apt-get install graphviz
+        - pip install -r requirements.txt
+        - pip install -r doc/requirements.txt
+        - pip install .
+        - pip install osfclient
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
@@ -70,6 +62,12 @@ jobs:
             branch: master
 
     - stage: website_dev
+      install:
+        - sudo apt-get install graphviz
+        - pip install -r requirements.txt
+        - pip install -r doc/requirements.txt
+        - pip install .
+        - pip install osfclient
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
@@ -95,6 +93,8 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: pip_dev_package
+      install:
+        - pip install .
       deploy:
         provider: pypi
         server: https://test.pypi.org/legacy/
@@ -105,6 +105,8 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
+      install:
+        - pip install .
       deploy:
         provider: pypi
         distributions: "sdist bdist_wheel"
