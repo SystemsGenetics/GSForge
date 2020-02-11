@@ -1,19 +1,19 @@
-from typing import Dict, Tuple, List, TypeVar, Type, Union
-# from os import PathLike
-
-import pathlib
-import param
-import os
-import pandas as pd
 import itertools
-import xarray as xr
-import numpy as np
+import os
+import pathlib
 from functools import reduce
-
 from textwrap import dedent
+from typing import Dict, Tuple, List, TypeVar, Type, Union
+
+import numpy as np
+import pandas as pd
+import param
+import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
+
+# from os import PathLike
 
 # Declare typing hints.
 # Typing hints are not used by the Python runtime in any way.

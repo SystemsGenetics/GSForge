@@ -5,7 +5,8 @@ from ...models import Interface
 from ..utils import AbstractPlottingOperation
 
 
-class grouped_mean_scatter_operation(AbstractPlottingOperation, Interface, param.ParameterizedFunction):
+class GroupedMeanScatter(AbstractPlottingOperation, Interface, param.ParameterizedFunction):
+    # TODO: Document me.
     group_variable = param.String()
     x_group_label = param.String()
     y_group_label = param.String()

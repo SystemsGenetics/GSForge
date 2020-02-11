@@ -4,14 +4,16 @@ import xarray as xr
 
 import itertools
 import param
+import warnings
 
 from ...models import Interface
 from ..utils import AbstractPlottingOperation
 
 
 class RasterGEM(Interface, AbstractPlottingOperation):
+    # TODO: Document me.
+    # TODO: Fix colorized_raster. It's not displaying colors.
 
-    # use_datashader = param.Boolean(default=True)
     hue = param.String(default=None, doc="Color by which to shade the observations.")
 
     @staticmethod
@@ -31,6 +33,7 @@ class RasterGEM(Interface, AbstractPlottingOperation):
 
     @staticmethod
     def colorized_raster(counts: xr.DataArray, labels:xr.DataArray, colors=None):
+        warnings.warn("Group color maps are not yet working correctly.")
         if colors is None:
             colors = ["Blues", "Greens", "Greys", "Oranges", "Purples", "Reds"]
 

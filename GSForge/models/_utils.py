@@ -1,6 +1,7 @@
-import xarray as xr
-import pandas as pd
 import csv
+
+import pandas as pd
+import xarray as xr
 
 
 def sniff_csv_sep(file_path: str) -> str:

@@ -14,14 +14,19 @@ import os
 from setuptools import setup, find_packages
 
 # These are the packages used by the classes in ''GSForge.models''.
-requirements = """
+core_requirements = """
 numpy
 pandas
 xarray
 param
 """.split()
 
-viz_requirements = """
+doc_requirements = """
+nbsite
+nbsphinx
+""".split()
+
+full_requirements = """
 Boruta
 bokeh
 click
@@ -37,36 +42,13 @@ scikit-learn
 scipy
 seaborn
 statsmodels
-tqdm
 umap_learn
 """.split()
 
+requirements = core_requirements
 
 if "GSFORGE_MINIMAL" not in os.environ:
-    requirements += viz_requirements
-
-# requirements = """\
-# Boruta
-# bokeh
-# click
-# datashader
-# h5py
-# holoviews
-# jupyter
-# matplotlib
-# methodtools
-# netcdf4
-# numpy
-# pandas
-# panel
-# param
-# scikit-learn
-# scipy
-# seaborn
-# statsmodels
-# tqdm
-# umap_learn
-# xarray""".split()
+    requirements += core_requirements + doc_requirements
 
 setup(
     name='GSForge',
@@ -77,6 +59,6 @@ setup(
     author='Tyler Biggs',
     author_email='tyler.biggs@wsu.edu',
     description='Feature (gene) selection package for gene expression data.',
-    python_requires='>3.6',
+    python_requires='>=3.8',
     install_requires=requirements,
 )

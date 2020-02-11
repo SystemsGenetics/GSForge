@@ -105,11 +105,11 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         return {"source": source, **params}
 
     @__dispatch_input_args.register
-    def __parse_xarray_datasets(self, source: GeneSet, **params) -> dict:
+    def __parse_gene_set(self, source: GeneSet, **params) -> dict:
         return {"source": source.data, **params}
 
     @__dispatch_input_args.register
-    def __parse_xarray_datasets(self, source: pd.DataFrame, **params) -> dict:
+    def __parse_pandas_dataframe(self, source: pd.DataFrame, **params) -> dict:
         print("Converting `pandas.DataFrame` to an `xarray` object.")
         return {"source": source.to_xarray(), **params}
 

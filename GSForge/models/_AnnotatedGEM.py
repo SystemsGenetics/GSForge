@@ -1,14 +1,12 @@
+import functools
+import json
+import pathlib
+from textwrap import dedent
 from typing import List, TypeVar, Union
 
-import pathlib
-import json
-import param
-import functools
-
 import pandas as pd
+import param
 import xarray as xr
-
-from textwrap import dedent
 
 from ._utils import (
     infer_xarray_variables,

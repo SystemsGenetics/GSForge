@@ -3,7 +3,7 @@ Plotting functions for GSForge.
 
 """
 
-from . import annotations
+# from . import annotations
 from . import collections
 from . import gem
 from . import results

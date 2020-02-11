@@ -10,6 +10,8 @@ from ..utils import AbstractPlottingOperation
 
 
 class sample_wise_distributions(Interface, AbstractPlottingOperation):
+    # TODO: Document me.
+    # TODO: Add matplotlib options.
 
     @staticmethod
     def bokeh_opts():

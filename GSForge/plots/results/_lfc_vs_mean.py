@@ -9,13 +9,53 @@ from ..utils import ResultPlottingOperation
 
 
 class MeanVsLFC(ResultPlottingOperation):
-    log_fold_change_var = param.String(default=None)
-    p_value_var = param.String(default=None)
+    """
+    Mean vs log-fold-change scatter plot used for visualizing differential gene expression results.
 
-    log_fold_change_cutoff = param.Number(default=2.0)
-    p_value_cutoff = param.Number(default=1e-6)
-    mean_value_var = param.String(default=None)
-    label_selected_genes = param.Boolean(default=False)
+    Parameters
+    ----------
+    source : Union[GSForge.GeneSet, xarray.Dataset, pandas.DataFrame]
+        Data source containing the log-fold change, and p-value variables.
+
+    log_fold_change_var : str
+        The name of the log-fold change column. Must be a variable within `source`.
+
+    p_value_var : str
+        The name of the p-value column. Must be a variable within `source`.
+
+    mean_value_var: str
+        The name of the base mean column. Must be a variable within `source`.
+
+    log_fold_change_cutoff : float
+        Cutoff to use in grouping and coloring genes. Defaults to 2.0.
+
+    p_value_cutoff : float
+        Cutoff to use in grouping and coloring genes. Defaults to 1e-6.
+
+    label_selected_genes : bool
+        Apply (if True) annotations of genes that pass both the log-fold-change and p-value cutoff values.
+
+    apply_default_opts : bool
+        Whether to apply the default styling.
+
+    Returns
+    -------
+    volcano scatter plot : holoviews.Overlay
+        A holoviews scatter plot of log-fold-change versus mean values.
+    """
+
+    log_fold_change_var = param.String(default=None,  doc="""
+    The name of the log-fold change column. Must be a variable within `source`.""")
+    p_value_var = param.String(default=None, doc="""
+    The name of the p-value column. Must be a variable within `source`.""")
+    log_fold_change_cutoff = param.Number(default=2.0, doc="""
+    Cutoff to use in grouping and coloring genes. Defaults to 2.0.""")
+    p_value_cutoff = param.Number(default=1e-6, doc="""
+    Cutoff to use in grouping and coloring genes. Defaults to 1e-6.""")
+    mean_value_var = param.String(default=None, doc="""
+    The name of the base mean column. Must be a variable within `source`.""")
+    label_selected_genes = param.Boolean(default=False, doc="""
+    Apply (if True) annotations of genes that pass both the log-fold-change and p-value cutoff values.""")
 
     @staticmethod
     def bokeh_opts():

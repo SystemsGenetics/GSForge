@@ -2,12 +2,13 @@
 The GSForge interface model forms a basis for interacting with data
 stored in the `AnnotatedGEM` and `GeneSetCollection` objects.
 """
-from typing import Union
-import param
-from textwrap import dedent
-import numpy as np
-import xarray as xr
 import functools
+from textwrap import dedent
+from typing import Union
+
+import numpy as np
+import param
+import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM, TypeAGEM
 # from ._GeneSet import GeneSet

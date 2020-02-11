@@ -48,6 +48,7 @@ class WithinCollectionOverlapHeatMap(AbstractPlottingOperation):
         return self.within_collection_overlap(gene_dict, mode=self.mode)
 
 
+# TODO: Re-implement below.
 # class BetweenCollectionOverlap(AbstractPlottingOperation):
 #
 #     @staticmethod

@@ -13,14 +13,14 @@ class Volcano(ResultPlottingOperation):
 
     Parameters
     ----------
-    data : xr.Dataset
-        Data containing the log-fold change and p-value variables.
+    source : Union[GSForge.GeneSet, xarray.Dataset, pandas.DataFrame]
+        Data source containing the log-fold change, and p-value variables.
 
     log_fold_change_var : str
-        The name of the log-fold change column. Must be a variable within `data`.
+        The name of the log-fold change column. Must be a variable within `source`.
 
     p_value_var : str
-        The name of the p-value column. Must be a variable within `data`.
+        The name of the p-value column. Must be a variable within `source`.
 
     p_value_cutoff : float
         Cutoff to use in grouping and coloring genes. Defaults to 2.0.
@@ -40,13 +40,17 @@ class Volcano(ResultPlottingOperation):
         A holoviews scatter plot of log-fold-change versus -log10(p-values).
     """
 
-    log_fold_change_var = param.String(default=None)
-    p_value_var = param.String(default=None)
+    log_fold_change_var = param.String(default=None,  doc="""
+    The name of the log-fold change column. Must be a variable within `source`.""")
+    p_value_var = param.String(default=None, doc="""
+    The name of the p-value column. Must be a variable within `source`.""")
+    log_fold_change_cutoff = param.Number(default=2.0, doc="""
+    Cutoff to use in grouping and coloring genes. Defaults to 2.0.""")
+    p_value_cutoff = param.Number(default=1e-6, doc="""
+    Cutoff to use in grouping and coloring genes. Defaults to 1e-6.""")
+    label_selected_genes = param.Boolean(default=False, doc="""
+    Apply (if True) annotations of genes that pass both the log-fold-change and p-value cutoff values.""")
 
-    log_fold_change_cutoff = param.Number(default=2.0)
-    p_value_cutoff = param.Number(default=1e-6)
-
-    label_selected_genes = param.Boolean(default=False)
 
     @staticmethod
     def bokeh_opts():
