@@ -1,30 +1,23 @@
 import param
 import xarray as xr
-import numpy as np
 import holoviews as hv
 import colorcet as cc
 from holoviews.operation.stats import univariate_kde
 import itertools
-from textwrap import dedent
 
-from GSForge.models import OperationInterface
+from ...models import Interface
+from ..utils import AbstractPlottingOperation
 
 
-class sample_wise_distributions(OperationInterface):
-
-    backend = param.ObjectSelector(default="bokeh", objects=["bokeh", "matplotlib"], doc=dedent("""\
-    The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"]."""))
-
-    apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc=dedent("""\
-    Whether to apply the default styling based on the current backend."""))
+class sample_wise_distributions(Interface, AbstractPlottingOperation):
 
     @staticmethod
-    def bokeh_options():
+    def bokeh_opts():
         return hv.opts.Area(fill_alpha=0.0, width=600, height=500)
 
-    @staticmethod
-    def matplotlib_options():
-        return
+    # @staticmethod
+    # def matplotlib_opts():
+    #     return
 
     @staticmethod
     def sample_wise_count_distributions(counts: xr.DataArray, sample_dim: str = "Sample",
@@ -35,15 +28,6 @@ class sample_wise_distributions(OperationInterface):
         return hv.Overlay(distributions).opts(show_legend=False)
 
     def process(self):
-
-        if self.backend == "matplotlib":
-            raise NotImplemented("Matplotlib backend not currently working for this.")
-
-        layout = self.sample_wise_count_distributions(
-            counts=self.x_count_data, sample_dim=self.sample_index_name)
-        options = {"bokeh": self.bokeh_options, "matplotlib": self.matplotlib_options}
-        if self.apply_default_opts:
-            default_options = options[self.backend]()
-            return layout.opts(default_options)
-
+        layout = self.sample_wise_count_distributions(counts=self.x_count_data,
+                                                      sample_dim=self.sample_index_name)
         return layout

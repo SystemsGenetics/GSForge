@@ -4,7 +4,7 @@ import xarray as xr
 import param
 import holoviews as hv
 
-from ..utils import ResultPlottingOperation, infer_kwarg_defaults_from_data, get_param_process_overlap_kwargs
+from ..utils import ResultPlottingOperation
 
 
 class Volcano(ResultPlottingOperation):
@@ -130,6 +130,6 @@ class Volcano(ResultPlottingOperation):
         return layout
 
     def process(self):
-        kwargs = {**infer_kwarg_defaults_from_data(self.source, self.volcano),
-                  **get_param_process_overlap_kwargs(self, self.volcano)}
+        kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.volcano),
+                  **self.get_param_process_overlap_kwargs(self.volcano)}
         return self.volcano(**kwargs)

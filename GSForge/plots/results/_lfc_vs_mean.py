@@ -5,10 +5,10 @@ import param
 
 import holoviews as hv
 
-from ..utils import ResultPlottingOperation, infer_kwarg_defaults_from_data, get_param_process_overlap_kwargs
+from ..utils import ResultPlottingOperation
 
 
-class Mean_vs_LFC(ResultPlottingOperation):
+class MeanVsLFC(ResultPlottingOperation):
     log_fold_change_var = param.String(default=None)
     p_value_var = param.String(default=None)
 
@@ -18,7 +18,7 @@ class Mean_vs_LFC(ResultPlottingOperation):
     label_selected_genes = param.Boolean(default=False)
 
     @staticmethod
-    def bokeh_options():
+    def bokeh_opts():
         return [
             hv.opts.Points(backend='bokeh', show_grid=True, invert_yaxis=True, padding=(0, 0.05), width=500,
                            height=500),
@@ -32,7 +32,7 @@ class Mean_vs_LFC(ResultPlottingOperation):
         ]
 
     @staticmethod
-    def matplotlib_options():
+    def matplotlib_opts():
         return [
             hv.opts.Points(backend='matplotlib', invert_yaxis=True, padding=(0.01, 0.05), fig_size=200, show_grid=True,
                            alpha=0.5),
@@ -97,6 +97,6 @@ class Mean_vs_LFC(ResultPlottingOperation):
         return layout
 
     def process(self):
-        kwargs = {**infer_kwarg_defaults_from_data(self.source, self.mean_vs_lfc),
-                  **get_param_process_overlap_kwargs(self, self.mean_vs_lfc)}
+        kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.mean_vs_lfc),
+                  **self.get_param_process_overlap_kwargs(self.mean_vs_lfc)}
         return self.mean_vs_lfc(**kwargs)

@@ -2,15 +2,16 @@ import param
 import xarray as xr
 import numpy as np
 import holoviews as hv
-from GSForge.models import OperationInterface
-from textwrap import dedent
 
 from holoviews.operation.stats import univariate_kde
 from holoviews.operation import datashader
 import warnings
 
+from ...models import Interface
+from ..utils import AbstractPlottingOperation
 
-class genewise_aggregate_scatter(OperationInterface):
+
+class genewise_aggregate_scatter(Interface, AbstractPlottingOperation):
     """
     Displays the output of selected aggregations upon the count array on a scatter plot with optional
     adjoined kernel density estimates. e.g. mean counts vs mean variance etc.
@@ -73,16 +74,8 @@ class genewise_aggregate_scatter(OperationInterface):
     axis_transform = param.Parameter(default=lambda ds: np.log2(ds.where(ds > 0)),
                                      doc="A transform (usually log) for getting a viewable spread of the results.")
 
-    backend = param.ObjectSelector(default="bokeh", objects=["bokeh", "matplotlib"], doc=dedent("""\
-    The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"]."""))
-
-    apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc=dedent("""\
-    Whether to apply the default styling based on the current backend."""))
-
-
-
     @staticmethod
-    def bokeh_options():
+    def bokeh_opts():
         return [
             hv.opts.Points(width=500, height=500, bgcolor="lightgrey", size=1.2, muted_alpha=0.05,
                            show_grid=True),
@@ -93,7 +86,7 @@ class genewise_aggregate_scatter(OperationInterface):
         ]
 
     @staticmethod
-    def matplotlib_options():
+    def matplotlib_opts():
         return [
             hv.opts.Points(fig_size=250, bgcolor="lightgrey", s=1.2, muted_alpha=0.05,
                            show_grid=True),
@@ -184,8 +177,4 @@ class genewise_aggregate_scatter(OperationInterface):
                 dynspread=self.dynspread,
             )
 
-        options = {"bokeh": self.bokeh_options, "matplotlib": self.matplotlib_options}
-        if self.apply_default_opts:
-            default_options = options[self.backend]()
-            return layout.opts(default_options)
         return layout

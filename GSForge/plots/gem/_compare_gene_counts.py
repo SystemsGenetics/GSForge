@@ -3,11 +3,11 @@ import param
 import xarray as xr
 from textwrap import dedent
 
-# from GSForge.models import OperationInterface
-from ...models import OperationInterface
+from ...models import Interface
+from ..utils import AbstractPlottingOperation
 
 
-class gene_vs_count_scatter(OperationInterface):
+class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     """
     Display the counts of a small selection of genes on a scatter plot (genes vs counts).
 
@@ -43,15 +43,9 @@ class gene_vs_count_scatter(OperationInterface):
     """
     hue = param.String(default=None, doc="Color by which to shade the observations.")
 
-    backend = param.ObjectSelector(default="bokeh", objects=["bokeh", "matplotlib"], doc=dedent("""\
-    The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"]."""))
-
     soft_max = param.Integer(default=50, precedence=-1.0, doc=dedent("""\
     The number of genes above which this function will return a ValueError rather than attempt to 
     plot an unreasonable number of genes."""))
-
-    apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc=dedent("""\
-    Whether to apply the default styling based on the current backend."""))
 
     @staticmethod
     def genewise_scatter(data: xr.Dataset, hue: str = None, gene_dim: str = "Gene", sample_dim: str = "Sample",
@@ -69,30 +63,25 @@ class gene_vs_count_scatter(OperationInterface):
         return scatter
 
     @staticmethod
-    def bokeh_options():
+    def bokeh_opts():
         return hv.opts.Scatter(jitter=0.2, width=800, height=500, legend_position="right", xrotation=90, padding=0.1,
                                backend="bokeh")
 
     @staticmethod
-    def matplotlib_options():
+    def matplotlib_opts():
         return hv.opts.Scatter(fig_size=250, aspect=1.8, xrotation=90, padding=0.1, backend="matplotlib")
 
     def process(self):
+        self.set_param(annotation_variables=[self.hue])
         if self.get_gene_index().shape[0] > self.soft_max:
             genes_selected = self.get_gene_index().shape[0]
             return ValueError(f"Selected number of genes: {genes_selected} is likely too much."
                               f"Provide an array of genes to `selected_genes` less than (or override) "
                               f"the `soft_max` parameter of {self.soft_max}")
 
-        self.set_param(annotation_variables=[self.hue])
         layout = self.genewise_scatter(data=self.selection,
                                        hue=self.hue,
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,
                                        count_dim=self.count_variable)
-        if self.apply_default_opts:
-            options = {"bokeh": self.bokeh_options, "matplotlib": self.matplotlib_options}
-            default_options = options[self.backend]()
-            return layout.opts(default_options)
-
         return layout

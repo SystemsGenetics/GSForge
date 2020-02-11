@@ -1,18 +1,26 @@
 import holoviews as hv
 from holoviews.operation.datashader import datashade
-import pandas as pd
 import xarray as xr
 
 import itertools
 import param
 
-from GSForge.models import OperationInterface
+from ...models import Interface
+from ..utils import AbstractPlottingOperation
 
 
-class RasterGEM(OperationInterface):
+class RasterGEM(Interface, AbstractPlottingOperation):
 
     # use_datashader = param.Boolean(default=True)
     hue = param.String(default=None, doc="Color by which to shade the observations.")
+
+    @staticmethod
+    def bokeh_opts():
+        return hv.opts.Scatter(width=500, height=500)
+
+    @staticmethod
+    def matplotlib_opts():
+        return hv.opts.Scatter(fig_size=250)
 
     @staticmethod
     def gem_raster(counts, use_datashader=True):
@@ -27,7 +35,6 @@ class RasterGEM(OperationInterface):
             colors = ["Blues", "Greens", "Greys", "Oranges", "Purples", "Reds"]
 
         label_df = labels.to_dataframe()
-        # label_series = pd.Series(labels)
         groups = label_df.groupby(labels.name).groups
 
         colors = {name: color for name, color in zip(groups.keys(), itertools.cycle(colors))}
@@ -37,11 +44,8 @@ class RasterGEM(OperationInterface):
 
         images = [hv.Image(values.values).opts(cmap=colors[name])
                   for name, values in data_groups.items()]
-        # images = {name: hv.Image(values.values).opts(cmap=colors[name])
-        #           for name, values in data_groups.items()}
 
         return hv.Overlay(images)
-        # return hv.NdOverlay(images)
 
     def process(self):
         if self.hue is None:
