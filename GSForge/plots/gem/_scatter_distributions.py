@@ -11,7 +11,7 @@ from ...models import Interface
 from ..utils import AbstractPlottingOperation
 
 
-class genewise_aggregate_scatter(Interface, AbstractPlottingOperation):
+class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
     """
     Displays the output of selected aggregations upon the count array on a scatter plot with optional
     adjoined kernel density estimates. e.g. mean counts vs mean variance etc.

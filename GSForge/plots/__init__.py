@@ -9,7 +9,7 @@ from . import gem
 from . import results
 
 # from GSForge.plots.gem._gene_mass import plot_count_sum_mass, plot_sample_mass, plot_sample
-# from GSForge.plots.gem._scatter_distributions import genewise_aggregate_scatter
+# from GSForge.plots.gem._scatter_distributions import GenewiseAggregateScatter
 # from GSForge.plots.gem._distributions import sample_wise_distributions
 # from GSForge.plots.collections._geneset_heatmap import within_collection_overlap, between_collection_overlap
 # from GSForge.plots.gem._raster_gem import RasterGEM
@@ -19,7 +19,7 @@ from . import results
 # __all__ = [
 #     "plot_count_sum_mass",
 #     "plot_sample_mass",
-#     "genewise_aggregate_scatter",
+#     "GenewiseAggregateScatter",
 #     "plot_sample",
 #     "sample_wise_distributions",
 #     "RasterGEM",

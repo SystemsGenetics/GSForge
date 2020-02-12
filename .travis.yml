@@ -27,15 +27,19 @@ python:
 
 stages:
   - name: website_dev
-    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (tag = website_dev) OR (commit_message =~ travis_dev)
+    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (commit_message =~ travis_dev)
+  - name: pip_dev_package
+    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (commit_message =~ travis_dev)
+  - name: build_dev_dockerfiles
+    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (commit_message =~ travis_dev)
+
   - name: website_release
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
-  - name: pip_dev_package
-    if: tag =~ ^v(\d+|\.)+[a-z]\d+$ OR (commit_message =~ travis_dev)
   - name: pip_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: build_dockerfiles
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
+
 
 jobs:
   include:
@@ -81,7 +85,7 @@ jobs:
           github_token: $GITHUB_TOKEN
           repo: SystemsGenetics/GSForgeDev
           on:
-            tags: true
+#            tags: true
             all_branches: true
 
     - stage: build_dockerfiles
@@ -91,6 +95,14 @@ jobs:
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
         - docker push systemsgenetics/gsforge_interactive:latest
         - docker push systemsgenetics/gsforge_workflow:latest
+
+    - stage: build_dev_dockerfiles
+      install: skip
+      script:
+        - docker-compose build
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push systemsgenetics/gsforge_interactive:dev
+        - docker push systemsgenetics/gsforge_workflow:dev
 
     - stage: pip_dev_package
       script:
