@@ -93,7 +93,7 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: pip_dev_package
-      install:
+      script:
         - pip install .
       deploy:
         provider: pypi
@@ -105,7 +105,7 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
-      install:
+      script:
         - pip install .
       deploy:
         provider: pypi
