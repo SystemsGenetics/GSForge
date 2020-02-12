@@ -270,7 +270,7 @@ class GeneSet(param.Parameterized):
         :return:
             A parsed parameter dictionary.
         """
-        params = cls.parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
+        params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return {"data": xr.open_dataset(netcdf_path), **params}
 
     @classmethod

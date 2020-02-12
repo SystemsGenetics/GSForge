@@ -2,19 +2,12 @@ import holoviews as hv
 import itertools
 import param
 
-from ...models import GeneSetCollection
+from ...models import GeneSetCollection, Interface
 from ..utils import AbstractPlottingOperation
 
 
-class WithinCollectionOverlapHeatMap(AbstractPlottingOperation):
+class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
     mode = param.ObjectSelector(default="overlap", objects=["overlap", "percent"])
-
-    gene_set_collection = param.ClassSelector(class_=GeneSetCollection, doc="""
-    A GeneSetCollection object.""", default=None, precedence=-1.0)
-
-    selected_gene_sets = param.ListSelector(default=[None], doc=""""
-    A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
-    that are to be used for selecting sets of genes from the count matrix.""")
 
     @staticmethod
     def bokeh_opts():

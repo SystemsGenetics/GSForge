@@ -37,7 +37,7 @@ class Interface(param.Parameterized):
     gene_set_collection = param.ClassSelector(class_=GeneSetCollection, doc=dedent("""\
     A GeneSetCollection object."""), default=None, precedence=-1.0)
 
-    selected_gene_sets = param.ListSelector(default=[None], doc=dedent("""\
+    selected_gene_sets = param.ListSelector(default=None, doc=dedent("""\
     A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
     that are to be used for selecting sets of genes from the count matrix."""))
 
@@ -92,9 +92,11 @@ class Interface(param.Parameterized):
     def __init__(self, *args, **params):
         if args:
             params = _interface_dispatch(*args, **params)
-        super().__init__(**params)
 
-        # TODO: Add and update an 'available count matrix' parameter.
+        if isinstance(params.get("annotation_variables"), str):
+            params["annotation_variables"] = [params.get("annotation_variables")]
+
+        super().__init__(**params)
 
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
