@@ -19,7 +19,7 @@ process Create_DGE_Input {
         file ( "dropped_counts.csv" ) into dropped_gem_csv_ch
         file ( "annotations.csv" ) into sample_annotations_ch
 
-    beforeScript 'conda activate py38'
+    // beforeScript 'conda activate py38'
 
     script:
     """
@@ -27,7 +27,7 @@ process Create_DGE_Input {
 
     import GSForge as gsf
 
-    agem = gsf.AnnotatedGEM(${gem_file})
+    agem = gsf.AnnotatedGEM("${gem_file}")
 
     dropped_counts, labels = gsf.get_data(
       agem,
