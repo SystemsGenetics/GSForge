@@ -48,7 +48,7 @@ umap_learn
 requirements = core_requirements
 
 if "GSFORGE_MINIMAL" not in os.environ:
-    requirements += core_requirements + doc_requirements
+    requirements += requirements + doc_requirements + full_requirements
 
 setup(
     name='GSForge',

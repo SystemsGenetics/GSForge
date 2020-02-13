@@ -4,7 +4,6 @@
 annotated_gem_ch = Channel.fromPath( params.annotated_gem_path )
 formula_design_ch = Channel.value( params.formula_design )
 formula_variables_ch = Channel.value( params.formula_variables )
-// contrast_arrays_ch = Channel.from( params.contrast_arrays )
 
 
 

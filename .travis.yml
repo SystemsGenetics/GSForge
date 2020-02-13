@@ -1,11 +1,6 @@
 # Much of this setup is borrowed or inspired from the travis.yml files
 # of the param, holoviews and related packages.
 
-#branches:
-#  only:
-#    - master
-#    - dev
-
 addons:
   apt:
     packages:
@@ -85,7 +80,6 @@ jobs:
           github_token: $GITHUB_TOKEN
           repo: SystemsGenetics/GSForgeDev
           on:
-#            tags: true
             all_branches: true
 
     - stage: build_dockerfiles
