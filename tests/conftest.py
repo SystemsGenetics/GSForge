@@ -40,20 +40,17 @@ def random_annotated_gem():
     )
 
     count_df = pd.DataFrame(data)
-    count_df.index.set_names(_sample_names)
-    count_df.columns.set_names(_gene_names)
+    count_df = count_df.reindex(index=_sample_names(), columns=_gene_names())
 
     label_df = pd.DataFrame(labels)
-    label_df.index.set_names(_sample_names)
-
-    return gsf.AnnotatedGEM.from_pandas(count_df, label_df, name="Generated GEM")
+    label_df = label_df.reindex(index=_sample_names())
+    return gsf.AnnotatedGEM.from_pandas(count_df.transpose(), label_df, name="Generated GEM")
 
 
 # Create a factory for creating more than one random GeneSet object.
 # See this discussion: https://github.com/pytest-dev/pytest/issues/2703
 @pytest.fixture(name="make_gene_set")
 def make_gene_set_(random_annotated_gem):
-    gene_sets = []
 
     def make_gene_set(name="Random Gene Set"):
         scores = np.random.random(size=N_GENES)
@@ -64,9 +61,6 @@ def make_gene_set_(random_annotated_gem):
         return gsf.GeneSet(name=name, data=xr_scores)
 
     yield make_gene_set
-
-    for gs in gene_sets:
-        del gs
 
 
 # This is the 'normal' singular fixture for a GeneSet.
