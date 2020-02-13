@@ -76,7 +76,7 @@ class AnnotatedGEM(param.Parameterized):
 
     """
 
-    data = param.ClassSelector(class_=xr.Dataset, doc=dedent("""\
+    data = param.ClassSelector(class_=xr.Dataset, allow_None=False, doc=dedent("""\
     An ``xarray.Dataset`` object that contains the Gene Expression Matrix, and any 
     needed annotations. This `xarray.Dataset` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample')."""))

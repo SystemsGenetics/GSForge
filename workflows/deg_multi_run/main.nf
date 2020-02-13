@@ -48,8 +48,8 @@ process Create_DGE_Input {
 
     labels = labels.to_dataframe()
 
-    complete_counts.to_csv("complete_counts.csv")
-    dropped_counts.to_csv("dropped_counts.csv")
+    complete_counts.to_csv("complete_counts.csv", index_label=False)
+    dropped_counts.to_csv("dropped_counts.csv", index_label=False)
     labels.to_csv("annotations.csv")
 
     """
@@ -59,7 +59,8 @@ process Create_DGE_Input {
 
 process Run_DESeq2 {
 
-    container = 'bioconductor/bioconductor_docker:RELEASE_3_10'
+  // container = 'bioconductor/bioconductor_docker:RELEASE_3_10'
+  container = 'genomicpariscentre/deseq2:latest'
 
     input:
         file ( gem_csv ) from dropped_gem_csv_ch
@@ -75,8 +76,8 @@ process Run_DESeq2 {
 
     library("DESeq2")
 
-    dropped_counts <- read.csv(file = ${gem_csv})
-    labels <- read.csv(file = ${gem_csv})
+    dropped_counts <- read.csv(file = "${gem_csv}")
+    labels <- read.csv(file = "${sample_annotations}")
 
     dds <- DESeqDataSetFromMatrix(countData = dropped_counts,
                                   colData = labels,

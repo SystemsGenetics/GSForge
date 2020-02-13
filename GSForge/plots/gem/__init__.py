@@ -5,3 +5,10 @@ from ._scatter_distributions import GenewiseAggregateScatter
 from ._raster_gem import RasterGEM
 from ._grouped_mean_points import GroupedMeanScatter
 
+__all__ = [
+    "sample_wise_distributions",
+    "GeneVsCountsScatter",
+    "GenewiseAggregateScatter",
+    "RasterGEM",
+    "GroupedMeanScatter"
+]

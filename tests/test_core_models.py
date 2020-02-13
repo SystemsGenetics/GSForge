@@ -2,6 +2,7 @@
 Test the 'core' data models, i.e. those that have ``.data`` parameter
 with an ``xarray.Dataset`` object.
 """
+import GSForge as gsf
 
 
 def test_annotated_gem_creation(random_annotated_gem):
@@ -30,3 +31,10 @@ def test_gene_set_collection_creation(random_gene_set_collection):
     print("set operation shapes:")
     for key, values in set_operations.items():
         print(key, values.shape)
+
+
+def test_interface(random_gene_set_collection):
+    interface = gsf.Interface(random_gene_set_collection)
+    interface.get_gene_index()
+
+
