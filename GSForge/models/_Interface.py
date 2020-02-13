@@ -122,8 +122,6 @@ class Interface(param.Parameterized):
         params = {"gem": annotated_gem,
                   "count_variable": annotated_gem.count_array_name,
                   **params}
-        # if args:
-        #     params = _interface_dispatch(*args, **params)
         return params
 
     @staticmethod
@@ -148,9 +146,6 @@ class Interface(param.Parameterized):
                       "count_variable": gene_set_collection.gem.count_array_name,
                       **params}
         params = {"gene_set_collection": gene_set_collection, **params}
-
-        # if args:
-        #     params = _interface_dispatch(*args, **params)
 
         return params
 
