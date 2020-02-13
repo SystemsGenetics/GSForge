@@ -89,6 +89,8 @@ jobs:
             all_branches: true
 
     - stage: build_dockerfiles
+      env:
+        -IMAGE_TAG="${TRAVS_TAG}"
       install: skip
       script:
         - docker-compose build
@@ -97,6 +99,8 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:latest
 
     - stage: build_dev_dockerfiles
+      env:
+        -IMAGE_TAG="dev"
       install: skip
       script:
         - docker-compose build

@@ -2,13 +2,13 @@ version: '3.3'
 
 services:
   interactive:
-    image: systemsgenetics/gsforge_interactive:latest
+    image: systemsgenetics/gsforge_interactive:${IMAGE_TAG}
     build:
       context: .
       dockerfile: './docker/notebook/Dockerfile'
 
   workflow:
-    image: systemsgenetics/gsforge_workflow:latest
+    image: systemsgenetics/gsforge_workflow:${IMAGE_TAG}
     build:
       context: .
       dockerfile: './docker/workflow/Dockerfile'

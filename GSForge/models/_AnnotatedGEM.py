@@ -47,33 +47,6 @@ class AnnotatedGEM(param.Parameterized):
     ``from_netcdf()``
       Reads in from a .nc filepath. Usually this means loading a previously
       created AnnotatedGEM.
-
-
-    **Randomly generate a demo AnnotatedGEM**
-
-    # >>> from sklearn.datasets import make_multilabel_classification
-    # >>> data, labels = make_multilabel_classification()
-    # >>> agem = AnnotatedGEM.from_pandas(pd.DataFrame(data), pd.DataFrame(labels), name="Generated GEM")
-
-
-    # >>> agem
-    # <GSForge.AnnotatedGEM>
-    # Name: Generated GEM
-    # Selected GEM Variable: 'counts'
-    #     Gene   100
-    #     Sample 100
-
-    **View the entire gene or sample index:**
-
-    # >>> agem.gene_index
-    # <xarray.DataArray 'Gene' (Gene: 100)>...
-
-    # >>> agem.sample_index
-    # <xarray.DataArray 'Sample' (Sample: 100)>...
-
-    # >>> agem.infer_variables()
-    # {'all_labels': ...
-
     """
 
     data = param.ClassSelector(class_=xr.Dataset, allow_None=False, doc=dedent("""\
@@ -100,8 +73,6 @@ class AnnotatedGEM(param.Parameterized):
     def __init__(self, *args, **params) -> None:
         if args:
             params = _annotated_gem_dispatch(*args, **params)
-        # TODO: Ensure that a data object exists in params.
-        #       Give an invalid input warning to the user.
         super().__init__(**params)
 
     def __repr__(self) -> str:

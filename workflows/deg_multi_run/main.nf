@@ -59,7 +59,6 @@ process Create_DGE_Input {
 
 process Run_DESeq2 {
 
-  // container = 'bioconductor/bioconductor_docker:RELEASE_3_10'
   container = 'genomicpariscentre/deseq2:latest'
 
     input:
