@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import itertools
 import os
 import pathlib
 from functools import reduce
 from textwrap import dedent
-from typing import Dict, Tuple, List, TypeVar, Type, Union
+from typing import Dict, Tuple, List
 
 import numpy as np
 import pandas as pd
@@ -12,15 +14,6 @@ import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
-
-# from os import PathLike
-
-# Declare typing hints.
-# Typing hints are not used by the Python runtime in any way.
-# They are used by third party tools and linters.
-# In python 3.8 we can use forward references.
-TypeGSC = TypeVar("TypeGSC", bound="GeneSetCollection")
-TypePath = Union[str, 'PathLike[Any]']
 
 
 class GeneSetCollection(param.Parameterized):
@@ -326,8 +319,8 @@ class GeneSetCollection(param.Parameterized):
     #     return key_ds
 
     @classmethod
-    def from_folder(cls: Type[TypeGSC], gem: AnnotatedGEM, target_dir, glob_filter="*.nc", filter_func=None,
-                    **params) -> TypeGSC:
+    def from_folder(cls, gem: AnnotatedGEM, target_dir, glob_filter="*.nc", filter_func=None,
+                    **params) -> GeneSetCollection:
         """
         Create a `GeneSetCollection` from a directory of saved GeneSet objects.
 

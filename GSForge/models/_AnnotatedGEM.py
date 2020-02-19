@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import functools
 import json
-import pathlib
+from pathlib import Path
 from textwrap import dedent
-from typing import List, TypeVar, Union
+from typing import List, Union, AnyStr, IO, Dict
 
+import numpy as np
 import pandas as pd
 import param
 import xarray as xr
@@ -14,13 +17,6 @@ from ._utils import (
     load_count_df,
     load_label_df,
 )
-
-# Declare typing hints.
-# Typing hints are not used by the Python runtime in any way.
-# They are used by third party tools and linters.
-# In python 3.8 we can use forward references.
-TypeAGEM = TypeVar("TypeAGEM", bound="AnnotatedGEM")
-TypePath = Union[str, 'PathLike[Any]']
 
 
 class AnnotatedGEM(param.Parameterized):
@@ -70,9 +66,13 @@ class AnnotatedGEM(param.Parameterized):
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names."""))
 
+    @functools.singledispatchmethod
+    def __annotated_gem_dispatch(*args, **params):
+        raise TypeError(f"Source of type: {type(args[0])} not supported.")
+
     def __init__(self, *args, **params) -> None:
         if args:
-            params = _annotated_gem_dispatch(*args, **params)
+            params = self.__annotated_gem_dispatch(*args, **params)
         super().__init__(**params)
 
     def __repr__(self) -> str:
@@ -117,7 +117,7 @@ class AnnotatedGEM(param.Parameterized):
         default_dims = set(self.data[self.count_array_name].dims)
         return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
 
-    def infer_variables(self, quantile_size: int = 10, skip: bool = None) -> dict:
+    def infer_variables(self, quantile_size: int = 10, skip: bool = None) -> Dict[str, np.ndarray]:
         """
         Infer categories for the variables in the AnnotatedGEM's labels.
 
@@ -141,6 +141,28 @@ class AnnotatedGEM(param.Parameterized):
 
         return infer_xarray_variables(xr_dataset=self.data, quantile_size=quantile_size, skip=skip)
 
+    @__annotated_gem_dispatch.register(str)
+    @__annotated_gem_dispatch.register(Path)
+    @classmethod
+    def _parse_netcdf_path(cls, netcdf_path: Union[str, Path, IO[AnyStr]], **params) -> dict:
+        """
+        Parse arguments for AnnotatedGEM creation via a path to an `xarray.Dataset` saved as a .netcdf file.
+
+        :param netcdf_path:
+            A path to a `netcdf` file. If this file has different index names than default
+            (Gene, Sample, counts), be sure to explicitly set those parameters
+            (`gene_index_name`, `sample_index_name`, `count_array_name`).
+
+        :param params:
+            Other parameters to set.
+
+        :return:
+            A parsed parameter dictionary.
+        """
+        params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
+        return {"data": xr.open_dataset(netcdf_path), **params}
+
+    @__annotated_gem_dispatch.register(xr.Dataset)
     @staticmethod
     def _parse_xarray_dataset(data: xr.Dataset, **params) -> dict:
         """
@@ -164,26 +186,7 @@ class AnnotatedGEM(param.Parameterized):
         return {"data": data, **params}
 
     @classmethod
-    def _parse_netcdf_path(cls, netcdf_path, **params):
-        """
-        Parse arguments for AnnotatedGEM creation via a path to an `xarray.Dataset` saved as a .netcdf file.
-
-        :param netcdf_path:
-            A path to a `netcdf` file. If this file has different index names than default
-            (Gene, Sample, counts), be sure to explicitly set those parameters
-            (`gene_index_name`, `sample_index_name`, `count_array_name`).
-
-        :param params:
-            Other parameters to set.
-
-        :return:
-            A parsed parameter dictionary.
-        """
-        params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
-        return {"data": xr.open_dataset(netcdf_path), **params}
-
-    @classmethod
-    def from_netcdf(cls, netcdf_path: TypePath, **params) -> TypeAGEM:
+    def from_netcdf(cls, netcdf_path: Union[str, Path, IO[AnyStr]], **params) -> AnnotatedGEM:
         """
         Construct an `AnnotatedGEM` object from a `netcdf` (.nc) file path.
 
@@ -198,6 +201,7 @@ class AnnotatedGEM(param.Parameterized):
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return cls(**params)
 
+    @__annotated_gem_dispatch.register(pd.DataFrame)
     @classmethod
     def _parse_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> dict:
         """
@@ -218,7 +222,7 @@ class AnnotatedGEM(param.Parameterized):
         return {"data": data, **params}
 
     @classmethod
-    def from_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> TypeAGEM:
+    def from_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> AnnotatedGEM:
         """
         Construct a `GEM` object from `pandas.DataFrame` objects.
 
@@ -239,21 +243,23 @@ class AnnotatedGEM(param.Parameterized):
         return cls(**params)
 
     @classmethod
-    def _parse_files(cls, count_path, label_path=None, count_kwargs=None, label_kwargs=None, **params) -> dict:
+    def _parse_files(cls,
+                     count_path: Union[str, Path, IO[AnyStr]],
+                     label_path: Union[str, Path, IO[AnyStr]] = None,
+                     count_kwargs: dict = None,
+                     label_kwargs: dict = None, **params) -> dict:
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
 
-        # Expand and resolve the given paths.
-        count_path = str(pathlib.Path(count_path).expanduser().resolve())
-
-        if label_path:
-            label_path = str(pathlib.Path(label_path).expanduser().resolve())
+        # Expand and resolve the given paths, ensures tilde '~' and environment variables are handled.
+        count_path = str(Path(count_path).expanduser().resolve())
 
         count_df = load_count_df(count_path=count_path, **count_kwargs)
 
         if label_path:
             if label_kwargs is None:
                 label_kwargs = dict(index_col=0)
+            label_path = str(Path(label_path).expanduser().resolve())
             label_df = load_label_df(label_path=label_path, **label_kwargs)
         else:
             label_df = None
@@ -271,11 +277,11 @@ class AnnotatedGEM(param.Parameterized):
 
     @classmethod
     def from_files(cls,
-                   count_path: str,
-                   label_path: str = None,
+                   count_path: Union[str, Path, IO[AnyStr]],
+                   label_path: Union[str, Path, IO[AnyStr]] = None,
                    count_kwargs: dict = None,
                    label_kwargs: dict = None,
-                   **params) -> TypeAGEM:
+                   **params) -> AnnotatedGEM:
         """
         Construct a `AnnotatedGEM` object from file paths and optional parsing arguments.
 
@@ -298,7 +304,7 @@ class AnnotatedGEM(param.Parameterized):
                                   count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
         return cls(**params)
 
-    def save(self, path):
+    def save(self, path: AnyStr) -> str:
         """
         Save as a netcdf (.nc) to the file at `path`.
 
@@ -318,16 +324,3 @@ class AnnotatedGEM(param.Parameterized):
         self.data.attrs.update({"__GSForge.AnnotatedGEM.params": params_str})
         self.data.to_netcdf(path, mode="w")
         return path
-
-
-# Python 3.8 will let us move this code into the class body, and add
-# # add register the @classmethod functions.
-@functools.singledispatch
-def _annotated_gem_dispatch(*args, **params):
-    raise TypeError(f"Source of type: {type(args[0])} not supported.")
-
-
-_annotated_gem_dispatch.register(xr.Dataset, AnnotatedGEM._parse_xarray_dataset)
-_annotated_gem_dispatch.register(str, AnnotatedGEM._parse_netcdf_path)
-_annotated_gem_dispatch.register(pathlib.PosixPath, AnnotatedGEM._parse_netcdf_path)
-_annotated_gem_dispatch.register(pd.DataFrame, AnnotatedGEM._parse_pandas)

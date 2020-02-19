@@ -84,7 +84,7 @@ jobs:
 
     - stage: build_dockerfiles
       env:
-        -IMAGE_TAG="${TRAVS_TAG}"
+        -GSFORGE_IMAGE_TAG="${TRAVS_TAG}"
       install: skip
       script:
         - docker-compose build
@@ -94,7 +94,7 @@ jobs:
 
     - stage: build_dev_dockerfiles
       env:
-        -IMAGE_TAG="dev"
+        -GSFORGE_IMAGE_TAG="dev"
       install: skip
       script:
         - docker-compose build

@@ -1,5 +1,5 @@
 """
-There are two 'core' data models in *GSForge*, both of which store their associated data
+There are two core data models in **GSForge**, both of which store their associated data
 in ``xarray.Dataset`` object under a ``data`` attribute. You are encouraged to consult the
 `xarray documentation <http://xarray.pydata.org/en/stable/>`_
 for how to perform any transform or selection not provided by *GSForge*.

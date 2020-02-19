@@ -173,6 +173,8 @@ class boruta_prospector(OperationInterface):
     - 2: which features have been selected already"""))
 
     def process(self):
+        if len(self.y_annotation_data) > 1:
+            raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
         x_data, y_data = self.x_count_data, self.y_annotation_data
         boruta_kwargs = kwargs_overlap(self, boruta_py.BorutaPy)
         boruta_model = boruta_py.BorutaPy(**boruta_kwargs)
@@ -188,9 +190,7 @@ class boruta_prospector(OperationInterface):
                  "selected_count_variable": self.count_variable,
                  "selected_annotation_variables": self.annotation_variables}
 
-        return parse_boruta_model(boruta_model, attrs=attrs, gene_coords=self.get_gene_index(),
+        return parse_boruta_model(boruta_model,
+                                  attrs=attrs,
+                                  gene_coords=self.get_gene_index(),
                                   dim=self.gem.gene_index_name)
-
-# class boruta_one_vs_rest_prospector(boruta_prospector):
-#     def process(self):
-#         pass
