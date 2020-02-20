@@ -7,8 +7,8 @@ services:
       context: .
       dockerfile: './docker/notebook/Dockerfile'
 
-#  workflow:
-#    image: systemsgenetics/gsforge_workflow:${GSFORGE_IMAGE_TAG:-dev}
-#    build:
-#      context: .
-#      dockerfile: './docker/workflow/Dockerfile'
+  workflow:
+    image: systemsgenetics/gsforge_workflow:${GSFORGE_IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: './docker/workflow/Dockerfile'

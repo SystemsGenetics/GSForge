@@ -16,23 +16,23 @@ from ._GeneSetCollection import GeneSetCollection
 class Interface(param.Parameterized):
     """
     The Interface provides common API access for interacting with the ``AnnotatedGEM`` and
-    ``GeneSetCollection`` objects. It also accepts an ``AnnotatedGEM`` and a single ``GeneSet``
-    for subset selection.
+    ``GeneSetCollection`` objects.
 
-    For updating default parameters within subclasses, use the following, although it may
-    cause 'watching' parameters to fire.
+    For updating default parameters within subclasses, use the following:
 
-    ```
-    self.set_param(key=value)
-    ```
+    .. doctest::
+        :options: +SKIP
 
+        >>> self.set_param(key=value)
+
+    Although it may cause 'watching' parameters to fire.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
-    An AnnotatedGEM object."""), default=None, precedence=-1.0)
+    An ``AnnotatedGEM`` object."""), default=None, precedence=-1.0)
 
     gene_set_collection = param.ClassSelector(class_=GeneSetCollection, doc=dedent("""\
-    A GeneSetCollection object."""), default=None, precedence=-1.0)
+    A ``GeneSetCollection`` object."""), default=None, precedence=-1.0)
 
     selected_gene_sets = param.ListSelector(default=None, doc=dedent("""\
     A list of keys from the provided GeneSetCollection (stored in gene_set_collection)
@@ -41,7 +41,7 @@ class Interface(param.Parameterized):
     selected_genes = param.Parameter(default=None, doc=dedent("""\
     A list of genes to use in indexing from the count matrix. This parameter takes
     priority over all other gene selecting methods. That means that selected
-    lineaments (or combinations thereof) will have no effect."""), precedence=-1.0)
+    GeneSets (or combinations thereof) will have no effect."""), precedence=-1.0)
 
     gene_set_mode = param.ObjectSelector(
         default="union",
@@ -50,10 +50,10 @@ class Interface(param.Parameterized):
         Controls how any selected gene sets are returned by the interface.
         
         **complete**
-            Returns the entire gene set of the AnnotatedGEM.
-        union
+            Returns the entire gene set of the ``AnnotatedGEM``.
+        **union**
             Returns the union of the selected gene sets support.
-        intersection
+        **intersection**
             Returns the intersection of the selected gene sets support.
         """)
     )
@@ -67,7 +67,7 @@ class Interface(param.Parameterized):
 
     annotation_variables = param.List(doc=dedent("""\
     The name of the active annotation variable(s). These are the annotation columns that will
-    be control the subset returned by `y_annotation_data`."""), precedence=-1.0, default=None)
+    be control the subset returned by ``y_annotation_data``."""), precedence=-1.0, default=None)
 
     count_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the count matrix.
