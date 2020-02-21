@@ -43,7 +43,8 @@ class AnnotatedGEM(param.Parameterized):
       Reads in from a .nc filepath. Usually this means loading a previously
       created AnnotatedGEM.
 
-    Randomly generate a demo AnnotatedGEM
+    Generate random a demo AnnotatedGEM:
+    ------------------------------------
 
     .. doctest::
         :options: +SKIP
@@ -59,6 +60,7 @@ class AnnotatedGEM(param.Parameterized):
             Sample 100
 
     View the entire gene or sample index:
+    -------------------------------------
 
     .. doctest::
         :options: +SKIP
