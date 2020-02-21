@@ -33,9 +33,11 @@ transformations that researchers may need from the core data classes. They are:
     Aside from being abstract, this is the same as the above *Interface*, except
     this calls a single function as defined by ``process`` function in a subclass.
 
+Order of operations applied for GSForge index selection.
 
 .. image:: ../../doc/_static/GSForge_index_selection.svg
   :width: 400
+  :align: center
   :alt: GSForge Index Selection
 
 """

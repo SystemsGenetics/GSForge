@@ -21,8 +21,7 @@ from ._utils import (
 
 class AnnotatedGEM(param.Parameterized):
     """
-    A data class for a gene expression matrix and any associated sample or
-    gene annotations.
+    A data class for a gene expression matrix and any associated sample or gene annotations.
 
     This model holds the count expression matrix, and any associated labels
     or annotations as an ``xarray.Dataset`` object under the ``.data`` attribute.
@@ -298,8 +297,8 @@ class AnnotatedGEM(param.Parameterized):
         if label_path and all(label_sample not in count_df.columns.values
                               for label_sample in label_df.index.values):
             raise ValueError(dedent("""Files cannot be automatically processed, please
-            load your data in to `pandas.DataFrame` objects and provide them to the
-            `AnnotatedGEM.from_pandas` constructor instead."""))
+            load your data in to ``pandas.DataFrame`` objects and provide them to the
+            ``AnnotatedGEM.from_pandas`` constructor instead."""))
 
         data = xrarray_gem_from_pandas(count_df, label_df)
 
@@ -313,22 +312,26 @@ class AnnotatedGEM(param.Parameterized):
                    label_kwargs: dict = None,
                    **params) -> AnnotatedGEM:
         """
-        Construct a `AnnotatedGEM` object from file paths and optional parsing arguments.
+        Construct a ``AnnotatedGEM`` object from file paths and optional parsing arguments.
 
-        :param count_path:
-            The path to the gene expression matrix.
+        Parameters
+        ----------
+        count_path : Union[str, Path, IO[AnyStr]]
+            Path to the gene expression matrix.
 
-        :param label_path:
-            The path to the gene annotation data.
+        label_path : Union[str, Path, IO[AnyStr]]
+            Path to the gene annotation data.
 
-        :param count_kwargs:
-            Arguments to be passed to `pandas.read_csv` for the count matrix.
+        count_kwargs : dict
+            A dictionary of arguments to be passed to ``pandas.read_csv`` for the count matrix.
 
-        :param label_kwargs:
-            Arguments to be passed to `pandas.read_csv` for the annotations.
+        label_kwargs : dict
+            A dictionary of arguments to be passed to ``pandas.read_csv`` for the annotations.
 
-        :return:
-            An instance of the `AnnotatedGEM` class.
+        Returns
+        -------
+        AnnotatedGEM
+            An instance of the ``AnnotatedGEM`` class.
         """
         params = cls._parse_files(count_path=count_path, label_path=label_path,
                                   count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
@@ -336,10 +339,10 @@ class AnnotatedGEM(param.Parameterized):
 
     def save(self, path: AnyStr) -> str:
         """
-        Save as a netcdf (.nc) to the file at `path`.
+        Save as a netcdf (.nc) to the file at ``path``.
 
         :param path:
-            The filepath to save to. This should use the `.nc` extension.
+            The filepath to save to. This should use the ``.nc`` extension.
 
         :return:
             The path to which the file was saved.

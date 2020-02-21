@@ -75,9 +75,9 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
         self.set_param(annotation_variables=[self.hue])
         if self.get_gene_index().shape[0] > self.soft_max:
             genes_selected = self.get_gene_index().shape[0]
-            return ValueError(f"Selected number of genes: {genes_selected} is likely too much."
-                              f"Provide an array of genes to `selected_genes` less than (or override) "
-                              f"the `soft_max` parameter of {self.soft_max}")
+            raise ValueError(f"Selected number of genes: {genes_selected} is likely too much."
+                             f"Provide an array of genes to `selected_genes` less than (or override) "
+                             f"the `soft_max` parameter of {self.soft_max}")
 
         layout = self.genewise_scatter(data=self.selection,
                                        hue=self.hue,

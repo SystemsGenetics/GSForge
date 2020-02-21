@@ -210,16 +210,6 @@ class GeneSet(param.Parameterized):
 
         score_name = _scan_for_score_variable()
 
-        # TODO: Convert this to an internal helper function.
-        # Look for a variable name that ends in "_score" if none is given.
-        # score_name = score_variable
-        # if score_variable is None:
-        #     for var_name in list(self.data.variables.keys()):
-        #         # TODO: Check more common 'score' variable names. Convert to a variable somewhere...
-        #         if "score" in var_name:
-        #             score_name = var_name
-        #             break  # Use the first match.
-
         if score_name is None:
             raise ValueError("A score variable could not be automatically identified, please specify one.")
 

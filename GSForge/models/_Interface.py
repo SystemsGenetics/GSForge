@@ -18,6 +18,72 @@ class Interface(param.Parameterized):
     The Interface provides common API access for interacting with the ``AnnotatedGEM`` and
     ``GeneSetCollection`` objects.
 
+    Parameters
+    ----------
+    gem : AnnotatedGEM
+        An instance of an ``AnnotatedGEM`` object that stores gene expression matrix and
+        any associated sample or gene annotations.
+
+    gene_set_collection : GeneSetCollection
+        An instance of a ``GeneSetCollection`` object.
+
+    selected_gene_sets : List[str]
+        A list of keys from the provided ``GeneSetCollection`` (stored in `gene_set_collection`)
+        that are to be used for selecting sets of genes from the count matrix.
+
+    selected_genes : Union[List, np.ndarray]
+        A list of genes to use in indexing from the count matrix. This parameter takes
+        priority over all other gene selecting methods. That means that selected
+        GeneSets (or combinations thereof) will have no effect.
+
+    gene_set_mode : str
+        Controls how any selected gene sets are returned by the interface.
+        **complete**
+            Returns the entire gene set of the ``AnnotatedGEM``.
+        **union**
+            Returns the union of the selected gene sets support.
+        **intersection**
+            Returns the intersection of the selected gene sets support.
+
+    sample_subset : Union[List, np.ndarray]
+        A list of samples to use in a given operation. These can be supplied
+        directly as a list of genes, or can be drawn from a given GeneSet.
+
+    count_variable : str
+        The name of the count matrix used.
+
+    annotation_variables : List[str]
+        The name of the active annotation variable(s). These are the annotation columns
+        that will be control the subset returned by `y_annotation_data`.
+
+    count_mask : str
+        The type of mask to use for the count matrix.
+        **complete**
+            Returns the entire count matrix as numbers.
+        **masked**
+            Returns the entire count matrix with zero or missing as NaN values.
+        **dropped**
+            Returns the count matrix without genes that have zero or missing values.
+
+    annotation_mask : str
+        The type of mask to use for the target array.
+        **complete**
+            Returns the entire target array.
+        **dropped**
+            Returns the target array without samples that have zero or missing values.
+
+    count_transform : Callable
+        A transform that will be run on the `x_data` that is supplied by this Interface.
+        The transform runs on the subset of the matrix that has been selected.
+
+        Some common transforms:
+
+        .. doctest::
+            :options: +SKIP
+
+            lambda counts: np.log2(counts.where(counts > 0)))
+
+
     For updating default parameters within subclasses, use the following:
 
     .. doctest::
@@ -47,16 +113,14 @@ class Interface(param.Parameterized):
         default="union",
         objects=["complete", "union", "intersection"],
         doc=dedent("""\
-        Controls how any selected gene sets are returned by the interface.
-        
-        **complete**
-            Returns the entire gene set of the ``AnnotatedGEM``.
-        **union**
-            Returns the union of the selected gene sets support.
-        **intersection**
-            Returns the intersection of the selected gene sets support.
-        """)
-    )
+    Controls how any selected gene sets are returned by the interface.
+    **complete**
+        Returns the entire gene set of the ``AnnotatedGEM``.
+    **union**
+        Returns the union of the selected gene sets support.
+    **intersection**
+        Returns the intersection of the selected gene sets support.
+    """))
 
     sample_subset = param.Parameter(default=None, precedence=-1.0, doc=dedent("""\
     A list of samples to use in a given operation. These can be supplied
@@ -71,20 +135,24 @@ class Interface(param.Parameterized):
 
     count_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the count matrix.
-        + 'complete' returns the entire count matrix as numbers.
-        + 'masked' returns the entire count matrix with zero or missing as NaN values.
-        + 'dropped' returns the count matrix without genes that have zero or missing values.
+    **complete**
+        Returns the entire count matrix as numbers.
+    **masked** 
+        Returns the entire count matrix with zero or missing as NaN values.
+    **dropped** 
+        Returns the count matrix without genes that have zero or missing values.
     """), default='complete', objects=["complete", "masked", "dropped"], precedence=-1.0)
 
     annotation_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the target array.
-        + 'complete' returns the entire target array.
-        + 'masked' returns the entire target array with zero or missing as NaN values.
-        + 'dropped' returns the target array without samples that have zero or missing values.
+    **complete** 
+        Returns the entire target array.
+    **dropped** 
+        Returns the target array without samples that have zero or missing values.
     """), default='complete', objects=["complete", "dropped"], precedence=1.0)
 
     count_transform = param.Callable(default=None, precedence=-1.0, doc=dedent("""\
-    A transform that will be run on the x_data that is supplied by this Interface. 
+    A transform that will be run on the `x_data` that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
 
     @functools.singledispatchmethod
@@ -110,16 +178,20 @@ class Interface(param.Parameterized):
         """
         Parse arguments for creation of a new `Interface` instance from an `AnnotatedGEM`.
 
-        :param annotated_gem:
+        Parameters
+        ----------
+        annotated_gem : AnnotatedGEM
             A `GSForge.AnnotatedGEM` object.
 
-        :param _args:
+        _args :
             Not used.
 
-        :param params:
+        params :
             Parameters to initialize this `Interface` with.
 
-        :return:
+        Returns
+        -------
+        params : dict
             A parsed parameter dictionary.
         """
         params = {"gem": annotated_gem,
@@ -133,16 +205,20 @@ class Interface(param.Parameterized):
         """
         Parse arguments for creation of a new `Interface` instance from an `GeneSetCollection`.
 
-        :param gene_set_collection:
-            A `GSForge.GeneSetCollection` object.
+        Parameters
+        ----------
+        annotated_gem : AnnotatedGEM
+            A `GSForge.AnnotatedGEM` object.
 
-        :param _args:
+        _args :
             Not used.
 
-        :param params:
+        params :
             Parameters to initialize this `Interface` with.
 
-        :return:
+        Returns
+        -------
+        params : dict
             A parsed parameter dictionary.
         """
         if gene_set_collection.gem is not None:
@@ -157,10 +233,14 @@ class Interface(param.Parameterized):
         """
         Get the currently selected gene index as a numpy array.
 
-        :param count_variable:
+        Parameters
+        ----------
+        count_variable : str
             Optional, for selecting alternate count arrays. The variable to be retrieved.
 
-        :return:
+        Returns
+        -------
+        gene index : np.ndarray
             A numpy array of the currently selected genes.
         """
         gene_set_combinations = {

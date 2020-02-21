@@ -37,8 +37,8 @@ class chi_squared_test(OperationInterface):
 
         chi2_scores, chi2_pvals = chi2(np.nan_to_num(x_data), y_data)
         attrs = {"Method": "Chi-Squared",
-                 "x_variable": self.x_variable,
-                 "y_variables": self.y_variables}
+                 "count_variable": self.count_variable,
+                 "annotation_variables": self.annotation_variables}
         data = xr.Dataset({"chi2_scores": (["Gene"], chi2_scores),
                            "chi2_pvals": (["Gene"], chi2_pvals)},
                           coords={"Gene": x_data[self.gem.gene_index_name]},
@@ -59,8 +59,8 @@ class f_classification_test(OperationInterface):
 
         f_scores, f_pvals = f_classif(np.nan_to_num(x_data), y_data)
         attrs = {"Method": "ANOVA F-value",
-                 "x_variable": self.x_variable,
-                 "y_variables": self.y_variables}
+                 "count_variable": self.count_variable,
+                 "annotation_variables": self.annotation_variables}
         data = xr.Dataset({"f_scores": (["Gene"], f_scores),
                            "f_pvals": (["Gene"], f_pvals)},
                           coords={"Gene": x_data[self.gem.gene_index_name]},
@@ -173,7 +173,7 @@ class boruta_prospector(OperationInterface):
     - 2: which features have been selected already"""))
 
     def process(self):
-        if len(self.y_annotation_data) > 1:
+        if len(self.annotation_variables) > 1:
             raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
         x_data, y_data = self.x_count_data, self.y_annotation_data
         boruta_kwargs = kwargs_overlap(self, boruta_py.BorutaPy)

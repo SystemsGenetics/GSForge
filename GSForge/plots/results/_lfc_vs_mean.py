@@ -23,7 +23,7 @@ class MeanVsLFC(ResultPlottingOperation):
     p_value_var : str
         The name of the p-value column. Must be a variable within `source`.
 
-    mean_value_var: str
+    mean_value_var : str
         The name of the base mean column. Must be a variable within `source`.
 
     log_fold_change_cutoff : float
@@ -40,11 +40,11 @@ class MeanVsLFC(ResultPlottingOperation):
 
     Returns
     -------
-    volcano scatter plot : holoviews.Overlay
+    holoviews.Overlay
         A holoviews scatter plot of log-fold-change versus mean values.
     """
 
-    log_fold_change_var = param.String(default=None,  doc="""
+    log_fold_change_var = param.String(default=None, doc="""
     The name of the log-fold change column. Must be a variable within `source`.""")
     p_value_var = param.String(default=None, doc="""
     The name of the p-value column. Must be a variable within `source`.""")

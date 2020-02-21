@@ -5,7 +5,7 @@ Plotting Guide
 * `GEM Rasters <GEM_Rasters.ipynb>`_
   Raster views of GEM and GEM subsets.
 
-* `Genes vs Counts <Genes_vs_Counts.ipynb>`_
+* `Genes vs Counts <Gene_vs_Counts.ipynb>`_
   Gene (x-axis) vs counts (y-axis) scatter plots.
 
 * `GeneSet Overlap Heatmaps <GeneSet_Overlap_Heatmaps.ipynb>`_
