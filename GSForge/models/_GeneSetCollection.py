@@ -32,6 +32,12 @@ class GeneSetCollection(param.Parameterized):
         if self.gene_sets is None:
             self.set_param(gene_sets=dict())
 
+    def __getitem__(self, item):
+        return self.gene_sets[item]
+
+    def __setitem__(self, key, value):
+        self.gene_sets[key] = value
+
     def summarize_gene_sets(self) -> Dict[str, int]:
         """
         Summarize this GeneSetCollection, returns a dictionary of ``{gene_set_name: support_length}``.
