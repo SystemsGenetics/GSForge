@@ -168,6 +168,9 @@ class Interface(param.Parameterized):
 
         super().__init__(**params)
 
+        if self.count_variable is None:
+            self.set_param({"count_variable": self.gem.count_array_name})
+
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
             self.param["selected_gene_sets"].objects = avail_mappings + [None]

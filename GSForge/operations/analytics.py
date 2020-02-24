@@ -26,17 +26,17 @@ import param
 import xarray as xr
 from sklearn.base import clone
 
-from ..models import OperationInterface
+from ..models import Interface
 from ..utils._operations import shuffle_along_axis, null_rank_distribution
 
 __all__ = [
-    "rank_genes_by_model",
+    "RankGenesByModel",
     "nFDR",
     "mProbes",
 ]
 
 
-class rank_genes_by_model(OperationInterface):
+class RankGenesByModel(Interface, param.ParameterizedFunction):
     """
     Given some machine learning model, runs `n_iterations` and returns a summary of the ranking results.
 
@@ -54,10 +54,31 @@ class rank_genes_by_model(OperationInterface):
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
-    def process(self):
+    def __call__(self, *args, model, n_iterations, **params):
+        """
+
+        Parameters
+        ----------
+        args : Union[AnnotatedGEM, GeneSetCollection]
+            Source data object, either an ``AnnotatedGEM`` or a ``GeneSetCollection``.
+
+        model :
+            A model with ``fit.()``  method and an output ``feature_scores_`` attribute.
+
+        n_iterations : int
+            Number of interations to test.
+
+        params:
+            Parameters for ``Interface`` configuration.
+
+        Returns
+        -------
+
+        """
+        super().__init__(*args, **params)
+
         if len(self.annotation_variables) > 1:
             raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
-
         if self.n_iterations == 1:
             return self._rank_genes_by_model()
         else:
@@ -85,10 +106,10 @@ class rank_genes_by_model(OperationInterface):
                             coords=[self.get_gene_index()],
                             name="feature_importances",
                             attrs=attrs)
-        return data
+        return data.to_dataset()
 
 
-class nFDR(OperationInterface):
+class nFDR(Interface, param.ParameterizedFunction):
     """
     nFDR (False Discovery Rate) [method_compare]_.
 
@@ -128,7 +149,8 @@ class nFDR(OperationInterface):
             attrs=attrs,
             name="nFDR")
 
-    def process(self):
+    def __call__(self, *args, **params):
+        super().__init__(*args, **params)
 
         x_data = self.x_count_data.values
         y_data = self.y_annotation_data.values
@@ -148,7 +170,7 @@ class nFDR(OperationInterface):
             return fdr_ds.to_dataset()
 
 
-class mProbes(OperationInterface):
+class mProbes(Interface, param.ParameterizedFunction):
     """
     mProbes [method_compare]_ works by randomly permuting the feature values in the supplied data.
     e.g. count values are shuffled within each samples feature (gene) array.
@@ -184,7 +206,8 @@ class mProbes(OperationInterface):
             attrs=attrs,
             name="nFDR")
 
-    def process(self):
+    def __call__(self, *args, **params):
+        super().__init__(*args, **params)
 
         x_data = self.x_count_data.values
         y_data = self.y_annotation_data.values
