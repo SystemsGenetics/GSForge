@@ -74,10 +74,10 @@ class AnnotatedGEM(param.Parameterized):
 
     """
 
-    data = param.ClassSelector(class_=xr.Dataset, allow_None=False, doc=dedent("""\
+    data = param.ClassSelector(class_=xr.Dataset, allow_None=False, doc="""\
     An ``xarray.Dataset`` object that contains the Gene Expression Matrix, and any 
     needed annotations. This `xarray.Dataset` object is expected to have a count 
-    array named 'counts', that has coordinates ('Gene', 'Sample')."""))
+    array named 'counts', that has coordinates ('Gene', 'Sample').""")
 
     count_array_name = param.String(default="counts", doc=dedent("""\
     This parameter controls which variable from the `xarray.Dataset` should be
@@ -150,14 +150,17 @@ class AnnotatedGEM(param.Parameterized):
         """
         Infer categories for the variables in the AnnotatedGEM's labels.
 
-        :param quantile_size:
+        Parameters
+        ----------
+        quantile_size : int
             The maximum number of unique elements before a variable is no
             longer considered as a `quantile-able` set of values.
 
-        :param skip:
+        skip : bool
             The variables to be skipped.
 
-        :return:
+        Returns
+        -------
             A dictionary of the inferred value types.
         """
         if skip is None:
@@ -175,17 +178,20 @@ class AnnotatedGEM(param.Parameterized):
     @classmethod
     def _parse_netcdf_path(cls, netcdf_path: Union[str, Path, IO[AnyStr]], **params) -> dict:
         """
-        Parse arguments for AnnotatedGEM creation via a path to an `xarray.Dataset` saved as a .netcdf file.
+        Parse arguments for AnnotatedGEM creation via a path to an ``xarray.Dataset`` saved as a .netcdf file.
 
-        :param netcdf_path:
-            A path to a `netcdf` file. If this file has different index names than default
+        Parameters
+        ----------
+        netcdf_path : Union[str, Path, IO[AnyStr]]
+            A path to a netcdf file. If this file has different index names than default
             (Gene, Sample, counts), be sure to explicitly set those parameters
             (`gene_index_name`, `sample_index_name`, `count_array_name`).
 
-        :param params:
+        params : dict
             Other parameters to set.
 
-        :return:
+        Returns
+        -------
             A parsed parameter dictionary.
         """
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
@@ -195,17 +201,20 @@ class AnnotatedGEM(param.Parameterized):
     @staticmethod
     def _parse_xarray_dataset(data: xr.Dataset, **params) -> dict:
         """
-        Parse arguments for AnnotatedGEM creation via an `xarray.Dataset`.
+        Parse arguments for AnnotatedGEM creation via an ``xarray.Dataset``.
 
-        :param data:
-            An `xarray.Dataset` if this dataset has different index names than default
+        Parameters
+        ----------
+        data : xr.Dataset
+            An ``xarray.Dataset`` if this dataset has different index names than default
             (Gene, Sample, counts), be sure to explicitly set those parameters
             (`gene_index_name`, `sample_index_name`, `count_array_name`).
 
-        :param params:
+        params : dict
             Other parameters to set.
 
-        :return:
+        Returns
+        -------
             A parsed parameter dictionary.
         """
         existing_params = data.attrs.get("__GSForge.AnnotatedGEM.params")
@@ -217,15 +226,18 @@ class AnnotatedGEM(param.Parameterized):
     @classmethod
     def from_netcdf(cls, netcdf_path: Union[str, Path, IO[AnyStr]], **params) -> AnnotatedGEM:
         """
-        Construct an `AnnotatedGEM` object from a `netcdf` (.nc) file path.
+        Construct an ``AnnotatedGEM`` object from a netcdf (.nc) file path.
 
-        :param netcdf_path:
+        Parameters
+        ----------
+        netcdf_path : Union[str, Path, IO[AnyStr]]
             A path to a `netcdf` file. If this file has different index names than default
             (Gene, Sample, counts), be sure to explicitly set those parameters
             (`gene_index_name`, `sample_index_name`, `count_array_name`).
 
-        :return:
-            A new AnnotatedGEM.
+        Returns
+        -------
+        AnnotatedGEM : A new instance of the AnnotatedGEM class.
         """
         params = cls._parse_xarray_dataset(xr.open_dataset(netcdf_path), **params)
         return cls(**params)
@@ -233,20 +245,6 @@ class AnnotatedGEM(param.Parameterized):
     @__annotated_gem_dispatch.register(pd.DataFrame)
     @classmethod
     def _parse_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> dict:
-        """
-        Parse arguments for the construction of an `AnnotatedGEM` object from `pandas.DataFrame` objects.
-
-        :param count_df:
-            The gene expression matrix as a `pandas.DataFrame`.
-            This file is assumed to have genes as rows and samples as columns.
-
-        :param label_df: The gene annotation data as a `pandas.DataFrame`.
-            This file is assumed to have samples as rows and annotation observations
-            as columns.
-
-        :return:
-            A parsed parameter dictionary.
-        """
         data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         return {"data": data, **params}
 
@@ -255,17 +253,20 @@ class AnnotatedGEM(param.Parameterized):
         """
         Construct a `GEM` object from `pandas.DataFrame` objects.
 
-        :param count_df:
+        Parameters
+        ----------
+        count_df : pd.DataFrame
             The gene expression matrix as a `pandas.DataFrame`.
             This file is assumed to have genes as rows and samples as columns.
 
-        :param label_df:
+        label_df : pd.DataFrame
             The gene annotation data as a `pandas.DataFrame`.
             This file is assumed to have samples as rows and annotation observations
             as columns.
 
-        :return:
-            An instance of the `AnnotatedGEM` class.
+        Returns
+        -------
+        AnnotatedGEM : A new instance of the AnnotatedGEM class.
         """
         data = xrarray_gem_from_pandas(count_df=count_df, label_df=label_df)
         params = {"data": data, **params}
@@ -330,22 +331,24 @@ class AnnotatedGEM(param.Parameterized):
 
         Returns
         -------
-        AnnotatedGEM
-            An instance of the ``AnnotatedGEM`` class.
+        AnnotatedGEM : A new instance of the AnnotatedGEM class.
         """
         params = cls._parse_files(count_path=count_path, label_path=label_path,
                                   count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
         return cls(**params)
 
-    def save(self, path: AnyStr) -> str:
+    def save(self, path: Union[str, Path, IO[AnyStr]]) -> str:
         """
         Save as a netcdf (.nc) to the file at ``path``.
 
-        :param path:
+        Parameters
+        ----------
+        path : Union[str, Path, IO[AnyStr]]
             The filepath to save to. This should use the ``.nc`` extension.
 
-        :return:
-            The path to which the file was saved.
+        Returns
+        -------
+        str : The path to which the file was saved.
         """
         if path is None:
             path = f"{self.name}.nc"
