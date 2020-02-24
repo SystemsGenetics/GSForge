@@ -31,13 +31,16 @@ class GeneSet(param.Parameterized):
         my_geneset = GeneSet.from_pandas(<pandas.DataFrame>)
 
 
-    **Set the support via a boolean array:**
+    **Get the supported Genes:**
 
-    **View the 'complete' gene index of this GeneSet:**
+    .. code-block:: python
+        my_geneset.gene_support()
 
-    Note:: This is not guaranteed to be a 'complete' gene index. A GeneSet can have an index that is
-    'only' its supported genes.
 
+    **Set the support with a list or array of genes:**
+
+    .. code-block:: python
+        my_geneset.set_support_by_genes(my_genes)
 
     """
 
