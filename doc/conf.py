@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 extensions += [
     "nbsphinx",
+    "sphinx.ext.napoleon",  # numpy-style docstrings.
     # 'nbsite.gallery'
 ]
 
