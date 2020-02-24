@@ -300,12 +300,13 @@ class Interface(param.Parameterized):
         """Returns the name of the sample index."""
         return self.gem.sample_index_name
 
-    def get_sample_index(self) -> np.array:
+    def get_sample_index(self) -> np.ndarray:
         """
         Get the currently selected sample index as a numpy array.
 
-        :return:
-            A numpy array of the currently selected samples.
+        Returns
+        -------
+        np.ndarray : An array of the currently selected samples.
         """
 
         if self.sample_subset is not None:
@@ -351,8 +352,9 @@ class Interface(param.Parameterized):
         """
         Returns the currently selected 'x_data'. Usually this will be a subset of the active count array.
 
-        :return:
-            An `xarray.Dataset` selection of the currently active 'x_data'.
+        Returns
+        -------
+        xarray.Dataset : An `xarray.Dataset` selection of the currently active 'x_data'.
         """
         # TODO: Consider adding a copy option.
 

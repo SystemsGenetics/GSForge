@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import itertools
 import os
-import pathlib
+from pathlib import Path
 from functools import reduce
 from textwrap import dedent
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr
 
 import numpy as np
 import pandas as pd
@@ -21,11 +21,20 @@ class GeneSetCollection(param.Parameterized):
     An interface class which contains an AnnotatedGEM and a dictionary of GeneSet objects.
     """
 
+    ###############################################################################################
+    # PARAMETERS
+    # See the param documentation.
+    ###############################################################################################
+
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
     A GSForge.AnnotatedGEM object."""))
 
     gene_sets = param.Dict(doc=dedent("""\
     A dictionary of `{key: GSForge.GeneSet}`."""))
+
+    ###############################################################################################
+    # PRIVATE FUNCTIONS
+    ###############################################################################################
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -56,30 +65,42 @@ class GeneSetCollection(param.Parameterized):
         summary += [f"    {k}: {v}" for k, v in itertools.islice(self.summarize_gene_sets().items(), 10)]
         return "\n".join(summary)
 
-    def get_support(self, key) -> np.ndarray:
+    ###############################################################################################
+    # PUBLIC FUNCTIONS
+    ###############################################################################################
+
+    def get_support(self, key: str) -> np.ndarray:
         """
         Get the support array for a given key.
 
-        :param key:
+        Parameters
+        ----------
+        key : str
             The GeneSet from which to get the gene support.
 
-        :return:
-            A ``numpy`` array of the genes that make up the support of this ``GeneSet``.
+        Returns
+        -------
+        np.ndarray : An array of the genes that make up the support of this ``GeneSet``.
         """
         return self.gene_sets[key].gene_support()
 
-    def save(self, target_dir, keys=None) -> None:
+    def save(self, target_dir: str, keys: List[str] = None) -> None:
         """
         Save  this collection to ``target_dir``. Each GeneSet will be saved as a separate
         .netcdf file within this directory.
 
-        :param target_dir:
+        Parameters
+        ----------
+        target_dir : str
             The path to which GeneSet ``xarray.Dataset`` .netcdf files will be written.
 
-        :param keys: The list of GeneSet keys that should be saved. If this is not provided, all
+        keys : List[str]
+            The list of GeneSet keys that should be saved. If this is not provided, all
             GeneSet objects are saved.
 
-        :return: None
+        Returns
+        -------
+        None
         """
         # Save all the gene sets in this collection in the target_dir path.
         if keys is None:
@@ -93,43 +114,51 @@ class GeneSetCollection(param.Parameterized):
             save_path = self.gene_sets[key].save_as_netcdf(target_dir)
             print(save_path)
 
-    def gene_sets_to_dataframes(self, keys=None, only_supported: bool = True) -> Dict[str, pd.DataFrame]:
+    def gene_sets_to_dataframes(self, keys: List[str] = None, only_supported: bool = True) -> Dict[str, pd.DataFrame]:
         """
         Returns a dictionary of {key: pd.DataFrame} of the ``GeneSet.data``. The DataFrame is limited
         to only those genes that are 'supported' within the GeneSet by default.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param only_supported:
+        only_supported : bool
             Whether to return a subset defined by each GeneSet support, or the complete data frame.
 
-        :return:
-            A dictionary of {key: pd.DataFrame} of the `GeneSet.data`.
+        Returns
+        -------
+        dict : A dictionary of {key: pd.DataFrame} of the ``GeneSet.data`` attribute.
         """
         keys = self.gene_sets.keys() if keys is None else keys
         keys = [key for key in keys if self.gene_sets[key].support_exists]
         return {key: self.gene_sets[key].to_dataframe(only_supported) for key in keys}
 
     # TODO: Consider overwrite protection.
-    def gene_sets_to_csv_files(self, target_dir=None, keys=None, only_supported: bool = True) -> None:
+    def gene_sets_to_csv_files(self, target_dir: str = None, keys: List[str] = None,
+                               only_supported: bool = True) -> None:
         """
         Writes GeneSet.data as .csv files.
 
         By default this creates creates a folder with the current working directory and saves the .csv
         files within. By default only genes that are "supported" by a GeneSet are included.
 
-        :param target_dir:
+        Parameters
+        ----------
+        target_dir :
             The target directory to save the .csv files to. This defaults to the name of this
             GeneSetCollection, which creates a folder in the current working directory.
 
-        :param keys:
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param only_supported:
+        only_supported : bool
             Whether to return a subset defined by each GeneSet support, or the complete data frame.
 
-        :return: None
+        Returns
+        -------
+        None
         """
         keys = self.gene_sets.keys() if keys is None else keys
         keys = [key for key in keys if self.gene_sets[key].support_exists]
@@ -140,23 +169,27 @@ class GeneSetCollection(param.Parameterized):
             df.to_csv(f"{target_dir}/{name}.csv")
 
     # TODO: Consider overwrite protection.
-    def gene_sets_to_excel_sheet(self, name: str = None, keys=None, only_supported: bool = True) -> None:
+    def gene_sets_to_excel_sheet(self, name: str = None, keys: List[str] = None, only_supported: bool = True) -> None:
         """
         Writes the GeneSet.data within this GeneSetCollection as a single Excel worksheet.
 
-        By default this sheet is named using the `.name` of this GeneSetCollection. By default
+        By default this sheet is named using the ``.name`` of this GeneSetCollection. By default
         only genes that are "supported" by a GeneSet are included.
 
-        :param name:
-            The name of the Excel sheet. `.xlsx` will be appended to the given name.
+        Parameters
+        ----------
+        name : str
+            The name of the Excel sheet. ``.xlsx`` will be appended to the given name.
 
-        :param keys:
+        keys : List[str]
              An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param only_supported:
+        only_supported : bool
             Whether to return a subset defined by each GeneSet support, or the complete data frame.
 
-        :return: None
+        Returns
+        -------
+        None
         """
         keys = self.gene_sets.keys() if keys is None else keys
         keys = [key for key in keys if self.gene_sets[key].support_exists]
@@ -172,18 +205,21 @@ class GeneSetCollection(param.Parameterized):
         Returns a dictionary of {name: supported_genes} for each GeneSet, or those specified
         by the `keys` argument.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :param empty_supports:
+        empty_supports:
             Whether to include GeneSets that have no support array, or no genes supported within
             the support array.
 
-        :return:
-            Dictionary of {name: supported_genes} for each GeneSet.
+        Returns
+        -------
+        dict : Dictionary of {name: supported_genes} for each GeneSet.
         """
         keys = self.gene_sets.keys() if keys is None else keys
 
@@ -199,14 +235,17 @@ class GeneSetCollection(param.Parameterized):
         """
         Return the intersection of supported genes in this GeneSet collection.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :return:
-            Intersection of the supported genes within GeneSets.
+        Returns
+        -------
+        np.ndarray : Intersection of the supported genes within GeneSets.
         """
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.intersect1d, gene_set_dict.values())
@@ -215,14 +254,17 @@ class GeneSetCollection(param.Parameterized):
         """
         Get the union of supported genes in this GeneSet collection.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :return:
-            Union of the supported genes within GeneSets.
+        Returns
+        -------
+        np.ndarray : Union of the supported genes within GeneSets.
         """
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.union1d, gene_set_dict.values())
@@ -231,50 +273,60 @@ class GeneSetCollection(param.Parameterized):
         """
         Get the difference of supported genes in this GeneSet collection.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :return:
-            Difference of the supported genes within GeneSets.
+        Returns
+        -------
+        np.ndarray : Difference of the supported genes within GeneSets.
         """
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.setdiff1d, gene_set_dict.values())
 
-    def pairwise_unions(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[str, np.ndarray]:
+    def pairwise_unions(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[Tuple[str, str], np.ndarray]:
         """
         Construct pairwise permutations of GeneSets within this collection, and return
         the union of each pair in a dictionary.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :return:
-            A dictionary of `{(GeneSet.name, GeneSet.name): gene support union}`.
+        Returns
+        -------
+        dict : A dictionary of ``{(GeneSet.name, GeneSet.name): gene support union}``.
         """
         gene_set_dict = self.as_dict(keys, exclude)
         return {(ak, bk): np.union1d(av, bv)
                 for (ak, av), (bk, bv) in itertools.permutations(gene_set_dict.items(), 2)
                 if ak != bk}
 
-    def pairwise_intersection(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[str, np.ndarray]:
+    def pairwise_intersection(self, keys: List[str] = None, exclude: List[str] = None
+                              ) -> Dict[Tuple[str, str], np.ndarray]:
         """
         Construct pairwise combinations of GeneSets within this collection, and return
         the intersection of each pair in a dictionary.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :return:
-            A dictionary of `{GeneSet.Name, GeneSet.name): GeneSets.gene_support() intersection}`.
+        Returns
+        -------
+        dict : A dictionary of ``{GeneSet.Name, GeneSet.name): GeneSets.gene_support() intersection}``.
         """
         gene_set_dict = self.as_dict(keys, exclude)
 
@@ -287,14 +339,17 @@ class GeneSetCollection(param.Parameterized):
         Construct pairwise permutations of GeneSets within this collection, and return
         the intersection of each pair within a dictionary.
 
-        :param keys:
+        Parameters
+        ----------
+        keys : List[str]
             An optional list of gene_set keys to return, by default all keys are selected.
 
-        :param exclude:
+        exclude : List[str]
             An optional list of `GeneSet` keys to exclude from the returned dictionary.
 
-        :return:
-            A dictionary of `{GeneSet.Name, GeneSet.name): percent gene intersection}`.
+        Returns
+        -------
+        dict : A dictionary of ``{GeneSet.Name, GeneSet.name): percent gene intersection}``.
         """
         gene_set_dict = self.as_dict(keys, exclude)
         zero_filtered_dict = {k: v for k, v in gene_set_dict.items()
@@ -324,36 +379,42 @@ class GeneSetCollection(param.Parameterized):
     #     key_ds["gene_set"] = keys
     #     return key_ds
 
+    ###############################################################################################
+    # CONSTRUCTOR FUNCTIONS
+    ###############################################################################################
     @classmethod
-    def from_folder(cls, gem: AnnotatedGEM, target_dir, glob_filter="*.nc", filter_func=None,
-                    **params) -> GeneSetCollection:
+    def from_folder(cls, gem: AnnotatedGEM, target_dir: Union[str, Path, IO[AnyStr]], glob_filter: str = "*.nc",
+                    filter_func: Callable = None, **params) -> GeneSetCollection:
         """
         Create a `GeneSetCollection` from a directory of saved GeneSet objects.
 
         The file name of each gene_set.nc file will be used as the key in the `gene_sets` dictionary.
 
-        :param gem:
+        Parameters
+        ----------
+        gem : AnnotatedGEM
             A `GSForge.AnnotatedGEM` object.
 
-        :param target_dir:
+        target_dir : Union[str, Path, IO[AnyStr]]
             The directory which contains the saved GeneSet .netcdf files.
 
-        :param glob_filter:
+        glob_filter : str
             A glob by which to restrict the files found within `target_dir`.
 
-        :param filter_func:
+        filter_func : Callable
              A function by which to filter which `xarray.Dataset` objects are included.
              This function should take an `xarray.Dataset` and return a boolean.
 
-        :param params:
+        params :
             Parameters to configure the GeneSetCollection.
 
-        :return:
-            A new GeneSetCollection.
+        Returns
+        -------
+        GeneSetCollection : A new GeneSetCollection.
         """
         # TODO: Add a warning if the glob returns nothing.
         gene_sets = dict()
-        for file in pathlib.Path(target_dir).expanduser().resolve().glob(glob_filter):
+        for file in Path(target_dir).expanduser().resolve().glob(glob_filter):
             data = xr.open_dataset(file)
 
             if filter_func is not None:

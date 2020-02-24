@@ -24,6 +24,7 @@ class GeneSet(param.Parameterized):
     **Create a GeneSet from a .netcf file path, ``pandas.DataFrame``, ``np.ndarray`` or list of genes:**
 
     .. code-block:: python
+
         # Supply any of the above objects along with any other parameters to create a GeneSet.
         my_geneset = GeneSet(<pandas.DataFrame, xarray.DataSet, numpy.ndarray, str>)
 
@@ -34,12 +35,14 @@ class GeneSet(param.Parameterized):
     **Get the supported Genes:**
 
     .. code-block:: python
+
         my_geneset.gene_support()
 
 
     **Set the support with a list or array of genes:**
 
     .. code-block:: python
+
         my_geneset.set_support_by_genes(my_genes)
 
     """
