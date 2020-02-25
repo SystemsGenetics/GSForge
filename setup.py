@@ -25,6 +25,7 @@ doc_requirements = """
 nbsite
 nbsphinx
 selenium
+sphinx_ioam_theme
 """.split()
 
 full_requirements = """
