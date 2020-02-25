@@ -54,6 +54,7 @@ Other Guides
     :titlesonly:
     :maxdepth: 2
 
+    Plotting Gallery <plotting_guide_gallery/index>
     AnnotatedGEM from pandas <AnnotatedGEM_from_pandas>
     GEM Normalization <GEM_Normalization>
     Selecting Genes with Boruta <Selecting_Genes_with_Boruta>

@@ -15,7 +15,7 @@ extensions += [
 
 nbsite_gallery_conf = {
     'galleries': {
-        'gallery': {
+        'plotting_guide_gallery': {
             'title': 'Plotting Guide Gallery',
             'backends': [],
             'extensions': ['*.ipynb', '*.py'],
