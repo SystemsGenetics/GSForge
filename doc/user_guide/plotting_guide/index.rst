@@ -20,6 +20,8 @@ Plotting Guide
 * `UMAP Panels and Views <UMAP_Panels_and_views.ipynb>`_
   Exploring UMAP with a Panel application, and how to directly generate plots.
 
+.. notebook:: GSForge ../../../examples/user_guide/plotting_guide/Plotting_Guide.ipynb
+    :offset: 0
 
 .. toctree::
     :titlesonly:

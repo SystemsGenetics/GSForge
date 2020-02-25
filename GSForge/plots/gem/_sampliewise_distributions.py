@@ -1,17 +1,18 @@
-import param
-import xarray as xr
-import holoviews as hv
-import colorcet as cc
-from holoviews.operation.stats import univariate_kde
 import itertools
 
-from ...models import Interface
+import colorcet as cc
+import holoviews as hv
+import xarray as xr
+from holoviews.operation.stats import univariate_kde
+
 from ..utils import AbstractPlottingOperation
+from ...models import Interface
 
 
-class sample_wise_distributions(Interface, AbstractPlottingOperation):
+class SamplewiseDistributions(Interface, AbstractPlottingOperation):
     # TODO: Document me.
     # TODO: Add matplotlib options.
+    # TODO: Set filled=False in the univariate_kde() call.
 
     @staticmethod
     def bokeh_opts():

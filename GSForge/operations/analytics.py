@@ -54,33 +54,13 @@ class RankGenesByModel(Interface, param.ParameterizedFunction):
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
-    def __call__(self, *args, model, n_iterations, **params):
-        """
-
-        Parameters
-        ----------
-        args : Union[AnnotatedGEM, GeneSetCollection]
-            Source data object, either an ``AnnotatedGEM`` or a ``GeneSetCollection``.
-
-        model :
-            A model with ``fit.()``  method and an output ``feature_scores_`` attribute.
-
-        n_iterations : int
-            Number of interations to test.
-
-        params:
-            Parameters for ``Interface`` configuration.
-
-        Returns
-        -------
-
-        """
+    def __call__(self, *args, **params):
         super().__init__(*args, **params)
 
         if len(self.annotation_variables) > 1:
             raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
         if self.n_iterations == 1:
-            return self._rank_genes_by_model()
+            return self._rank_genes_by_model().to_dataset()
         else:
             rankings = [self._rank_genes_by_model() for _ in range(self.n_iterations)]
             ranking_ds = xr.concat(rankings, "feature_importance_iter")
@@ -102,11 +82,11 @@ class RankGenesByModel(Interface, param.ParameterizedFunction):
                  "annotation_variables": self.annotation_variables}
 
         data = xr.DataArray(data=model.feature_importances_,
-                            dims=[self.gem.gene_index_name],
                             coords=[self.get_gene_index()],
+                            dims=[self.gem.gene_index_name],
                             name="feature_importances",
                             attrs=attrs)
-        return data.to_dataset()
+        return data
 
 
 class nFDR(Interface, param.ParameterizedFunction):

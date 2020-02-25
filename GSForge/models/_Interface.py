@@ -243,8 +243,8 @@ class Interface(param.Parameterized):
 
         Returns
         -------
-        gene index : np.ndarray
-            A numpy array of the currently selected genes.
+        np.ndarray
+            An array of the currently selected genes.
         """
         gene_set_combinations = {
             "union": lambda sel_gs: self.gene_set_collection.union(sel_gs),
@@ -309,7 +309,8 @@ class Interface(param.Parameterized):
 
         Returns
         -------
-        np.ndarray : An array of the currently selected samples.
+        np.ndarray
+            An array of the currently selected samples.
         """
 
         if self.sample_subset is not None:

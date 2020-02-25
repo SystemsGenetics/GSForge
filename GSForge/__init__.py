@@ -1,6 +1,5 @@
 from .models import *
-from .operations import get_data
-from .operations.core import get_gem_data
+from .operations.core import *
 
 import os
 

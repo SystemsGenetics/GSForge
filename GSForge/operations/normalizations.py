@@ -6,9 +6,10 @@ These (classes) functions have static methods that implement the transform on a 
 or ``xarray`` source.
 """
 
-import param
 import numpy as np
-from ..models import OperationInterface
+import param
+
+from ..models import Interface
 
 __all__ = [
     "ReadsPerKilobaseMillion",
@@ -16,7 +17,7 @@ __all__ = [
 ]
 
 
-class UpperQuartile(OperationInterface):
+class UpperQuartile(Interface, param.ParameterizedFunction):
     """
     Under this normalization method, after removing genes having zero read counts for all samples,
     the remaining gene counts are divided by the upper quartile of counts different from zero in
@@ -76,17 +77,18 @@ class UpperQuartile(OperationInterface):
         per_sample_quantile_mean = per_sample_quantile.mean()
         return (adjusted_counts / (per_sample_quantile / per_sample_quantile_mean)).drop("quantile")
 
-    def process(self):
+    def __call__(self, *args, **params):
         """
         Perform the upper quartile normalization.
 
         :return: The upper quartile normalized count matrix.
         """
+        super().__init__(*args, **params)
         counts = self.x_count_data
         return self.xr_upper_quartile(counts)
 
 
-class ReadsPerKilobaseMillion(OperationInterface):
+class ReadsPerKilobaseMillion(Interface, param.ParameterizedFunction):
     """
     RPKM or FPKM -- Reads or Fragments per per Kilobase Million.
 
@@ -109,7 +111,8 @@ class ReadsPerKilobaseMillion(OperationInterface):
         normalized_counts = reads_per_million / lengths
         return normalized_counts
 
-    def process(self):
+    def __call__(self, *args, **params):
+        super().__init__(*args, **params)
         counts = self.x_count_data
         lengths = self.gem.data[self.length_variable].sel({self.gene_index_name: self.get_gene_index()}).copy()
         return self.xr_reads_per_kilobase_million(counts=counts, lengths=lengths, sample_dim=self.sample_index_name)

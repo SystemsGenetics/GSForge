@@ -29,10 +29,6 @@ transformations that researchers may need from the core data classes. They are:
     or *GeneSetCollection*. It provides functions that facilitate pulling gene
     or sample subsets and access to any transforms of the count matrix.
 
-**OperationInterface**
-    Aside from being abstract, this is the same as the above *Interface*, except
-    this calls a single function as defined by ``process`` function in a subclass.
-
 Order of operations applied for GSForge index selection.
 
 .. image:: ../../doc/_static/GSForge_index_selection.svg
@@ -46,7 +42,6 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from ._GeneSetCollection import GeneSetCollection
 from ._Interface import Interface
-from ._OperationInterface import OperationInterface
 
 
 __all__ = [
@@ -54,5 +49,4 @@ __all__ = [
     "GeneSet",
     "GeneSetCollection",
     "Interface",
-    "OperationInterface"
 ]

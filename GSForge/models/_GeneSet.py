@@ -32,7 +32,7 @@ class GeneSet(param.Parameterized):
         my_geneset = GeneSet.from_pandas(<pandas.DataFrame>)
 
 
-    **Get the supported Genes:**
+    **Get supported Genes:**
 
     .. code-block:: python
 
@@ -48,7 +48,7 @@ class GeneSet(param.Parameterized):
     """
 
     data = param.Parameter(allow_None=False, doc=dedent("""\
-    Contains a gene-index `xarray.Dataset` object, it should have
+    Contains a gene-index ``xarray.Dataset`` object, it should have
     only those genes that are considered 'within' the GeneSet
     in the index, or a boolean variable named 'support'."""))
 
@@ -57,7 +57,7 @@ class GeneSet(param.Parameterized):
     (boolean) variable indicating membership in this GeneSet."""))
 
     gene_index_name = param.String(default="Gene", doc=dedent("""\
-    This parameter controls which variable from the `xarray.Dataset` should be 
+    This parameter controls which variable from the ``xarray.Dataset`` should be 
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names."""))
 

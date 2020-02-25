@@ -32,7 +32,7 @@ import json
 import hashlib
 
 from GSForge.models._AnnotatedGEM import AnnotatedGEM  # To avoid the __init__ run.
-from GSForge.operations.prospectors import boruta_prospector
+from GSForge.operations.prospectors import BorutaProspector
 
 from sklearn.ensemble import RandomForestClassifier
 # import lightgbm as lgb
@@ -103,7 +103,7 @@ def main(gem_netcdf,
         agem = AnnotatedGEM(data=ds)
 
         click.echo("Running boruta feature selection...")
-        boruta_results = boruta_prospector(
+        boruta_results = BorutaProspector(
             agem,
             estimator=selection_model,
             annotation_variables=y_label,
