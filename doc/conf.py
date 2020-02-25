@@ -19,10 +19,10 @@ nbsite_gallery_conf = {
             'title': 'Plot Gallery',
             'intro': 'Demonstrations of plotting functions provided by GSForge.',
         },
-        "panel_gallery": {  # This key must be the same as a folder name within /examples
-            'title': 'Panel Application Gallery',
-            'intro': 'Demonstrations of "panelized" applications provided by GSForge.',
-        }
+        # "panel_gallery": {  # This key must be the same as a folder name within /examples
+        #     'title': 'Panel Application Gallery',
+        #     'intro': 'Demonstrations of "panelized" applications provided by GSForge.',
+        # }
     },
     'github_org': 'SystemsGenetics',
     'github_project': 'GSForge',
