@@ -53,7 +53,6 @@ jobs:
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
-          skip_cleanup: true
           local_dir: ./builtdocs
           target_branch: gh-pages
           github_token: $GITHUB_TOKEN
@@ -74,7 +73,6 @@ jobs:
         - nbsite build --what=html --output=builtdocs
       deploy:
         - provider: pages
-          skip_cleanup: true
           local_dir: ./builtdocs
           target_branch: gh-pages
           github_token: $GITHUB_TOKEN
