@@ -352,12 +352,12 @@ class GeneSet(param.Parameterized):
         """
         if self.support_index_name in self.data:
             supported_genes = self.data[self.gene_index_name].sel(
-                {self.gene_index_name: (self.data[self.support_index_name] == True)}).values.copy()
-            return self.data[self.gene_index_name].sel({self.gene_index_name: supported_genes}).values.copy()
+                {self.gene_index_name: (self.data[self.support_index_name] == True)}).values
+            return self.data[self.gene_index_name].sel({self.gene_index_name: supported_genes}).values
         else:
             Warning("Warning, no boolean support array found. Returning the complete "
                     "set of genes in this GeneSet.")
-            return self.data[self.gene_index_name].values.copy()
+            return self.data[self.gene_index_name].values
 
     @property
     def support_exists(self) -> bool:

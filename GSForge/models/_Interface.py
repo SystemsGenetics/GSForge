@@ -169,7 +169,7 @@ class Interface(param.Parameterized):
         super().__init__(**params)
 
         if self.count_variable is None:
-            self.set_param({"count_variable": self.gem.count_array_name})
+            self.set_param("count_variable", self.gem.count_array_name)
 
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
@@ -281,7 +281,7 @@ class Interface(param.Parameterized):
 
         # Get the gene index from this mask.
         # A .copy() of the array values should be used to prevent strange index behavior.
-        genes = masked_counts[self.gem.gene_index_name].values.copy()
+        genes = masked_counts[self.gem.gene_index_name].values
         return genes
 
     @property
@@ -325,7 +325,7 @@ class Interface(param.Parameterized):
 
             subset = subset.dropna(dim=self.gem.sample_index_name)
 
-        return subset[self.gem.sample_index_name].values.copy()
+        return subset[self.gem.sample_index_name].values
 
     def get_selection_indexes(self) -> dict:
         """Returns the currently selected indexes as a dictionary."""
