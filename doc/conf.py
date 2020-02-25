@@ -15,13 +15,13 @@ extensions += [
 
 nbsite_gallery_conf = {
     'galleries': {
-        'plotting_guide_gallery': {
-            'title': 'Plotting Guide Gallery',
+        'user_guide': {
+            'title': 'User Guides Gallery',
             'backends': [],
             'extensions': ['*.ipynb', '*.py'],
-            'intro': 'Sample intro',
+            'intro': 'Tutorials and demonstrations provided by GSForge.',
             'sections': [
-                {'path': 'user_guide/plotting_guide',
+                {'path': 'plotting_guide',
                  'title': 'Plotting Guide',
                  'description': 'Demonstrations of plotting functions provided by GSForge.'},
             ],
