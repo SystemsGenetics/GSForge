@@ -42,8 +42,6 @@ jobs:
     - stage: website_release
       install:
         - sudo apt-get install graphviz
-        - pip install -r requirements.txt
-        - pip install -r doc/requirements.txt
         - pip install .
         - pip install osfclient
       script:
@@ -63,8 +61,6 @@ jobs:
     - stage: website_dev
       install:
         - sudo apt-get install graphviz
-        - pip install -r requirements.txt
-        - pip install -r doc/requirements.txt
         - pip install .
         - pip install osfclient
       script:
