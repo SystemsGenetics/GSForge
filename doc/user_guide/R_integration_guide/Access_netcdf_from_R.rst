@@ -1,5 +1,5 @@
 ********************
-Access_netcdf_from_R
+Access netcdf from R
 ********************
 
 .. notebook:: GSForge ../../../examples/user_guide/R_integration_guide/Access_netcdf_from_R.ipynb
