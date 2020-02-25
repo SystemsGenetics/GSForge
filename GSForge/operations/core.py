@@ -1,6 +1,5 @@
-from typing import Union
-
 import param
+
 from ..models import Interface
 
 __all__ = [

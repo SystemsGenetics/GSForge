@@ -11,6 +11,8 @@ Getting Started
 
     <object data="../_static/user_guide.svg" type="image/svg+xml" width="900"></object>
 
+The following are 'how-to guides' for their respective topics.
+
 
 Creating and working with an AnnotatedGEM
 -----------------------------------------
@@ -36,29 +38,13 @@ Creating a GeneSetCollection and Analyzing Results
   How to run a basic gene (feature) selection using random forests and the Boruta all-relevant feature selection algorithm.
 
 
-Other Guides
-------------
-
-* `Plotting Guide <plotting_guide/index.rst>`_
-  Plotting examples by plot type.
-
-* `Workflow Guide <workflow_guide/index.rst>`_
-  Using nextflow to run many different boruta analyses.
-
-* `R-Integration Guide <R_integration_guide/index.rst>`_
-  Integrating results from R packages into GeneSet objects.
-
-
-
 .. toctree::
     :titlesonly:
     :maxdepth: 2
 
-    Plotting Gallery <plotting_guide_gallery/index>
     AnnotatedGEM from pandas <AnnotatedGEM_from_pandas>
     GEM Normalization <GEM_Normalization>
     Selecting Genes with Boruta <Selecting_Genes_with_Boruta>
     GeneSet Analysis <GeneSet_Analysis>
-    Plotting Guide <plotting_guide/index>
     Workflow Guide <workflow_guide/index>
     R-Integration Guide <R_integration_guide/index>

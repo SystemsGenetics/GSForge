@@ -1,3 +1,5 @@
+.. This is the landing page for users coming to the documentation website.
+
 *******
 GSForge
 *******
@@ -25,6 +27,8 @@ to an experimental condition or phenotypic trait, which offers new potential hyp
 
     Introduction <self>
     User Guide <user_guide/index>
+    Plot Gallery <plot_gallery/index>
+    Panel Gallery <panel_gallery/index>
     API <Reference_Manual/index>
     Development <Development>
     About <About>

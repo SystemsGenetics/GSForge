@@ -24,6 +24,7 @@ param
 doc_requirements = """
 nbsite
 nbsphinx
+selenium
 """.split()
 
 full_requirements = """

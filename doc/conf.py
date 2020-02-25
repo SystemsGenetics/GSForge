@@ -15,22 +15,18 @@ extensions += [
 
 nbsite_gallery_conf = {
     'galleries': {
-        'user_guide': {
-            'title': 'User Guides Gallery',
-            'backends': [],
-            'extensions': ['*.ipynb', '*.py'],
-            'intro': 'Tutorials and demonstrations provided by GSForge.',
-            'sections': [
-                {'path': 'plotting_guide',
-                 'title': 'Plotting Guide',
-                 'description': 'Demonstrations of plotting functions provided by GSForge.'},
-            ],
+        'plot_gallery': {  # This key must be the same as a folder name within /examples
+            'title': 'Plot Gallery',
+            'intro': 'Demonstrations of plotting functions provided by GSForge.',
+        },
+        "panel_gallery": {  # This key must be the same as a folder name within /examples
+            'title': 'Panel Application Gallery',
+            'intro': 'Demonstrations of "panelized" applications provided by GSForge.',
         }
     },
     'github_org': 'SystemsGenetics',
     'github_project': 'GSForge',
     # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
-    # 'within_subsection_order': lambda key: key
 }
 
 project = u'GSForge'

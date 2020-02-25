@@ -1,6 +1,6 @@
 import holoviews as hv
 import param
-import xarray as xr
+import pandas as pd
 from textwrap import dedent
 
 from ...models import Interface
@@ -48,9 +48,9 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     plot an unreasonable number of genes."""))
 
     @staticmethod
-    def genewise_scatter(data: xr.Dataset, hue: str = None, gene_dim: str = "Gene", sample_dim: str = "Sample",
+    def genewise_scatter(data: pd.DataFrame, hue: str = None, gene_dim: str = "Gene", sample_dim: str = "Sample",
                          count_dim: str = "counts"):
-        hvds = hv.Dataset(data.to_dataframe().reset_index())
+        hvds = hv.Dataset(data)
         kdims = [gene_dim, count_dim]
         vdims = [sample_dim] if hue is None else [sample_dim, hue]
 
@@ -79,7 +79,7 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
                              f"Provide an array of genes to `selected_genes` less than (or override) "
                              f"the `soft_max` parameter of {self.soft_max}")
 
-        layout = self.genewise_scatter(data=self.selection,
+        layout = self.genewise_scatter(data=self.selection.to_dataframe().reset_index(),
                                        hue=self.hue,
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,
