@@ -26,10 +26,7 @@ to an experimental condition or phenotypic trait, which offers new potential hyp
     :maxdepth: 3
 
     Introduction <self>
-    User Guide <user_guide/index>
-    Plot Gallery <plot_gallery/index>
-    Panel Gallery <panel_gallery/index>
+    User Guide <user_guide/overview>
     API <Reference_Manual/index>
     Development <Development>
     About <About>
-
