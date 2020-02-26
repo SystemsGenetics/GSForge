@@ -56,7 +56,7 @@ nbsite_gallery_conf = {
 project = u'GSForge'
 authors = u'Tyler Biggs'
 copyright = u'2019 - 2020' + authors
-description = 'Short description for html meta description.'
+# description = 'Short description for html meta description.'
 
 version = '0.4'
 release = 'alpha'
