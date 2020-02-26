@@ -23,7 +23,7 @@ to an experimental condition or phenotypic trait, which offers new potential hyp
 
 .. toctree::
     :titlesonly:
-    :maxdepth: 2
+    :maxdepth: 3
 
     Introduction <self>
     User Guide <user_guide/index>
