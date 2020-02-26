@@ -21,25 +21,31 @@ nbsite_gallery_conf = {
         'plot_gallery': {
             'title': 'Plot Gallery',
             'intro': 'Demonstrations of plotting functions provided by GSForge.',
+            'orphans': ['Plotting_Guide.ipynb'],
+            # The orphans key allows the user to pass a list of files that will be rendered to html without
+            # being thumbnailed and linked from the gallery page. The main usecase for this is when a section
+            # has an index which provides an overview of the section and directs users through
+            # the notebooks in a particular order.
         },
         "panel_gallery": {
             'title': 'Panel Gallery',
             'intro': 'Demonstrations of "panel-ized" applications provided by GSForge.',
         },
-        "user_guide": {
-            'title': 'User Guide',
+        "how_to_galleries": {
+            'title': 'How-to Guides',
             'intro': 'How-to guides provided by GSForge.',
-            'orphans': ['overview.ipynb'],
-            # The orphans key allows the user to pass a list of files that will be rendered to html without
-            # being thumbnailed and linked from the gallery page. The main usecase for this is when a section
-            # has an index which provides an overview of the section and directs users through
-            # the notebooks in a particular order.
             'sections': [
-                {
-                    'path': 'R_integration_guide',
-                    'title': 'R Integration Guide',
-                    'skip': ['Access_netecdf_from_R', 'DESeq2_GeneSets', 'EdgeR_GeneSets', 'R_GEM_normalizations'],
-                }
+                {'path': 'core_guides',
+                 'title': 'Core How-to Guides'},
+                {'path': 'R_integration_guides',
+                 'title': 'R Integration Guides',
+                 'skip': ['Access_netecdf_from_R.ipynb',
+                          'DESeq2_GeneSets.ipynb',
+                          'EdgeR_GeneSets.ipynb',
+                          'R_GEM_normalizations.ipynb']},
+                {'path': 'workflow_guide',
+                 'title': 'Workflow Integration How-to Guides'},
+
             ],
         },
     },
@@ -66,7 +72,7 @@ html_theme_options = {
 
 _NAV = (
     ('Welcome', 'Welcome'),
-    ('User Guide', 'user_guide/index'),
+    ('User Guide', 'user_guide/overview'),
     # ('Gallery', 'gallery/index'),
     ('API', 'Reference_Manual/index'),
     ('Developer Guide', 'Development'),
