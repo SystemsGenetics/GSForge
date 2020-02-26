@@ -42,6 +42,7 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from ._GeneSetCollection import GeneSetCollection
 from ._Interface import Interface
+from ._accessors import *
 
 
 __all__ = [
