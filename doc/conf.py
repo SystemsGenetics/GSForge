@@ -17,7 +17,8 @@ extensions += [
 
 nbsite_gallery_conf = {
     'galleries': {
-        'plot_gallery': {  # This key must be the same as a folder name within /examples
+        # This key must be the same as a folder name within /examples.
+        'plot_gallery': {
             'title': 'Plot Gallery',
             'intro': 'Demonstrations of plotting functions provided by GSForge.',
         },
@@ -25,7 +26,7 @@ nbsite_gallery_conf = {
             'title': 'Panel Gallery',
             'intro': 'Demonstrations of "panel-ized" applications provided by GSForge.',
         },
-        "user_guide": {  # This key must be the same as a folder name within /examples
+        "user_guide": {
             'title': 'User Guide',
             'intro': 'How-to guides provided by GSForge.',
             'orphans': ['overview.ipynb'],
@@ -37,14 +38,13 @@ nbsite_gallery_conf = {
                 {
                     'path': 'R_integration_guide',
                     'title': 'R Integration Guide',
-                    'skip': True,
+                    'skip': ['Access_netecdf_from_R', 'DESeq2_GeneSets', 'EdgeR_GeneSets', 'R_GEM_normalizations'],
                 }
             ],
         },
     },
     'github_org': 'SystemsGenetics',
     'github_project': 'GSForge',
-    # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
 }
 
 project = u'GSForge'

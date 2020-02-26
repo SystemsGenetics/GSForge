@@ -1,50 +1,73 @@
-**********
 User Guide
-**********
+__________
 
-Getting Started
----------------
+How-to guides provided by GSForge.
 
-.. Must use a raw element with an object tag for clickable links. https://stackoverflow.com/a/35562792
 
 .. raw:: html
 
-    <object data="../_static/user_guide.svg" type="image/svg+xml" width="900"></object>
-
-The following are 'how-to guides' for their respective topics.
+    <div class="section sphx-glr-section" id="R_integration_guide-section"><h2>R Integration Guide</h2>
 
 
-Creating and working with an AnnotatedGEM
------------------------------------------
+.. raw:: html
 
-* `AnnotatedGEM from pandas <AnnotatedGEM_from_pandas.ipynb>`_
-  How to load your count and label .csv or .txt files into an `xarray.Dataset` using `GSForge`, and save them as a single netcdf (.nc) file for future use.
+    <div class="sphx-glr-thumbcontainer example" tooltip="Access Netcdf From R">
 
-* `GEM Normalization <GEM_Normalization.ipynb>`_
-  How to run and save different normalizations to the same `AnnotatedGEM` object.
+.. figure:: /../_static/images/logo.png
 
+    :ref:`Access Netcdf From R <gallery_Access_netcdf_from_R>`
 
-Selecting Genes & Creating a GeneSet
-------------------------------------
+.. raw:: html
 
-* `Selecting Genes with Boruta <Selecting_Genes_with_Boruta.ipynb>`_
-  How to select genes based on a sample label using random forests via the Boruta algorithm.
+    </div>
 
 
-Creating a GeneSetCollection and Analyzing Results
---------------------------------------------------
+.. raw:: html
 
-* `GeneSet Analysis <GeneSet_Analysis.ipynb>`_
-  How to run a basic gene (feature) selection using random forests and the Boruta all-relevant feature selection algorithm.
+    <div class="sphx-glr-thumbcontainer example" tooltip="Deseq2 Genesets">
+
+.. figure:: /../_static/images/logo.png
+
+    :ref:`Deseq2 Genesets <gallery_DESeq2_GeneSets>`
+
+.. raw:: html
+
+    </div>
 
 
-.. toctree::
-    :titlesonly:
-    :maxdepth: 2
+.. raw:: html
 
-    AnnotatedGEM from pandas <AnnotatedGEM_from_pandas>
-    GEM Normalization <GEM_Normalization>
-    Selecting Genes with Boruta <Selecting_Genes_with_Boruta>
-    GeneSet Analysis <GeneSet_Analysis>
-    Workflow Guide <workflow_guide/index>
-    R-Integration Guide <R_integration_guide/index>
+    <div class="sphx-glr-thumbcontainer example" tooltip="Edger Genesets">
+
+.. figure:: /user_guide/R_integration_guide/thumbnails/EdgeR_GeneSets.png
+
+    :ref:`Edger Genesets <gallery_EdgeR_GeneSets>`
+
+.. raw:: html
+
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer example" tooltip="R Gem Normalizations">
+
+.. figure:: /user_guide/R_integration_guide/thumbnails/R_GEM_normalizations.png
+
+    :ref:`R Gem Normalizations <gallery_R_GEM_normalizations>`
+
+.. raw:: html
+
+    </div>
+
+
+.. raw:: html
+
+    <div style='clear:both'></div>
+
+
+
+.. raw:: html
+
+    </div>
+
