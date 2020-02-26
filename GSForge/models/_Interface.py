@@ -358,7 +358,8 @@ class Interface(param.Parameterized):
 
         Returns
         -------
-        xarray.Dataset : An `xarray.Dataset` selection of the currently active 'x_data'.
+        xarray.Dataset
+            The selection of the currently active count data.
         """
         # TODO: Consider adding a copy option.
 
