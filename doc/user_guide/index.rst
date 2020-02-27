@@ -13,7 +13,7 @@ Getting Started
 
 .. Include the how-to gallery index. Note that this file is generated during the travis build.
 
-.. include:: ../how_to_galleries/index
+.. include:: ../how_to_galleries/index.rst
 
 .. toctree::
     :titlesonly:
@@ -21,4 +21,4 @@ Getting Started
 
     How-to Gallery <../how_to_galleries/index>
     Plot Gallery <../plot_gallery/index>
-    Panel Gallery ../<panel_gallery/index>
+    Panel Gallery <../panel_gallery/index>
