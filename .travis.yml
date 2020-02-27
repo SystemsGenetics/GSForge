@@ -11,6 +11,10 @@ addons:
 env:
   - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
 
+cache:
+  directories:
+  - $GSFORGE_DEMO_DATA/
+
 language: python
 
 services:
@@ -18,7 +22,6 @@ services:
 
 python:
   - "3.8"
-
 
 stages:
   - name: website_dev
@@ -34,7 +37,6 @@ stages:
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: build_dockerfiles
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
-
 
 jobs:
   include:
