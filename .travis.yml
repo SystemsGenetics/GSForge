@@ -11,10 +11,6 @@ addons:
 env:
   - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
 
-cache:
-  directories:
-  - $GSFORGE_DEMO_DATA/
-
 language: python
 
 services:
