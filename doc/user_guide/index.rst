@@ -13,7 +13,7 @@ Getting Started
 
 .. Include the how-to gallery index. Note that this file is generated during the travis build.
 
-.. include:: ../how_go_galleries/index
+.. include:: ../how_to_galleries/index
 
 .. toctree::
     :titlesonly:
