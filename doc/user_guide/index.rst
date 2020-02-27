@@ -13,12 +13,12 @@ Getting Started
 
 .. Include the how-to gallery index. Note that this file is generated during the travis build.
 
-.. include:: how_go_galleries/index
+.. include:: ../how_go_galleries/index
 
 .. toctree::
     :titlesonly:
     :maxdepth: 3
 
-    How-to Gallery <how_to_galleries/index>
-    Plot Gallery <plot_gallery/index>
-    Panel Gallery <panel_gallery/index>
+    How-to Gallery <../how_to_galleries/index>
+    Plot Gallery <../plot_gallery/index>
+    Panel Gallery ../<panel_gallery/index>

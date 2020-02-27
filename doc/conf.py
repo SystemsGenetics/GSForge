@@ -39,7 +39,7 @@ nbsite_gallery_conf = {
                  'title': 'Core How-to Guides'},
                 {'path': 'R_integration_guides',
                  'title': 'R Integration Guides',
-                 'skip': ['Access_netecdf_from_R.ipynb',
+                 'skip': ['Access_netcdf_from_R.ipynb',
                           'DESeq2_GeneSets.ipynb',
                           'EdgeR_GeneSets.ipynb',
                           'R_GEM_normalizations.ipynb']},
