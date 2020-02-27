@@ -72,7 +72,7 @@ html_theme_options = {
 
 _NAV = (
     ('Welcome', 'Welcome'),
-    ('User Guide', 'user_guide/overview'),
+    ('User Guide', 'user_guide/index'),
     # ('Gallery', 'gallery/index'),
     ('API', 'Reference_Manual/index'),
     ('Developer Guide', 'Development'),

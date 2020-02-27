@@ -11,6 +11,9 @@ Getting Started
 
     <object data="../_static/user_guide.svg" type="image/svg+xml" width="900"></object>
 
+.. Include the how-to gallery index. Note that this file is generated during the travis build.
+
+.. include:: how_go_galleries/index
 
 .. toctree::
     :titlesonly:
