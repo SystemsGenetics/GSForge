@@ -26,7 +26,6 @@ nbsite
 nbsphinx
 selenium
 sphinx_ioam_theme
-rpy2
 """.split()
 
 full_requirements = """
