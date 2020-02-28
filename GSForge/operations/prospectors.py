@@ -20,6 +20,8 @@ from ..utils import kwargs_overlap
 __all__ = [
     "parse_boruta_model",
     "BorutaProspector",
+    "ChiSquaredTest",
+    "FClassificationTest"
 ]
 
 

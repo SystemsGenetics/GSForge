@@ -37,12 +37,15 @@ nbsite_gallery_conf = {
             'sections': [
                 {'path': 'core_guides',
                  'title': 'Core How-to Guides'},
-                {'path': 'R_integration_guides',
-                 'title': 'R Integration Guides',
-                 'skip': ['Access_netcdf_from_R.ipynb',
-                          'DESeq2_GeneSets.ipynb',
-                          'EdgeR_GeneSets.ipynb',
-                          'R_GEM_normalizations.ipynb']},
+                {
+                    'path': 'R_integration_guides',
+                    'title': 'R Integration Guides',
+                    'skip': [
+                        'DESeq2_GeneSets.ipynb',
+                        'EdgeR_GeneSets.ipynb',
+                        'R_GEM_normalizations.ipynb'
+                    ]
+                },
                 {'path': 'workflow_guide',
                  'title': 'Workflow Integration How-to Guides'},
 
@@ -51,14 +54,17 @@ nbsite_gallery_conf = {
     },
     'github_org': 'SystemsGenetics',
     'github_project': 'GSForge',
+    'thumbnail_url': 'https://github.com/SystemsGenetics/GSForgeDev/tree/gh-pages/assets/thumbnails',
 }
 
 project = u'GSForge'
 authors = u'Tyler Biggs'
-copyright = u'2019 - 2020' + authors
-description = 'Short description for html meta description.'
+copyright = u'2019 - 2020 ' + authors
+description = 'GSForge is a Python software package that assists researchers in the selection of ' \
+              'gene sets with potential association to an experimental condition or phenotypic trait, ' \
+              'which offers new potential hypotheses for gene-trait causality.'
 
-version = '0.4'
+version = '0.5'
 release = 'alpha'
 
 html_static_path += ['_static']

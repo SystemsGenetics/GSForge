@@ -7,6 +7,7 @@ from functools import reduce
 from textwrap import dedent
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr
 
+import methodtools
 import numpy as np
 import pandas as pd
 import param
@@ -231,6 +232,7 @@ class GeneSetCollection(param.Parameterized):
 
         return {key: self.gene_sets[key].gene_support() for key in keys}
 
+    @methodtools.lru_cache()
     def intersection(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
         Return the intersection of supported genes in this GeneSet collection.
@@ -250,6 +252,7 @@ class GeneSetCollection(param.Parameterized):
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.intersect1d, gene_set_dict.values())
 
+    @methodtools.lru_cache()
     def union(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
         Get the union of supported genes in this GeneSet collection.
@@ -269,6 +272,7 @@ class GeneSetCollection(param.Parameterized):
         gene_set_dict = self.as_dict(keys, exclude)
         return reduce(np.union1d, gene_set_dict.values())
 
+    @methodtools.lru_cache()
     def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
         Get the difference of supported genes in this GeneSet collection.

@@ -18,8 +18,7 @@ to an experimental condition or phenotypic trait, which offers new potential hyp
   :alt: GSForge and GEMmaker within the RNA-Seq Analysis Cycle
 
 
-.. notebook:: GSForge ../examples/Installation.ipynb
-    :offset: 0
+.. include:: Installation.rst
 
 
 .. toctree::

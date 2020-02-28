@@ -95,6 +95,14 @@ class AnnotatedGEM(param.Parameterized):
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names.""")
 
+    @param.depends("count_array_name", "sample_index_name", "gene_index_name", watch=True)
+    def __update_attrs(self):
+        """Updates the attributes on the ``xarray.Dataset`` object so that the
+        accessor functions know the correct dimension names."""
+        self.gem.data.attrs.update({"count_array_name": self.count_array_name,
+                                    "sample_index_name": self.sample_index_name,
+                                    "gene_index_name": self.gene_index_name, })
+
     @functools.singledispatchmethod
     def __annotated_gem_dispatch(*args, **params):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
@@ -311,8 +319,8 @@ class AnnotatedGEM(param.Parameterized):
         if label_path and all(label_sample not in count_df.columns.values
                               for label_sample in label_df.index.values):
             raise ValueError(dedent("""Files cannot be automatically processed, please
-            load your data in to ``pandas.DataFrame`` objects and provide them to the
-            ``AnnotatedGEM.from_pandas`` constructor instead."""))
+        load your data in to ``pandas.DataFrame`` objects and provide them to the
+        ``AnnotatedGEM.from_pandas`` constructor instead."""))
 
         data = xrarray_gem_from_pandas(count_df, label_df)
 

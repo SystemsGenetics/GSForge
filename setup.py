@@ -26,6 +26,7 @@ nbsite
 nbsphinx
 selenium
 sphinx_ioam_theme
+rpy2
 """.split()
 
 full_requirements = """
@@ -37,6 +38,7 @@ h5py
 holoviews
 jupyter
 matplotlib
+graphviz
 methodtools
 netcdf4
 panel
