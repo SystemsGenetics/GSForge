@@ -10,7 +10,6 @@ addons:
 
 env:
   - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
-#  - GSFORGE_BUILD_DOC=true
 
 language: python
 
