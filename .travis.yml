@@ -11,6 +11,10 @@ addons:
 env:
   - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
 
+
+language: python
+
+
 python:
   - "3.8"
 
