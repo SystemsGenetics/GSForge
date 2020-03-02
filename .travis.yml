@@ -48,7 +48,7 @@ before_install:
   - conda update --yes conda
 
 install:
-  - conda env create -f ./doc/environment.yml --yes
+  - conda env create -f ./doc/environment.yml
   - source activate Py38_GSForge
 
   # Below, include the dependencies you want to install with conda, optionally
