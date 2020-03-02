@@ -1,0 +1,10 @@
+name: Py38_GSForge
+channels:
+  - conda-forge
+  - bioconda
+  - r
+dependencies:
+  - pip
+  - r-base
+  - bioconductor-deseq2
+  - rpy2

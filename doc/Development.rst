@@ -4,7 +4,7 @@ Development
 
 
 Travis CI Overview
---------
+------------------
 
 *GSForge* is maintained via travis ci integration.
 Upon pushing a tagged commit (that matches the regex string in travis.yml file) to the master branch,

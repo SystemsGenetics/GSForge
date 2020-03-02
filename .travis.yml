@@ -13,11 +13,15 @@ env:
 
 language: python
 
+
 services:
   - docker
 
-python:
-  - "3.8"
+
+matrix:
+  include:
+    - python: 3.8
+
 
 stages:
   - name: website_dev
@@ -34,14 +38,38 @@ stages:
   - name: build_dockerfiles
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
 
+
+
+before_install:
+  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b
+  - export PATH=/home/travis/miniconda/bin:$PATH
+  - conda update --yes conda
+
+install:
+  - conda env create -f ./doc/environment.yml --yes
+  - source activate Py38_GSForge
+
+  # Below, include the dependencies you want to install with conda, optionally
+  # specifying versions used in the matrix above. If you split this into
+  # multiple conda install commands, you should always include numpy=$NUMPY as
+  # the first package to install (for every conda install command) otherwise
+  # numpy may be automatically upgraded.
+
+  - pip install osfclient
+  - sudo apt-get install graphviz
+  - pip install ./GSForge
+  - conda env update --name py38_env --file ./doc/environment.yml --yes
+
 jobs:
   include:
 
     - stage: website_release
-      install:
-        - sudo apt-get install graphviz
-        - pip install .
-        - pip install osfclient
+#      install:
+#        - sudo apt-get install graphviz
+#        - pip install .
+#        - pip install osfclient
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - mkdir doc/Reference_Manual
@@ -58,10 +86,10 @@ jobs:
             branch: master
 
     - stage: website_dev
-      install:
-        - sudo apt-get install graphviz
-        - pip install .
-        - pip install osfclient
+#      install:
+#        - sudo apt-get install graphviz
+#        - pip install .
+#        - pip install osfclient
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - mkdir doc/Reference_Manual
@@ -99,8 +127,9 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:dev
 
     - stage: pip_dev_package
+      install: skip
       script:
-        - pip install .
+        - pip install ./GSForge
       deploy:
         provider: pypi
         server: https://test.pypi.org/legacy/
@@ -111,8 +140,9 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
+      install: skip
       script:
-        - pip install .
+        - pip install ./GSForge
       deploy:
         provider: pypi
         distributions: "sdist bdist_wheel"

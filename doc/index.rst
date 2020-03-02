@@ -27,6 +27,6 @@ to an experimental condition or phenotypic trait, which offers new potential hyp
 
     Introduction <self>
     User Guide <user_guide/index>
-    API <Reference_Manual/index>
+    API <Reference_Manual/GSForge>
     Development <Development>
     About <About>
