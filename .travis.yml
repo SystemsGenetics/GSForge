@@ -59,7 +59,7 @@ install:
 
   - pip install osfclient
   - sudo apt-get install graphviz
-  - pip install ./GSForge
+  - pip install .
   - conda env update --name py38_env --file ./doc/environment.yml
 
 jobs:

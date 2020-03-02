@@ -40,11 +40,11 @@ nbsite_gallery_conf = {
                 {
                     'path': 'R_integration_guides',
                     'title': 'R Integration Guides',
-                    'skip': [
-                        'DESeq2_GeneSets.ipynb',
-                        'EdgeR_GeneSets.ipynb',
-                        'R_GEM_normalizations.ipynb'
-                    ]
+                    # 'skip': [
+                    #     'DESeq2_GeneSets.ipynb',
+                    #     'EdgeR_GeneSets.ipynb',
+                    #     'R_GEM_normalizations.ipynb'
+                    # ]
                 },
                 {'path': 'workflow_guide',
                  'title': 'Workflow Integration How-to Guides'},
@@ -52,6 +52,7 @@ nbsite_gallery_conf = {
             ],
         },
     },
+    'only_use_existing': True,  # Disable all thumbnail generation for now.
     'github_org': 'SystemsGenetics',
     'github_project': 'GSForge',
     'thumbnail_url': 'https://github.com/SystemsGenetics/GSForgeDev/tree/gh-pages/assets/thumbnails',

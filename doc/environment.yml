@@ -4,6 +4,7 @@ channels:
   - bioconda
   - r
 dependencies:
+  - python=3.8
   - pip
   - r-base
   - bioconductor-deseq2
