@@ -44,6 +44,7 @@ jobs:
         - pip install osfclient
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
+        - mkdir doc/Reference_Manual
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
         - nbsite build --what=html --output=builtdocs
@@ -63,6 +64,7 @@ jobs:
         - pip install osfclient
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
+        - mkdir doc/Reference_Manual
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
         - nbsite build --what=html --output=builtdocs

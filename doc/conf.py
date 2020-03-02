@@ -23,7 +23,7 @@ nbsite_gallery_conf = {
             'intro': 'Demonstrations of plotting functions provided by GSForge.',
             'orphans': ['Plotting_Guide.ipynb'],
             # The orphans key allows the user to pass a list of files that will be rendered to html without
-            # being thumbnailed and linked from the gallery page. The main usecase for this is when a section
+            # being thumbnailed and linked from the gallery page. The main use-case for this is when a section
             # has an index which provides an overview of the section and directs users through
             # the notebooks in a particular order.
         },
@@ -79,8 +79,7 @@ html_theme_options = {
 _NAV = (
     ('Welcome', 'Welcome'),
     ('User Guide', 'user_guide/index'),
-    # ('Gallery', 'gallery/index'),
-    ('API', 'Reference_Manual/index'),
+    ('API', 'Reference_Manual/GSForge'),
     ('Developer Guide', 'Development'),
     ('About', 'About')
 )
