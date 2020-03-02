@@ -40,11 +40,11 @@ nbsite_gallery_conf = {
                 {
                     'path': 'R_integration_guides',
                     'title': 'R Integration Guides',
-                    # 'skip': [
-                    #     'DESeq2_GeneSets.ipynb',
-                    #     'EdgeR_GeneSets.ipynb',
-                    #     'R_GEM_normalizations.ipynb'
-                    # ]
+                    'skip': [
+                        'DESeq2_GeneSets.ipynb',
+                        'EdgeR_GeneSets.ipynb',
+                        'R_GEM_normalizations.ipynb'
+                    ]
                 },
                 {'path': 'workflow_guide',
                  'title': 'Workflow Integration How-to Guides'},
