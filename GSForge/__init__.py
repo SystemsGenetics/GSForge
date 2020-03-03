@@ -1,19 +1,19 @@
 """
 Welcome to the GSForge API reference documentation.
 
-:ref:`GSForge.models`
+:doc:`GSForge.models`
  Primary data models for GSForge.
 
-:ref:`GSForge.operations`
+:doc:`GSForge.operations`
  Transforms and feature selection tools.
 
-:ref:`GSForge.plots`
+:doc:`GSForge.plots`
  Plotting tools.
 
-:ref:`GSForge.panels`
+:doc:`GSForge.panels`
  Interactive visualizations.
 
-:ref:`GSForge.utils`
+:doc:`GSForge.utils`
  Utilities.
 """
 
@@ -22,6 +22,6 @@ from .operations.core import *
 
 import os
 
-if "GSFORGE_MINIMAL" not in os.environ:
+if "GSFORGE_INSTALL_MODE" not in os.environ:
     from . import plots
     from . import panels

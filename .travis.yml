@@ -40,16 +40,7 @@ stages:
 
 
 
-#before_install:
-#  - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
-#  - chmod +x miniconda.sh
-#  - ./miniconda.sh -b
-#  - export PATH=/home/travis/miniconda2/bin:$PATH
-#  - conda update --yes conda
-
 install:
-#  - conda env create -f ./doc/environment.yml
-#  - source activate Py38_GSForge
   - sudo apt-get install graphviz
   - pip install osfclient
   - pip install .
@@ -58,10 +49,8 @@ jobs:
   include:
 
     - stage: website_release
-#      install:
-#        - sudo apt-get install graphviz
-#        - pip install .
-#        - pip install osfclient
+      env:
+        - GSFORGE_INSTALL_MODE=docs
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - mkdir doc/Reference_Manual
@@ -78,10 +67,8 @@ jobs:
             branch: master
 
     - stage: website_dev
-#      install:
-#        - sudo apt-get install graphviz
-#        - pip install .
-#        - pip install osfclient
+      env:
+        - GSFORGE_INSTALL_MODE=docs
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - mkdir doc/Reference_Manual
@@ -100,7 +87,7 @@ jobs:
 
     - stage: build_dockerfiles
       env:
-        -GSFORGE_IMAGE_TAG="${TRAVS_TAG}"
+        -GSFORGE_IMAGE_TAG="${TRAVS_TAG}" GSFORGE_INSTALL_MODE=container
       install: skip
       script:
         - docker-compose build
@@ -110,7 +97,7 @@ jobs:
 
     - stage: build_dev_dockerfiles
       env:
-        -GSFORGE_IMAGE_TAG="dev"
+        -GSFORGE_IMAGE_TAG="dev" GSFORGE_INSTALL_MODE=container
       install: skip
       script:
         - docker-compose build
@@ -119,9 +106,11 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:dev
 
     - stage: pip_dev_package
+      env:
+        - GSFORGE_INSTALL_MODE=normal
       install: skip
       script:
-        - pip install ./GSForge
+        - pip install .
       deploy:
         provider: pypi
         server: https://test.pypi.org/legacy/
@@ -132,9 +121,11 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
+      env:
+        - GSFORGE_INSTALL_MODE=normal
       install: skip
       script:
-        - pip install ./GSForge
+        - pip install .
       deploy:
         provider: pypi
         distributions: "sdist bdist_wheel"

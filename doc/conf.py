@@ -65,8 +65,8 @@ description = 'GSForge is a Python software package that assists researchers in 
               'gene sets with potential association to an experimental condition or phenotypic trait, ' \
               'which offers new potential hypotheses for gene-trait causality.'
 
-version = '0.5'
-release = 'alpha'
+# version = '0.7'
+# release = 'alpha'
 
 html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
@@ -89,7 +89,7 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'VERSION': version,
+    # 'VERSION': version,
     'NAV': _NAV,
     # by default, footer links are same as those in header
     'LINKS': _NAV,

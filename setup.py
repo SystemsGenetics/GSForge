@@ -48,14 +48,18 @@ statsmodels
 umap_learn
 """.split()
 
-requirements = core_requirements
 
-if "GSFORGE_MINIMAL" not in os.environ:
-    requirements += requirements + doc_requirements + full_requirements
+installation_modes = {
+    "normal": core_requirements + full_requirements,
+    "docs": core_requirements + doc_requirements + full_requirements,
+    "container": core_requirements
+}
+
+requirements = installation_modes[os.environ.get("GSFORGE_INSTALL_MODE", "normal")]
 
 setup(
     name='GSForge',
-    version='0.2',
+    version='0.7.1',
     packages=find_packages(),
     url='https://systemsgenetics.github.io/GSForge/',
     license='LICENSE.txt',
