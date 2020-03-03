@@ -1,8 +1,8 @@
-name: GEMprospector_workflow
+name: GSForge_Py38_env
 channels:
   - conda-forge
 dependencies:
-  - python=3.7
+  - python=3.8
   - netcdf4
   - hdf5
   - xarray
@@ -10,7 +10,4 @@ dependencies:
   - numpy
   - pandas
   - boruta_py
-  - pip
-  - pip:
-      - sklearn
-      - xgboost
+  - scikit-learn

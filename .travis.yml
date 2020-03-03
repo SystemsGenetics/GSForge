@@ -39,17 +39,14 @@ stages:
 
 
 
-install:
-  - sudo apt-get install graphviz
-  - pip install osfclient
-  - pip install .
-
 jobs:
   include:
 
     - stage: website_release
-      env:
-        - GSFORGE_INSTALL_MODE=docs
+      install:
+        - sudo apt-get install graphviz
+        - pip install osfclient
+        - pip install .[docs]
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - mkdir doc/Reference_Manual
@@ -66,8 +63,10 @@ jobs:
             branch: master
 
     - stage: website_dev
-      env:
-        - GSFORGE_INSTALL_MODE=docs
+      install:
+        - sudo apt-get install graphviz
+        - pip install osfclient
+        - pip install .[docs]
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
         - mkdir doc/Reference_Manual
@@ -86,7 +85,7 @@ jobs:
 
     - stage: build_dockerfiles
       env:
-        -GSFORGE_IMAGE_TAG="${TRAVS_TAG}" GSFORGE_INSTALL_MODE=container
+        -GSFORGE_IMAGE_TAG="${TRAVS_TAG}"
       install: skip
       script:
         - docker-compose build
@@ -96,7 +95,7 @@ jobs:
 
     - stage: build_dev_dockerfiles
       env:
-        -GSFORGE_IMAGE_TAG="dev" GSFORGE_INSTALL_MODE=container
+        -GSFORGE_IMAGE_TAG="dev"
       install: skip
       script:
         - docker-compose build
