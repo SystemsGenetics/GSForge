@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 import json
 from pathlib import Path
 from textwrap import dedent
@@ -17,6 +16,7 @@ from ._utils import (
     load_count_df,
     load_label_df,
 )
+from .singledispatchmethod import singledispatchmethod
 
 
 class AnnotatedGEM(param.Parameterized):
@@ -95,7 +95,7 @@ class AnnotatedGEM(param.Parameterized):
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names.""")
 
-    @functools.singledispatchmethod
+    @singledispatchmethod
     def __annotated_gem_dispatch(*args, **params):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
