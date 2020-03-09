@@ -1,8 +1,12 @@
 """
-GSForge operations can be broken down into three categories:
+GSForge operations have been separated into categories:
+
+Core
+  Core operations provide a data-access interface to AnnotatedGEM and GeneSetCollection objects.
 
 Analytics
-  For discrete operations, *i.e.* chi-squared tests, differential gene expression, etc.
+  For discrete operations, *i.e.* chi-squared tests, differential gene expression, etc. As well
+  as tools for analytics based on machine-learning models.
 
 Normalizations
   For those operations that are meant to create an entire transform of the GEM.
@@ -16,13 +20,3 @@ from .analytics import *
 from .core import *
 from .normalizations import *
 from .prospectors import *
-
-# class get_data(OperationInterface):
-#     """
-#     Gets the GEM matrix and an optional annotation column.
-#     """
-#
-#     # TODO: Expand comment, describe how the sample and gene indexes are built.
-#
-#     def process(self):
-#         return self.x_count_data, self.y_annotation_data

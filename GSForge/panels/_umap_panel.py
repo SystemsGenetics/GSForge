@@ -8,8 +8,8 @@ from methodtools import lru_cache
 
 import umap
 
-from GSForge import Interface
-from GSForge.utils._panel_utils import generate_help_pane
+from ..models import Interface
+from .utils import generate_help_pane
 
 
 class UMAP_Panel(param.Parameterized):

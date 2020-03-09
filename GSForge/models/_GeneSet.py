@@ -13,6 +13,8 @@ import pandas as pd
 import param
 import xarray as xr
 
+from ._singledispatchmethod import singledispatchmethod
+
 
 class GeneSet(param.Parameterized):
     """
@@ -65,7 +67,7 @@ class GeneSet(param.Parameterized):
     # PRIVATE FUNCTIONS
     ###############################################################################################
 
-    @functools.singledispatchmethod
+    @singledispatchmethod
     def __geneset_dispatch(*args, **params):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
 

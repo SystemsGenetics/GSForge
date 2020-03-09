@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import functools
 from textwrap import dedent
 from typing import Union
 
@@ -10,6 +9,7 @@ import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
+from ._singledispatchmethod import singledispatchmethod
 
 
 # TODO: Add GeneSet data access.
@@ -155,7 +155,7 @@ class Interface(param.Parameterized):
     A transform that will be run on the `x_data` that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
 
-    @functools.singledispatchmethod
+    @singledispatchmethod
     def __interface_dispatch(*args, **params):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
 

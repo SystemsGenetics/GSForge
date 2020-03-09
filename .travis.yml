@@ -104,8 +104,6 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:dev
 
     - stage: pip_dev_package
-      env:
-        - GSFORGE_INSTALL_MODE=normal
       install: skip
       script:
         - pip install .
@@ -119,8 +117,6 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
-      env:
-        - GSFORGE_INSTALL_MODE=normal
       install: skip
       script:
         - pip install .

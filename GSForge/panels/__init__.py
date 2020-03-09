@@ -4,10 +4,10 @@ or ``GeneSetCollection`` objects.
 """
 
 from ._umap_panel import UMAP_Panel
-from ._connectivity_panel import Connectivity_Panel
+# from ._connectivity_panel import Connectivity_Panel
 
 
 __all__ = [
     "UMAP_Panel",
-    "Connectivity_Panel",
+    # "Connectivity_Panel",
 ]
