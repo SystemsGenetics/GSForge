@@ -9,7 +9,7 @@ import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
-from ._singledispatchmethod import singledispatchmethod
+from ..utils._singledispatchmethod import singledispatchmethod
 
 
 # TODO: Add GeneSet data access.

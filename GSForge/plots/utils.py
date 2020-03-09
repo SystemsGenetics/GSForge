@@ -1,11 +1,12 @@
-import xarray as xr
-import param
 import inspect
+
 import holoviews as hv
-import functools
 import pandas as pd
+import param
+import xarray as xr
 
 from ..models import GeneSet
+from ..utils._singledispatchmethod import singledispatchmethod
 
 DGE_DEFAULT_KWARGS = dict(
     log_fold_change_var=[
@@ -95,7 +96,7 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         inst.__init__(**params)
         return inst.__call__(*args, **params)
 
-    @functools.singledispatchmethod
+    @singledispatchmethod
     def __dispatch_input_args(self, source, *args, **params):
         """Dispatches *args based on the first time to be parsed and joined with an updated params dict."""
         raise NotImplementedError(f"Cannot parse {source} of type {type(source)}.")
@@ -121,7 +122,6 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         if self.apply_default_opts is False:
             return layout
         return layout.opts(self.get_default_options())
-
 
 # class CollectionOperation(AbstractPlottingOperation):
 #     """
@@ -161,4 +161,3 @@ class ResultPlottingOperation(AbstractPlottingOperation):
 #             coll_mappings = gsc.as_dict()
 #
 #         return {"source": source, **params}
-
