@@ -126,9 +126,10 @@ class Interface(param.Parameterized):
     A list of samples to use in a given operation. These can be supplied
     directly as a list of genes, or can be drawn from a given GeneSet."""))
 
-    count_variable = param.String(default=None, precedence=-1.0, doc=dedent("""\
-    The name of the count matrix used."""))
+    count_variable = param.ObjectSelector(default=None, precedence=1.0, doc="""\
+    The name of the count matrix used.""", objects=[None], check_on_set=False)
 
+    # TODO: Change to an object selector?
     annotation_variables = param.List(doc=dedent("""\
     The name of the active annotation variable(s). These are the annotation columns that will
     be control the subset returned by ``y_annotation_data``."""), precedence=-1.0, default=None)
@@ -141,7 +142,7 @@ class Interface(param.Parameterized):
         Returns the entire count matrix with zero or missing as NaN values.
     **dropped** 
         Returns the count matrix without genes that have zero or missing values.
-    """), default='complete', objects=["complete", "masked", "dropped"], precedence=-1.0)
+    """), default='complete', objects=["complete", "masked", "dropped"], precedence=1.0)
 
     annotation_mask = param.ObjectSelector(doc=dedent("""\
     The type of mask to use for the target array.
@@ -163,10 +164,14 @@ class Interface(param.Parameterized):
         if args:
             params = self.__interface_dispatch(*args, **params)
 
+        # If the user passes a string, place it as a single item within a list.
         if isinstance(params.get("annotation_variables"), str):
             params["annotation_variables"] = [params.get("annotation_variables")]
 
         super().__init__(**params)
+
+        # Populate the count variable selector with valid count arrays.
+        self.param["count_variable"].objects = [None] + sorted(self.gem.count_array_names)
 
         if self.count_variable is None:
             self.set_param(**{"count_variable": self.gem.count_array_name})
