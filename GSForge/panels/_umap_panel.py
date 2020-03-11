@@ -146,7 +146,7 @@ class UMAP_Panel(param.Parameterized):
         return self.static_transform(array, **kwargs)
 
     @lru_cache()
-    def cached_transform(self, gene_set, transform_state):
+    def cached_transform(self, _count_array_name, _gene_set, _transform_state):
         """A cached transform based on the genes and transform arguments selected."""
         return self.transform()
 
@@ -154,11 +154,14 @@ class UMAP_Panel(param.Parameterized):
     def view(self):
         """A `holoviews.Points` plot of the selected transform."""
         df = self.interface.gem.data[self.data_var_cats["all_labels"]].to_dataframe().reset_index()
+        # TODO: Consider how a more robust hash could be created.
         gene_set = frozenset(self.interface.get_gene_index())
         transform_state = frozenset(self.get_transform_kwargs().items())
+        count_array_state = frozenset(self.count_variable)
+
         hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in list(df.columns)])
 
-        transform = self.cached_transform(gene_set, transform_state)
+        transform = self.cached_transform(count_array_state, gene_set, transform_state)
         df["x"] = transform[:, 0]
         df["y"] = transform[:, 1]
 
