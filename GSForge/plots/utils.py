@@ -13,7 +13,7 @@ DGE_DEFAULT_KWARGS = dict(
         "logFC",  # from EdgeR.
         "log2FoldChange",  # from DESeq2.
     ],
-    mean_value_var=["baseMean"],
+    mean_value_var=["baseMean", "logCPM"],
     p_value_var=["pvalue", "PValue"]
 )
 
@@ -71,8 +71,9 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
         for key in key_overlap:
             default_argument = set.intersection(set(source.variables.keys()), DGE_DEFAULT_KWARGS[key])
             if len(default_argument) == 0:
-                raise ValueError("Unable to automatically infer variable names, please explicitly"
-                                 " provide them.")
+                continue
+            #     raise ValueError("Unable to automatically infer variable names, please explicitly"
+            #                      " provide them.")
             if len(default_argument) > 1:
                 raise ValueError("More than one potential default found. Explicitly set the arguments"
                                  "to this function.")
