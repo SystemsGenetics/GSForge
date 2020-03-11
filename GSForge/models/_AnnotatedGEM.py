@@ -16,7 +16,7 @@ from ._utils import (
     load_count_df,
     load_label_df,
 )
-from ..utils._singledispatchmethod import singledispatchmethod
+from GSForge._singledispatchmethod import singledispatchmethod
 
 
 class AnnotatedGEM(param.Parameterized):

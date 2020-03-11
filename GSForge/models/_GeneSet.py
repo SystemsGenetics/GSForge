@@ -13,7 +13,7 @@ import pandas as pd
 import param
 import xarray as xr
 
-from ..utils._singledispatchmethod import singledispatchmethod
+from GSForge._singledispatchmethod import singledispatchmethod
 
 
 class GeneSet(param.Parameterized):
@@ -445,6 +445,7 @@ class GeneSet(param.Parameterized):
         """
 
         # TODO: Comment mode functions and their arguments clearly. Include how to write such a function.
+        # TODO: Use only scores with real values in these functions to prevent RuntimeWarnings.
         # TODO: Consider moving these functions to utilities?
         def _abs_largest(scores: xr.DataArray, **kwargs):
             nn = kwargs["n"]
@@ -495,6 +496,8 @@ class GeneSet(param.Parameterized):
         data = self.data.sel({self.gene_index_name: self.gene_support()})[score_name] \
             if within_support \
             else self.data[score_name]
+
+        data = data.dropna(dim=self.gene_index_name)
 
         # Assign the selected mode function.
         selected_mode = modes.get(mode)

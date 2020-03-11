@@ -1,8 +1,8 @@
 import json
 import inspect
 
-from ..models import GeneSet, GeneSetCollection
-
+from ..models._GeneSet import GeneSet
+from ..models._GeneSetCollection import GeneSetCollection
 
 __all__ = [
     "get_by_json_attr",
