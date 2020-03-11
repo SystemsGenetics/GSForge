@@ -13,7 +13,7 @@ DGE_DEFAULT_KWARGS = dict(
         "log2FoldChange",  # from DESeq2.
     ],
     mean_value_var=["baseMean"],
-    p_value_var=["pvalue"]
+    p_value_var=["pvalue", "PValue"]
 )
 
 
@@ -60,12 +60,18 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
 
     @staticmethod
     def infer_kwarg_defaults_from_data(source: xr.Dataset, function) -> dict:
+        """Try to infer variable names for plotting functions.
+        e.g. Try to find what the 'p-value' column.
+        """
         kwargs = dict()
         key_overlap = set.intersection(set(inspect.signature(function).parameters.keys()),
                                        set(DGE_DEFAULT_KWARGS.keys()))
 
         for key in key_overlap:
             default_argument = set.intersection(set(source.variables.keys()), DGE_DEFAULT_KWARGS[key])
+            if len(default_argument) == 0:
+                raise ValueError("Unable to automatically infer variable names, please explicitly"
+                                 " provide them.")
             if len(default_argument) > 1:
                 raise ValueError("More than one potential default found. Explicitly set the arguments"
                                  "to this function.")
