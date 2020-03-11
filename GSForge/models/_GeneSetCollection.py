@@ -7,6 +7,7 @@ from functools import reduce
 from textwrap import dedent
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr
 
+import methodtools
 import numpy as np
 import pandas as pd
 import param
@@ -199,6 +200,29 @@ class GeneSetCollection(param.Parameterized):
             for set_name, df in data_frames.items():
                 df.to_excel(writer, sheet_name=set_name)
 
+    @methodtools.lru_cache()
+    def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
+        return {key: self.gene_sets[key].gene_support() for key in keys}
+
+    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None,
+                    empty_supports: bool = False) -> Tuple[AnyStr]:
+        # Use all keys in the collection if none are provided.
+        keys = self.gene_sets.keys() if keys is None else keys
+
+        # Ensure all keys provided are actually within the collection.
+        if not all(key in self.gene_sets.keys() for key in keys):
+            raise ValueError(f"Not all keys given were found in the available keys: {list(self.gene_sets.keys())}")
+
+        if empty_supports is False:
+            keys = [key for key in keys if self.gene_sets[key].support_exists]
+
+        if exclude is not None:
+            keys = [key for key in keys if key not in exclude]
+
+        # Sort the remaining keys and pass them as a 'hash-able' tuple to the cached function.
+        sorted_keys = tuple(sorted(keys))
+        return sorted_keys
+
     def as_dict(self, keys: List[str] = None, exclude: List[str] = None,
                 empty_supports: bool = False) -> Dict[str, np.ndarray]:
         """
@@ -221,15 +245,13 @@ class GeneSetCollection(param.Parameterized):
         -------
         dict : Dictionary of {name: supported_genes} for each GeneSet.
         """
-        keys = self.gene_sets.keys() if keys is None else keys
+        sorted_keys = self._parse_keys(keys, exclude, empty_supports)
+        return self._as_dict(sorted_keys)
 
-        if empty_supports is False:
-            keys = [key for key in keys if self.gene_sets[key].support_exists]
-
-        if exclude is not None:
-            keys = [key for key in keys if key not in exclude]
-
-        return {key: self.gene_sets[key].gene_support() for key in keys}
+    @methodtools.lru_cache()
+    def _intersection(self, keys: Tuple[AnyStr]) -> np.ndarray:
+        gene_set_dict = self._as_dict(keys)
+        return reduce(np.intersect1d, gene_set_dict.values())
 
     def intersection(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
@@ -247,8 +269,13 @@ class GeneSetCollection(param.Parameterized):
         -------
         np.ndarray : Intersection of the supported genes within GeneSets.
         """
-        gene_set_dict = self.as_dict(keys, exclude)
-        return reduce(np.intersect1d, gene_set_dict.values())
+        sorted_keys = self._parse_keys(keys, exclude)
+        return self._intersection(sorted_keys)
+
+    @methodtools.lru_cache()
+    def _union(self, keys: Tuple[AnyStr]) -> np.ndarray:
+        gene_set_dict = self._as_dict(keys)
+        return reduce(np.union1d, gene_set_dict.values())
 
     def union(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
@@ -266,8 +293,13 @@ class GeneSetCollection(param.Parameterized):
         -------
         np.ndarray : Union of the supported genes within GeneSets.
         """
-        gene_set_dict = self.as_dict(keys, exclude)
-        return reduce(np.union1d, gene_set_dict.values())
+        sorted_keys = self._parse_keys(keys, exclude)
+        return self._union(sorted_keys)
+
+    @methodtools.lru_cache()
+    def _difference(self, keys: Tuple[AnyStr]) -> np.ndarray:
+        gene_set_dict = self._as_dict(keys)
+        return reduce(np.setdiff1d, gene_set_dict.values())
 
     def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
         """
@@ -285,8 +317,8 @@ class GeneSetCollection(param.Parameterized):
         -------
         np.ndarray : Difference of the supported genes within GeneSets.
         """
-        gene_set_dict = self.as_dict(keys, exclude)
-        return reduce(np.setdiff1d, gene_set_dict.values())
+        sorted_keys = self._parse_keys(keys, exclude)
+        return self._difference(sorted_keys)
 
     def pairwise_unions(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[Tuple[str, str], np.ndarray]:
         """
@@ -357,27 +389,6 @@ class GeneSetCollection(param.Parameterized):
         return [(ak, bk, len(np.intersect1d(av, bv)) / len(av))
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
                 if ak != bk]
-
-    # def get_gene_sets_data(self, variables: list, keys=None) -> Dict[str, np.ndarray]:
-    #     """
-    #     Extracts variables from each Dataset, and returns them as a dictionary.
-    #
-    #     If you need these to be collated into a dataset, use `collate_gene_sets_data()`.
-    #
-    #     :param variables:
-    #     :param keys:
-    #     :return:
-    #     """
-    #     keys = self.gene_sets.keys() if keys is None else keys
-    #     return {key: self.gene_sets[key].gene_support()[variables] for key in keys}
-
-    # def collate_gene_sets_data(self, variables: list, keys=None) -> xr.Dataset:
-    #     keys = self.gene_sets.keys() if keys is None else keys
-    #     data_dict = self.get_gene_sets_data(variables, keys)
-    #     # TODO: Change this call to ensure that it returns an xr.Dataset.
-    #     key_ds = xr.concat(data_dict.values(), dim="gene_set")
-    #     key_ds["gene_set"] = keys
-    #     return key_ds
 
     ###############################################################################################
     # CONSTRUCTOR FUNCTIONS

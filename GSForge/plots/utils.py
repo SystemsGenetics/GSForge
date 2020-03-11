@@ -5,7 +5,7 @@ import holoviews as hv
 import functools
 import pandas as pd
 
-from ..models import Interface, GeneSet, GeneSetCollection
+from ..models import GeneSet
 
 DGE_DEFAULT_KWARGS = dict(
     log_fold_change_var=[

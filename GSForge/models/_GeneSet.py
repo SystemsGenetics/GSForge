@@ -32,7 +32,7 @@ class GeneSet(param.Parameterized):
         my_geneset = GeneSet.from_pandas(<pandas.DataFrame>)
 
 
-    **Get the supported Genes:**
+    **Get supported Genes:**
 
     .. code-block:: python
 
@@ -48,7 +48,7 @@ class GeneSet(param.Parameterized):
     """
 
     data = param.Parameter(allow_None=False, doc=dedent("""\
-    Contains a gene-index `xarray.Dataset` object, it should have
+    Contains a gene-index ``xarray.Dataset`` object, it should have
     only those genes that are considered 'within' the GeneSet
     in the index, or a boolean variable named 'support'."""))
 
@@ -57,7 +57,7 @@ class GeneSet(param.Parameterized):
     (boolean) variable indicating membership in this GeneSet."""))
 
     gene_index_name = param.String(default="Gene", doc=dedent("""\
-    This parameter controls which variable from the `xarray.Dataset` should be 
+    This parameter controls which variable from the ``xarray.Dataset`` should be 
     considered to be the 'gene index' coordinate.
     Consider using this if you require different coordinate names."""))
 
@@ -337,7 +337,7 @@ class GeneSet(param.Parameterized):
         -------
         xr.DataArray : A copy of the entire gene index of this GeneSet as an ``xarray.DataArray``.
         """
-        return self.data[self.gene_index_name].copy()
+        return self.data[self.gene_index_name]
 
     def gene_support(self) -> np.ndarray:
         """
@@ -447,20 +447,20 @@ class GeneSet(param.Parameterized):
         def _abs_largest(scores: xr.DataArray, **kwargs):
             nn = kwargs["n"]
             top_idx = np.argsort(np.abs(scores.values))[::-1][:nn]
-            return scores.isel({self.gene_index_name: top_idx})[self.gene_index_name].values.copy()
+            return scores.isel({self.gene_index_name: top_idx})[self.gene_index_name].values
 
         def _above_threshold(scores: xr.DataArray, **kwargs):
             threshold = kwargs["threshold"]
-            return scores.isel({self.gene_index_name: scores.values > threshold})[self.gene_index_name].values.copy()
+            return scores.isel({self.gene_index_name: scores.values > threshold})[self.gene_index_name].values
 
         def _below_threshold(scores: xr.DataArray, **kwargs):
             threshold = kwargs["threshold"]
-            return scores.isel({self.gene_index_name: scores.values < threshold})[self.gene_index_name].values.copy()
+            return scores.isel({self.gene_index_name: scores.values < threshold})[self.gene_index_name].values
 
         def _above_absolute_threshold(scores: xr.DataArray, **kwargs):
             threshold = kwargs["threshold"]
             return scores.isel({self.gene_index_name: np.abs(scores.values) > threshold})[
-                self.gene_index_name].values.copy()
+                self.gene_index_name].values
 
         modes = {
             "absolute_largest": _abs_largest,

@@ -1,8 +1,8 @@
-from __future__ import annotations
-
 import numpy as np
 
 from ._Interface import Interface
+from typing import Union
+import xarray as xr
 
 
 # Defining a test class for the interface class
@@ -82,3 +82,20 @@ class TestInterface(Interface):
             subset = subset.dropna(dim=self.gem.sample_index_name)
 
         return subset[self.gem.sample_index_name].values.copy()
+
+    @property
+    def test_y_annotation_data(self) -> Union[xr.Dataset, xr.DataArray, None]:
+        """
+        Returns the currently selected 'y_data', or None, based on the `selected_annotation_variables` parameter.
+
+        :return:
+            An `xarray.Dataset` or `xarray.DataArray` object of the currently selected y_data.
+        """
+        if self.annotation_variables is None:
+            return None
+
+        sample_index = self.get_sample_index()
+        subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
+        if len(self.annotation_variables) == 1:
+            return subset[self.annotation_variables[0]].copy()
+        return subset[self.annotation_variables].copy()

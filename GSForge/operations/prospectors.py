@@ -14,25 +14,25 @@ import xarray as xr
 from boruta import boruta_py
 from sklearn.feature_selection import chi2, f_classif
 
-from ..models import OperationInterface
+from ..models import Interface
 from ..utils import kwargs_overlap
 
 __all__ = [
-    "create_random_lineament",
     "parse_boruta_model",
-    "boruta_prospector",
+    "BorutaProspector",
+    "ChiSquaredTest",
+    "FClassificationTest"
 ]
 
 
-class chi_squared_test(OperationInterface):
+class ChiSquaredTest(Interface, param.ParameterizedFunction):
     """
     Compute chi-squared stats between each non-negative feature and class.
     See the `Scikit-learn documentation <https://scikit-learn.org/>`_
     """
 
-    # TODO: Note that this uses the OperationInterface.
-
-    def process(self):
+    def __call__(self, *args, **params):
+        super().__init__(*args, **params)
         x_data, y_data = self.x_count_data, self.y_annotation_data
 
         chi2_scores, chi2_pvals = chi2(np.nan_to_num(x_data), y_data)
@@ -46,15 +46,14 @@ class chi_squared_test(OperationInterface):
         return data
 
 
-class f_classification_test(OperationInterface):
+class FClassificationTest(Interface, param.ParameterizedFunction):
     """
     Compute the ANOVA F-value for the provided sample.
     See the `Scikit-learn documentation <https://scikit-learn.org/>`_
     """
 
-    # TODO: Note that this uses the OperationInterface.
-
-    def process(self):
+    def __call__(self, *args, **params):
+        super().__init__(*args, **params)
         x_data, y_data = self.x_count_data, self.y_annotation_data
 
         f_scores, f_pvals = f_classif(np.nan_to_num(x_data), y_data)
@@ -66,19 +65,6 @@ class f_classification_test(OperationInterface):
                           coords={"Gene": x_data[self.gem.gene_index_name]},
                           attrs=attrs)
         return data
-
-
-class create_random_lineament(OperationInterface):
-    """
-    Creates a random lineament of size ``k``.
-
-    Picks from the gene index defined by the ``Interface`` options.
-    """
-    k = param.Integer(default=100)
-
-    def process(self):
-        random_genes = np.random.choice(self.gene_index, self.k)
-        return random_genes, {"random_size": self.k}
 
 
 class _model_parsers(enum.Enum):
@@ -122,7 +108,7 @@ def parse_boruta_model(boruta_model, gene_coords, attrs=None, dim="Gene") -> xr.
 
 
 # TODO: Consider a direct to GeneSet object option.
-class boruta_prospector(OperationInterface):
+class BorutaProspector(Interface, param.ParameterizedFunction):
     """Runs a single instance of BorutaPy feature selection.
 
     This is just a simple wrapper for a boruta model that produces an
@@ -172,7 +158,9 @@ class boruta_prospector(OperationInterface):
     - 1: displays iteration number
     - 2: which features have been selected already"""))
 
-    def process(self):
+    def __call__(self, *args, **params):
+        super().__init__(*args, **params)
+
         if len(self.annotation_variables) > 1:
             raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
         x_data, y_data = self.x_count_data, self.y_annotation_data

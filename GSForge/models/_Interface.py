@@ -169,7 +169,7 @@ class Interface(param.Parameterized):
         super().__init__(**params)
 
         if self.count_variable is None:
-            self.set_param("count_variable", self.gem.count_array_name)
+            self.set_param(**{"count_variable": self.gem.count_array_name})
 
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
@@ -243,8 +243,8 @@ class Interface(param.Parameterized):
 
         Returns
         -------
-        gene index : np.ndarray
-            A numpy array of the currently selected genes.
+        np.ndarray
+            An array of the currently selected genes.
         """
         gene_set_combinations = {
             "union": lambda sel_gs: self.gene_set_collection.union(sel_gs),
@@ -309,7 +309,8 @@ class Interface(param.Parameterized):
 
         Returns
         -------
-        np.ndarray : An array of the currently selected samples.
+        np.ndarray
+            An array of the currently selected samples.
         """
 
         if self.sample_subset is not None:
@@ -357,7 +358,8 @@ class Interface(param.Parameterized):
 
         Returns
         -------
-        xarray.Dataset : An `xarray.Dataset` selection of the currently active 'x_data'.
+        xarray.Dataset
+            The selection of the currently active count data.
         """
         # TODO: Consider adding a copy option.
 
@@ -401,5 +403,5 @@ class Interface(param.Parameterized):
         sample_index = self.get_sample_index()
         subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
         if len(self.annotation_variables) == 1:
-            return subset[self.annotation_variables[0]].copy()
-        return subset[self.annotation_variables].copy()
+            return subset[self.annotation_variables[0]]
+        return subset[self.annotation_variables]

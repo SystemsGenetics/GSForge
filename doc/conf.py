@@ -1,40 +1,72 @@
 # -*- coding: utf-8 -*-
 # flake8: noqa (hacky way of sharing config, etc...)
-
-from nbsite.shared_conf import *
+# See here: https://github.com/pyviz-dev/nbsite/blob/master/nbsite/shared_conf.py
+# For values imported from shared_conf
 import os
 import sys
+
+from nbsite.shared_conf import *
 
 sys.path.insert(0, os.path.abspath('..'))
 
 extensions += [
     "nbsphinx",
     "sphinx.ext.napoleon",  # numpy-style docstrings.
-    # 'nbsite.gallery'
+    'nbsite.gallery'
 ]
 
-# nbsite_gallery_conf = {
-#     'backends': ['bokeh', 'matplotlib'],
-#     'default_extensions': ['*.ipynb', '*.py'],
-#     'enable_download': True,
-#     'examples_dir': os.path.join('..', 'examples'),
-#     'galleries': {
-#         'R_integration_guide': {'title': 'R Integration Guide', 'path': 'R_integration_guide', 'skip': True},
-#         'plotting_guide': {'title': 'Plotting Guide Gallery', 'path': 'plotting_guide_gallery'},
-#     },
-#     'github_org': 'SystemsGenetics',
-#     'github_project': 'GSForge',
-#     # 'thumbnail_url': 'https://assets.holoviews.org/thumbnails',
-#     # 'within_subsection_order': lambda key: key
-# }
+nbsite_gallery_conf = {
+    'galleries': {
+        # This key must be the same as a folder name within /examples.
+        'plot_gallery': {
+            'title': 'Plot Gallery',
+            'intro': 'Demonstrations of plotting functions provided by GSForge.',
+            'orphans': ['Plotting_Guide.ipynb'],
+            # The orphans key allows the user to pass a list of files that will be rendered to html without
+            # being thumbnailed and linked from the gallery page. The main use-case for this is when a section
+            # has an index which provides an overview of the section and directs users through
+            # the notebooks in a particular order.
+        },
+        "panel_gallery": {
+            'title': 'Panel Gallery',
+            'intro': 'Demonstrations of "panel-ized" applications provided by GSForge.',
+        },
+        "how_to_galleries": {
+            'title': 'How-to Guides',
+            'intro': 'How-to guides provided by GSForge.',
+            'sections': [
+                {'path': 'core_guides',
+                 'title': 'Core How-to Guides'},
+                {
+                    'path': 'R_integration_guides',
+                    'title': 'R Integration Guides',
+                    # 'skip': [
+                    #     'DESeq2_GeneSets.ipynb',
+                    #     'EdgeR_GeneSets.ipynb',
+                    #     'R_GEM_normalizations.ipynb'
+                    # ]
+                },
+                {'path': 'workflow_guide',
+                 'title': 'Workflow Integration How-to Guides'},
+
+            ],
+        },
+    },
+    'only_use_existing': True,  # Disable all thumbnail generation for now.
+    'github_org': 'SystemsGenetics',
+    'github_project': 'GSForge',
+    'thumbnail_url': 'https://github.com/SystemsGenetics/GSForgeDev/tree/gh-pages/assets/thumbnails',
+}
 
 project = u'GSForge'
 authors = u'Tyler Biggs'
-copyright = u'2019 ' + authors
-description = 'Short description for html meta description.'
+copyright = u'2019 - 2020 ' + authors
+description = 'GSForge is a Python software package that assists researchers in the selection of ' \
+              'gene sets with potential association to an experimental condition or phenotypic trait, ' \
+              'which offers new potential hypotheses for gene-trait causality.'
 
-version = '0.0.1'
-release = '0.0.1'
+# version = '0.7'
+# release = 'alpha'
 
 html_static_path += ['_static']
 html_theme = 'sphinx_ioam_theme'
@@ -48,8 +80,7 @@ html_theme_options = {
 _NAV = (
     ('Welcome', 'Welcome'),
     ('User Guide', 'user_guide/index'),
-    # ('Gallery', 'gallery/index'),
-    ('API', 'Reference_Manual/index'),
+    ('API', 'Reference_Manual/GSForge'),
     ('Developer Guide', 'Development'),
     ('About', 'About')
 )
@@ -58,7 +89,7 @@ html_context.update({
     'PROJECT': project,
     'DESCRIPTION': description,
     'AUTHOR': authors,
-    'VERSION': version,
+    # 'VERSION': version,
     'NAV': _NAV,
     # by default, footer links are same as those in header
     'LINKS': _NAV,

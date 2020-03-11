@@ -11,22 +11,24 @@ addons:
 env:
   - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
 
-language: python
 
-services:
-  - docker
+language: python
 
 python:
   - "3.8"
 
 
+services:
+  - docker
+
+
 stages:
   - name: website_dev
-    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (commit_message =~ travis_dev)
+    if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
   - name: pip_dev_package
-    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (commit_message =~ travis_dev)
+    if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
   - name: build_dev_dockerfiles
-    if: (tag =~ ^v(\d+|\.)+[a-z]\d+$) OR (commit_message =~ travis_dev)
+    if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
 
   - name: website_release
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
@@ -36,18 +38,18 @@ stages:
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
 
 
+
 jobs:
   include:
 
     - stage: website_release
       install:
         - sudo apt-get install graphviz
-        - pip install -r requirements.txt
-        - pip install -r doc/requirements.txt
-        - pip install .
         - pip install osfclient
+        - pip install .[docs]
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
+        - mkdir doc/Reference_Manual
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
         - nbsite build --what=html --output=builtdocs
@@ -63,12 +65,11 @@ jobs:
     - stage: website_dev
       install:
         - sudo apt-get install graphviz
-        - pip install -r requirements.txt
-        - pip install -r doc/requirements.txt
-        - pip install .
         - pip install osfclient
+        - pip install .[docs]
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
+        - mkdir doc/Reference_Manual
         - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
         - nbsite generate-rst --org SystemsGenetics --project-name GSForge
         - nbsite build --what=html --output=builtdocs
@@ -103,6 +104,9 @@ jobs:
         - docker push systemsgenetics/gsforge_workflow:dev
 
     - stage: pip_dev_package
+      env:
+        - GSFORGE_INSTALL_MODE=normal
+      install: skip
       script:
         - pip install .
       deploy:
@@ -115,6 +119,9 @@ jobs:
         password: $TESTPYPI_PWD
 
     - stage: pip_package
+      env:
+        - GSFORGE_INSTALL_MODE=normal
+      install: skip
       script:
         - pip install .
       deploy:

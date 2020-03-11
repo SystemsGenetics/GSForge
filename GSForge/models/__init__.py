@@ -3,7 +3,9 @@ There are two 'core' data models in *GSForge*, both of which store their associa
 in ``xarray.Dataset`` object under a ``data`` attribute. You are encouraged to consult the
 `xarray documentation <http://xarray.pydata.org/en/stable/>`_
 for how to perform any transform or selection not provided by *GSForge*.
-The two 'core' data classes are:
+
+Core Data Classes
+-----------------
 
 **AnnotatedGEM**
     Contains the gene expression matrix, which is indexed by a 'Gene'
@@ -14,6 +16,18 @@ The two 'core' data classes are:
     A GeneSet is a set of genes and any associated values. A GeneSet
     can a set of 'supported' genes, *i.e.* genes that are 'within' a
     given GeneSet.
+
+These core data classes are constructed with a limited set of packages:
+
+- ``numpy``
+- ``pandas``
+- ``xarray``
+- ``param``
+
+This allows the creation of container images without interactive visualization libraries.
+
+Interface Data Classes
+----------------------
 
 The interface classes provide patterns of data access and common
 transformations that researchers may need from the core data classes. They are:
@@ -29,10 +43,13 @@ transformations that researchers may need from the core data classes. They are:
     or *GeneSetCollection*. It provides functions that facilitate pulling gene
     or sample subsets and access to any transforms of the count matrix.
 
+<<<<<<< HEAD
 **OperationInterface**
     Aside from being abstract, this is the same as the above *Interface*, except
     this calls a single function as defined by ``process`` function in a subclass.
 
+=======
+Order of operations applied for GSForge index selection.
 
 .. image:: ../../doc/_static/GSForge_index_selection.svg
   :width: 400
@@ -46,7 +63,8 @@ from ._TestGeneSet import TestGeneSet
 from ._GeneSetCollection import GeneSetCollection
 from ._Interface import Interface
 from ._TestInterface import TestInterface
-from ._OperationInterface import OperationInterface
+# from ._OperationInterface import OperationInterface
+# from ._accessors import *
 
 
 __all__ = [
@@ -56,5 +74,5 @@ __all__ = [
     "GeneSetCollection",
     "Interface",
     "TestInterface",
-    "OperationInterface"
+    # "OperationInterface"
 ]

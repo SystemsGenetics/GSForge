@@ -76,24 +76,24 @@ class AnnotatedGEM(param.Parameterized):
 
     data = param.ClassSelector(class_=xr.Dataset, allow_None=False, doc="""\
     An ``xarray.Dataset`` object that contains the Gene Expression Matrix, and any 
-    needed annotations. This `xarray.Dataset` object is expected to have a count 
+    needed annotations. This ``xarray.Dataset`` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample').""")
 
-    count_array_name = param.String(default="counts", doc=dedent("""\
-    This parameter controls which variable from the `xarray.Dataset` should be
+    count_array_name = param.String(default="counts", doc="""\
+    This parameter controls which variable from the ``xarray.Dataset`` should be
     considered to be the 'count' variable.
     Consider using this if you require different index names, or wish to control 
-    which count array among many should be used by default."""))
+    which count array among many should be used by default.""")
 
-    sample_index_name = param.String(default="Sample", doc=dedent("""\
-    This parameter controls which variable from the `xarray.Dataset` should be
+    sample_index_name = param.String(default="Sample", doc="""\
+    This parameter controls which variable from the ``xarray.Dataset`` should be
     considered to be the 'sample' coordinate.
-    Consider using this if you require different coordinate names."""))
+    Consider using this if you require different coordinate names.""")
 
-    gene_index_name = param.String(default="Gene", doc=dedent("""\
-    This parameter controls which variable from the `Xarray.Dataset` should be 
+    gene_index_name = param.String(default="Gene", doc="""\
+    This parameter controls which variable from the ``xarray.Dataset`` should be 
     considered to be the 'gene index' coordinate.
-    Consider using this if you require different coordinate names."""))
+    Consider using this if you require different coordinate names.""")
 
     @functools.singledispatchmethod
     def __annotated_gem_dispatch(*args, **params):
@@ -105,9 +105,7 @@ class AnnotatedGEM(param.Parameterized):
         super().__init__(**params)
 
     def __repr__(self) -> str:
-        """
-        Display a summary of this AnnotatedGEM.
-        """
+        """Display a summary of this AnnotatedGEM."""
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"Selected GEM Variable: '{self.count_array_name}'"]
@@ -120,8 +118,13 @@ class AnnotatedGEM(param.Parameterized):
         """
         Returns the entire gene index of this AnnotatedGEM object as an ``xarray.DataArray``.
 
-        The actual variable or coordinate that this returns is controlled by the
-        ``gene_index_name`` parameter.
+        The variable or coordinate that this returns is controlled by the
+        `gene_index_name` parameter.
+
+        Returns
+        -------
+        xarray.DataArray
+            The complete gene index of this AnnotatedGEM.
         """
         return self.data[self.gene_index_name].copy(deep=True)
 
@@ -131,7 +134,12 @@ class AnnotatedGEM(param.Parameterized):
         Returns the entire sample index of this AnnotatedGEM object as an ``xarray.DataArray``.
 
         The actual variable or coordinate that this returns is controlled by the
-        ``sample_index_name`` parameter.
+        `sample_index_name` parameter.
+
+        Returns
+        -------
+        xarray.DataArray
+            The complete sample index of this AnnotatedGEM.
         """
         return self.data[self.sample_index_name].copy(deep=True)
 
@@ -142,6 +150,11 @@ class AnnotatedGEM(param.Parameterized):
 
         This is done simply by returning all data variables that have the same dimension set
         as the default count array.
+
+        Returns
+        -------
+        List[str]
+            A list of available count arrays in this AnnotatedGEM.
         """
         default_dims = set(self.data[self.count_array_name].dims)
         return [var for var in self.data.data_vars if set(self.data[var].dims) == default_dims]
@@ -298,8 +311,8 @@ class AnnotatedGEM(param.Parameterized):
         if label_path and all(label_sample not in count_df.columns.values
                               for label_sample in label_df.index.values):
             raise ValueError(dedent("""Files cannot be automatically processed, please
-            load your data in to ``pandas.DataFrame`` objects and provide them to the
-            ``AnnotatedGEM.from_pandas`` constructor instead."""))
+        load your data in to ``pandas.DataFrame`` objects and provide them to the
+        ``AnnotatedGEM.from_pandas`` constructor instead."""))
 
         data = xrarray_gem_from_pandas(count_df, label_df)
 

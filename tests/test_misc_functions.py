@@ -47,8 +47,8 @@ def test_y_annotation_data(random_annotated_gem):
 
 
 def test_gene_support(random_gene_set):
-	random_gene_set.save_as_netcdf(target_dir="./tests", name="test_gene_support_Gene_Set")
-	test_geneset = gsf.TestGeneSet("./tests/test_gene_support_Gene_Set.nc")
+	df = random_gene_set.to_dataframe(only_supported=False)
+	test_geneset = gsf.TestGeneSet(df)
 
 	support = random_gene_set.gene_support()
 	print(support)
@@ -59,8 +59,8 @@ def test_gene_support(random_gene_set):
 
 
 def test_gene_index(random_gene_set):
-	random_gene_set.save_as_netcdf(target_dir="./tests", name="test_gene_index_Gene_Set")
-	test_geneset = gsf.TestGeneSet("./tests/test_gene_index_Gene_Set.nc")
+	df = random_gene_set.to_dataframe(only_supported=False)
+	test_geneset = gsf.TestGeneSet(df)
 
 	index = random_gene_set.gene_index
 	test_index = test_geneset.test_gene_index
@@ -69,12 +69,28 @@ def test_gene_index(random_gene_set):
 
 
 def test_get_n_top_genes(random_gene_set):
-	random_gene_set.save_as_netcdf(target_dir="./tests", name="test_get_n_top_genes_Gene_Set")
-	test_geneset = gsf.TestGeneSet("./tests/test_get_n_top_genes_Gene_Set.nc")
+	df = random_gene_set.to_dataframe(only_supported=False)
+	test_geneset = gsf.TestGeneSet(df)
 
 	# "threshold"
 	# score variable "scores"
-	genes = random_gene_set.get_n_top_genes()
-	test_genes = test_geneset.get_n_top_genes()
 
-	assert np.array_equal(genes, test_genes)
+	supports = [True, False]
+	modes = ["absolute_largest",
+            "above_threshold",
+            "below_threshold",
+            "above_absolute_threshold"]
+	threehold = .5
+	score_variable = "scores"
+
+	for mode in modes:
+		for support in supports:
+			if mode == "absolute_largest":
+				for n in range(0, 100, 1):
+					genes = random_gene_set.get_n_top_genes(score_variable=score_variable, mode=mode, within_support=support, n=n)
+					test_genes = test_geneset.get_n_top_genes(score_variable=score_variable, mode=mode, within_support=support, n=n)
+					assert np.array_equal(genes, test_genes)
+			else:
+				genes = random_gene_set.get_n_top_genes(score_variable=score_variable, mode=mode, within_support=support, threshold=threehold)
+				test_genes = test_geneset.get_n_top_genes(score_variable=score_variable, mode=mode, within_support=support, threshold=threehold)
+				assert np.array_equal(genes, test_genes)
