@@ -328,10 +328,16 @@ class GeneSetCollection(param.Parameterized):
         np.ndarray
             ...
         """
-        valid_modes = {'union', 'intersection'}
+
+        if other_keys is None:
+            other_keys = [key for key in self.gene_sets.keys() if key is not primary_key]
         other_keys_set = frozenset(sorted(other_keys))
+
+        valid_modes = {'union', 'intersection'}
+
         if mode not in valid_modes:
             raise ValueError(f"Given mode {mode} is not a valid mode. ({valid_modes})")
+
         return self._difference(primary_key, other_keys_set, mode)
 
     def pairwise_unions(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[Tuple[str, str], np.ndarray]:
