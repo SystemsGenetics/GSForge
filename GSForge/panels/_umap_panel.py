@@ -8,15 +8,8 @@ import umap
 from bokeh.models import HoverTool
 from methodtools import lru_cache
 
-<<<<<<< HEAD
-import umap
-
-from ..models import Interface
-from .utils import generate_help_pane
-=======
 from .utils import generate_help_pane
 from ..models._Interface import Interface
->>>>>>> 6d15f74b18d448dc4f6a4dfc0857297420b303d7
 
 
 class UMAP_Panel(param.Parameterized):
