@@ -330,7 +330,7 @@ class GeneSetCollection(param.Parameterized):
         """
 
         if other_keys is None:
-            other_keys = [key for key in self.gene_sets.keys() if key is not primary_key]
+            other_keys = [key for key in self.gene_sets.keys() if key == primary_key]
         other_keys_set = frozenset(sorted(other_keys))
 
         valid_modes = {'union', 'intersection'}
