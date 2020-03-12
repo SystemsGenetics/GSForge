@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from functools import reduce
 from textwrap import dedent
-from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr
+from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr, FrozenSet
 
 import methodtools
 import numpy as np
@@ -297,28 +297,42 @@ class GeneSetCollection(param.Parameterized):
         return self._union(sorted_keys)
 
     @methodtools.lru_cache()
-    def _difference(self, keys: Tuple[AnyStr]) -> np.ndarray:
-        gene_set_dict = self._as_dict(keys)
-        return reduce(np.setdiff1d, gene_set_dict.values())
+    def _difference(self, primary_key: str, other_keys: FrozenSet[str], mode: str) -> np.ndarray:
+        modes = {'union': self.union, 'intersection': self.intersection}
+        other_set = modes[mode](other_keys)
+        primary_set = self.gene_sets[primary_key].gene_support()
+        return np.setdiff1d(primary_set, other_set)
 
-    def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
+    # def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
+    def difference(self, primary_key: str, other_keys: List[str] = None, mode: str = 'union'):
         """
-        Get the difference of supported genes in this GeneSet collection.
+        Finds the genes within `primary_key` that are not within the `mode` of the sets
+        given in `other_keys`.
+
+        If no `other_keys` are provided, all remaining keys are used.
+        The default `mode` is `union`.
 
         Parameters
         ----------
-        keys : List[str]
-            An optional list of gene_set keys to return, by default all keys are selected.
+        primary_key : List[str]
+            The set
 
-        exclude : List[str]
-            An optional list of `GeneSet` keys to exclude from the returned dictionary.
+        other_keys : List[str]
+            An optional list of `GeneSet` keys...
+
+        mode : str
+            Mode by which to join the GeneSets given by `other_keys`.
 
         Returns
         -------
-        np.ndarray : Difference of the supported genes within GeneSets.
+        np.ndarray
+            ...
         """
-        sorted_keys = self._parse_keys(keys, exclude)
-        return self._difference(sorted_keys)
+        valid_modes = {'union', 'intersection'}
+        other_keys_set = frozenset(sorted(other_keys))
+        if mode not in valid_modes:
+            raise ValueError(f"Given mode {mode} is not a valid mode. ({valid_modes})")
+        return self._difference(primary_key, other_keys_set, mode)
 
     def pairwise_unions(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[Tuple[str, str], np.ndarray]:
         """

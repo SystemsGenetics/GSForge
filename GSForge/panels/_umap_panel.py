@@ -157,7 +157,7 @@ class UMAP_Panel(param.Parameterized):
         # TODO: Consider how a more robust hash could be created.
         gene_set = frozenset(self.interface.get_gene_index())
         transform_state = frozenset(self.get_transform_kwargs().items())
-        count_array_state = frozenset(self.count_variable)
+        count_array_state = frozenset(self.interface.count_variable)
 
         hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in list(df.columns)])
 
