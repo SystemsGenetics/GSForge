@@ -1,15 +1,15 @@
-import param
-from textwrap import dedent
 import inspect
-import panel as pn
+from textwrap import dedent
+
 import holoviews as hv
+import panel as pn
+import param
+import umap
 from bokeh.models import HoverTool
 from methodtools import lru_cache
 
-import umap
-
-from GSForge import Interface
-from GSForge.utils._panel_utils import generate_help_pane
+from .utils import generate_help_pane
+from ..models._Interface import Interface
 
 
 class UMAP_Panel(param.Parameterized):

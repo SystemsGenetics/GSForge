@@ -12,7 +12,7 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
 
 
-# TODO: Add GeneSet data access.
+# TODO: Add .keys() and other dict like functionality.
 class Interface(param.Parameterized):
     """
     The Interface provides common API access for interacting with the ``AnnotatedGEM`` and

@@ -1,13 +1,13 @@
-import param
-import panel as pn
-import holoviews as hv
-from methodtools import lru_cache
-
-import networkx as nx
 import itertools
 
-from ..models import Interface
-from GSForge.utils._panel_utils import generate_help_pane
+import holoviews as hv
+import networkx as nx
+import panel as pn
+import param
+from methodtools import lru_cache
+
+from .utils import generate_help_pane
+from ..models._Interface import Interface
 
 
 class Connectivity_Panel(Interface):
@@ -17,31 +17,31 @@ class Connectivity_Panel(Interface):
     This panel requires a GeneSetCollection as input.
     """
     mapping_selector = param.ListSelector(default=None)
-    mapping_index_name = param.String(default="Gene", precedence=-1.0)
+    # mapping_index_name = param.String(default="Gene", precedence=-1.0)
     edge_weight_label = param.String(default=None, precedence=-1.0)
     update_network = param.Action(lambda self: self.param.trigger('update_network'))
 
     def __init__(self, *args, **params):
         super().__init__(*args, **params)
-        if self.lineament_collection is None:
+        if self.gene_set_collection is None:
             raise Warning("Requires a `GeneSetCollection` input to function.")
         if self.mapping_selector is None:
-            avail_mappings = list(self.lineament_collection.lineaments.keys())
+            avail_mappings = list(self.gene_set_collection.gene_sets.keys())
             self.param["mapping_selector"].objects = avail_mappings
             self.set_param(mapping_selector=avail_mappings)
 
     def build_nx_graph(self, selected_mappings=None, weight=None):
         """Construct the networkx graph object form the selected mappings."""
-        lcoll = self.lineament_collection
+        coll = self.gene_set_collection
         graph = nx.Graph()
-        gene_mappings = lcoll.as_dict(selected_mappings)
+        gene_mappings = coll.as_dict(selected_mappings)
 
         for key, genes in gene_mappings.items():
             graph.add_node(key, node_type="Feature")
             graph.add_nodes_from(genes, node_type="Gene")
 
             if weight is not None:
-                subset = self.lineament_collection[key].data.sel({self.mapping_index_name: genes})
+                subset = self.gene_set_collection[key].data.sel({self.gem.gene_index_name: genes})
                 weights = subset[weight].values
                 new_edges = [(key, gene, {"weight": weight})
                              for gene, weight in zip(genes, weights)]
