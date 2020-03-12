@@ -22,7 +22,7 @@ class Volcano(ResultPlottingOperation):
     p_value_var : str
         The name of the p-value column. Must be a variable within `source`.
 
-    p_value_cutoff : float
+    log_fold_change_cutoff : float
         Cutoff to use in grouping and coloring genes. Defaults to 2.0.
 
     p_value_cutoff : float
