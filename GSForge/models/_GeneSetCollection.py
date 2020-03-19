@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import os
+import copy
 from pathlib import Path
 from functools import reduce
 from textwrap import dedent
@@ -202,7 +203,7 @@ class GeneSetCollection(param.Parameterized):
 
     @methodtools.lru_cache()
     def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
-        return {key: self.gene_sets[key].gene_support() for key in keys}
+        return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
 
     def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None,
                     empty_supports: bool = False) -> Tuple[AnyStr]:

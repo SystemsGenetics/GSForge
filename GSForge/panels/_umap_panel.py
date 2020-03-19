@@ -12,6 +12,7 @@ from .utils import generate_help_pane
 from ..models._Interface import Interface
 
 
+#TODO: Allow size selection of the points drawn.
 class UMAP_Panel(param.Parameterized):
     """A UMAP Panel Exploration Tool.
 
@@ -91,6 +92,7 @@ class UMAP_Panel(param.Parameterized):
         return hv.opts.Points(
             cmap="Set1",
             legend_position='right',
+            axiswise=True,
             xaxis=None,
             yaxis=None, padding=0.05, show_grid=True, bgcolor="lightgrey",
             width=700, height=500, backend="bokeh")

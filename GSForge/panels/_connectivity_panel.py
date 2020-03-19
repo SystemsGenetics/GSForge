@@ -10,14 +10,16 @@ from .utils import generate_help_pane
 from ..models._Interface import Interface
 
 
+# TODO: Bin nodes that are unique to only one gene set.
+# TODO: Clear visual difference between gene_set 'source' nodes and gene nodes.
+# TODO: Table of genes displayed? Linked someway?
+# TODO: Set precedence of Interface class members...
 class Connectivity_Panel(Interface):
     """
     Display lineament collection membership via a network graph.
 
     This panel requires a GeneSetCollection as input.
     """
-    mapping_selector = param.ListSelector(default=None)
-    # mapping_index_name = param.String(default="Gene", precedence=-1.0)
     edge_weight_label = param.String(default=None, precedence=-1.0)
     update_network = param.Action(lambda self: self.param.trigger('update_network'))
 
@@ -25,10 +27,6 @@ class Connectivity_Panel(Interface):
         super().__init__(*args, **params)
         if self.gene_set_collection is None:
             raise Warning("Requires a `GeneSetCollection` input to function.")
-        if self.mapping_selector is None:
-            avail_mappings = list(self.gene_set_collection.gene_sets.keys())
-            self.param["mapping_selector"].objects = avail_mappings
-            self.set_param(mapping_selector=avail_mappings)
 
     def build_nx_graph(self, selected_mappings=None, weight=None):
         """Construct the networkx graph object form the selected mappings."""
@@ -92,7 +90,7 @@ class Connectivity_Panel(Interface):
     @param.depends("update_network")
     def view(self):
         # Create an immutable tuple of mapping keys so that they can be hashed.
-        hashable_keys = tuple(self.mapping_selector)
+        hashable_keys = tuple(self.selected_gene_sets)
         graph, layout = self.layout_graph(hashable_keys, self.edge_weight_label)
         return hv.Graph.from_networkx(graph, positions=layout).opts(
             tools=['hover'], padding=0.2, height=400, width=500,
