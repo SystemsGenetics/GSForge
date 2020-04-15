@@ -28,8 +28,8 @@ click
 datashader
 h5py
 holoviews
-jupyter
 matplotlib
+jupyterlab
 graphviz
 methodtools
 netcdf4
@@ -68,5 +68,8 @@ setup(
             'selenium',
             'sphinx_ioam_theme',
         ],
+        'R_support': [
+            ''
+        ]
     }
 )

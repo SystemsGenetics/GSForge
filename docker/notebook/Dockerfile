@@ -1,7 +1,13 @@
 FROM jupyter/datascience-notebook:latest
 
-RUN mkdir /opt/gsforge
-COPY . /opt/gsforge/
-RUN pip install /opt/gsforge/
 
-COPY ./examples examples/
+COPY requirements.txt /tmp/
+RUN conda install --yes --file /tmp/requirements.txt && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+RUN mkdir $HOME/gsforge
+COPY . $HOME/gsforge
+RUN pip install $HOME/gsforge
+
+COPY ./examples $HOME/examples/
