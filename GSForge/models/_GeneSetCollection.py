@@ -201,7 +201,7 @@ class GeneSetCollection(param.Parameterized):
             for set_name, df in data_frames.items():
                 df.to_excel(writer, sheet_name=set_name)
 
-    @methodtools.lru_cache()
+    # @methodtools.lru_cache()
     def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
         return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
 
@@ -249,7 +249,7 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude, empty_supports)
         return self._as_dict(sorted_keys)
 
-    @methodtools.lru_cache()
+    # @methodtools.lru_cache()
     def _intersection(self, keys: Tuple[AnyStr]) -> np.ndarray:
         gene_set_dict = self._as_dict(keys)
         return reduce(np.intersect1d, gene_set_dict.values())
@@ -273,7 +273,7 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._intersection(sorted_keys)
 
-    @methodtools.lru_cache()
+    # @methodtools.lru_cache()
     def _union(self, keys: Tuple[AnyStr]) -> np.ndarray:
         gene_set_dict = self._as_dict(keys)
         return reduce(np.union1d, gene_set_dict.values())
@@ -297,7 +297,7 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._union(sorted_keys)
 
-    @methodtools.lru_cache()
+    # @methodtools.lru_cache()
     def _difference(self, primary_key: str, other_keys: FrozenSet[str], mode: str) -> np.ndarray:
         modes = {'union': self.union, 'intersection': self.intersection}
         other_set = modes[mode](other_keys)
@@ -305,7 +305,7 @@ class GeneSetCollection(param.Parameterized):
         return np.setdiff1d(primary_set, other_set)
 
     # def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
-    def difference(self, primary_key: str, other_keys: List[str] = None, mode: str = 'union'):
+    def difference(self, primary_key: str, other_keys: List[str] = None, mode: str = 'union') -> np.ndarray:
         """
         Finds the genes within `primary_key` that are not within the `mode` of the sets
         given in `other_keys`.
@@ -340,6 +340,40 @@ class GeneSetCollection(param.Parameterized):
             raise ValueError(f"Given mode {mode} is not a valid mode. ({valid_modes})")
 
         return self._difference(primary_key, other_keys_set, mode)
+
+    def joint_difference(self, primary_keys: List[str], other_keys: List[str] = None,
+                         primary_join_mode: str = 'intersection',
+                         others_join_mode: str = 'union'):
+        """
+
+        Parameters
+        ----------
+        primary_keys
+        other_keys
+        primary_join_mode
+        others_join_mode
+
+        Returns
+        -------
+
+        """
+        if other_keys is None:
+            other_keys = [key for key in self.gene_sets.keys() if key not in primary_keys]
+
+        join_modes = {'union': self.union, 'intersection': self.intersection}
+        for mode in [primary_join_mode, others_join_mode]:
+            if mode not in join_modes.keys():
+                raise ValueError(f"Given mode {mode} is not a valid mode. ({list(join_modes.keys())})")
+
+        primary_join_function = join_modes[primary_join_mode]
+        others_join_function = join_modes[others_join_mode]
+
+        primary_join = primary_join_function(primary_keys)
+        others_join = others_join_function(other_keys)
+
+        joint_difference = np.setdiff1d(primary_join, others_join)
+
+        return joint_difference
 
     def pairwise_unions(self, keys: List[str] = None, exclude: List[str] = None) -> Dict[Tuple[str, str], np.ndarray]:
         """
