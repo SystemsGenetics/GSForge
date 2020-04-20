@@ -8,7 +8,7 @@ from functools import reduce
 from textwrap import dedent
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr, FrozenSet
 
-import methodtools
+# import methodtools
 import numpy as np
 import pandas as pd
 import param

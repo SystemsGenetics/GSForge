@@ -52,7 +52,7 @@ if not env_install_hook:
 
 setup(
     name='GSForge',
-    version='0.7.2',
+    version='0.8.0',
     packages=find_packages(),
     url='https://systemsgenetics.github.io/GSForge/',
     license='LICENSE.txt',
@@ -69,7 +69,7 @@ setup(
             'sphinx_ioam_theme',
         ],
         'R_support': [
-            ''
+            'rpy2'
         ]
     }
 )
