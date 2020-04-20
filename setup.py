@@ -52,7 +52,7 @@ if not env_install_hook:
 
 setup(
     name='GSForge',
-    version='0.8.0',
+    version='0.5',
     packages=find_packages(),
     url='https://systemsgenetics.github.io/GSForge/',
     license='LICENSE.txt',

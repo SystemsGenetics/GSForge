@@ -85,13 +85,13 @@ jobs:
 
     - stage: build_dockerfiles
       env:
-        -GSFORGE_IMAGE_TAG="${TRAVS_TAG}"
+        - GSFORGE_IMAGE_TAG=$TRAVIS_TAG
       install: skip
       script:
         - docker-compose build
         - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-        - docker push systemsgenetics/gsforge_interactive:latest
-        - docker push systemsgenetics/gsforge_workflow:latest
+        - docker push systemsgenetics/gsforge_interactive:$TRAVIS_TAG
+        - docker push systemsgenetics/gsforge_workflow:$TRAVIS_TAG
 
     - stage: build_dev_dockerfiles
       env:
