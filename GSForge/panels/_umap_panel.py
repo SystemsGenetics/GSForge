@@ -14,9 +14,7 @@ from ..models._Interface import Interface
 
 #TODO: Allow size selection of the points drawn.
 class UMAP_Panel(param.Parameterized):
-    """A UMAP Panel Exploration Tool.
-
-    """
+    """A UMAP Panel Exploration Tool."""
 
     interface = param.Parameter(
         precedence=-1.0,
@@ -158,6 +156,8 @@ class UMAP_Panel(param.Parameterized):
         df = self.interface.gem.data[self.data_var_cats["all_labels"]].to_dataframe().reset_index()
         # TODO: Consider how a more robust hash could be created.
         gene_set = frozenset(self.interface.get_gene_index())
+        if len(gene_set) == 0:
+            return pn.pane.Markdown('No genes in selected set.')
         transform_state = frozenset(self.get_transform_kwargs().items())
         count_array_state = frozenset(self.interface.count_variable)
 
@@ -172,8 +172,10 @@ class UMAP_Panel(param.Parameterized):
         points = hv.Points(df, kdims=["x", "y"])
 
         if self.hue is not None:
-            points = hv.NdOverlay({key: points.select(**{self.hue: key})
-                                   for key in points.data[self.hue].unique()})
+            df[self.hue] = df[self.hue].astype(str)
+            points = points.opts(color=self.hue)
+            # points = hv.NdOverlay({key: points.select(**{self.hue: key})
+            #                        for key in points.data[self.hue].unique()})
 
         return points.opts(self.bokeh_opts()).opts(tools=[hover])
 

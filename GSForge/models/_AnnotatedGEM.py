@@ -371,5 +371,5 @@ class AnnotatedGEM(param.Parameterized):
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
         self.data.attrs.update({"__GSForge.AnnotatedGEM.params": params_str})
-        self.data.to_netcdf(path, mode="w")
+        self.data.to_netcdf(path)
         return path

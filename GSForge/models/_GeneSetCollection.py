@@ -7,6 +7,7 @@ from pathlib import Path
 from functools import reduce
 from textwrap import dedent
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr, FrozenSet
+from collections import defaultdict
 
 # import methodtools
 import numpy as np
@@ -205,17 +206,15 @@ class GeneSetCollection(param.Parameterized):
     def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
         return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
 
-    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None,
-                    empty_supports: bool = False) -> Tuple[AnyStr]:
+    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple[AnyStr]:
         # Use all keys in the collection if none are provided.
-        keys = self.gene_sets.keys() if keys is None else keys
+        keys = list(self.gene_sets.keys()) if keys is None else list(keys)
+        exclude = [] if exclude is None else exclude
 
         # Ensure all keys provided are actually within the collection.
-        if not all(key in self.gene_sets.keys() for key in keys):
-            raise ValueError(f"Not all keys given were found in the available keys: {list(self.gene_sets.keys())}")
-
-        if empty_supports is False:
-            keys = [key for key in keys if self.gene_sets[key].support_exists]
+        for key in keys + exclude:
+            if key not in self.gene_sets.keys():
+                raise ValueError(f"Key {key} not found in available keys:\n{list(self.gene_sets.keys())}")
 
         if exclude is not None:
             keys = [key for key in keys if key not in exclude]
@@ -246,7 +245,7 @@ class GeneSetCollection(param.Parameterized):
         -------
         dict : Dictionary of {name: supported_genes} for each GeneSet.
         """
-        sorted_keys = self._parse_keys(keys, exclude, empty_supports)
+        sorted_keys = self._parse_keys(keys, exclude)
         return self._as_dict(sorted_keys)
 
     # @methodtools.lru_cache()
@@ -444,6 +443,73 @@ class GeneSetCollection(param.Parameterized):
         return [(ak, bk, len(np.intersect1d(av, bv)) / len(av))
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
                 if ak != bk]
+
+    def construct_standard_specification(self, include: List[str] = None, exclude=None) -> dict:
+        """
+        Construct a standard specification that can be used to view unions, intersections and
+        differences (unique genes) of the sets within this collection.
+
+        Parameters
+        ----------
+        include : List[str]
+            An optional list of gene_set keys to return, by default all keys are selected.
+
+        exclude : List[str]
+            An optional list of `GeneSet` keys to exclude from the returned dictionary.
+
+        Returns
+        -------
+        dict: A specification dictionary.
+        """
+
+        include = self._parse_keys(include, exclude)
+        standard_spec = defaultdict(list)
+
+        standard_spec['union'].append({'name': f'{self.name}__standard_union',
+                                       'keys': include})
+
+        standard_spec['intersection'].append({'name': f'{self.name}__standard_intersection',
+                                              'keys': include})
+
+        for primary_key in include:
+            other_keys = [key for key in include if primary_key != key]
+            standard_spec['difference'].append({'name': f'{self.name}__{primary_key}__unique',
+                                                'primary_key': primary_key,
+                                                'other_keys': other_keys})
+
+        return standard_spec
+
+    def process_set_operation_specification(self, specification: dict = None) -> dict:
+        """
+        Calls and stores the results from a specification. The specification must declare
+        set operation functions and their arguments.
+
+        Parameters
+        ----------
+        specification : Dict
+        """
+        # TODO: Add input validation for the specification.
+
+        function_map = {
+            'intersection': self.intersection,
+            'union': self.union,
+            'difference': self.difference,
+            'joint_difference': self.joint_difference,
+            'pairwise_unions': self.pairwise_unions,
+            'pairwise_intersection': self.pairwise_intersection,
+            'pairwise_percent_intersection': self.pairwise_percent_intersection,
+        }
+
+        processed_spec = dict()
+
+        for key, function in function_map.items():
+            if specification.get(key):
+                for entry in specification.get(key):
+                    name = entry.pop('name')
+                    # print(entry)
+                    processed_spec[name] = function(**entry)
+
+        return processed_spec
 
     ###############################################################################################
     # CONSTRUCTOR FUNCTIONS
