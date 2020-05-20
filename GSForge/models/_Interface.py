@@ -94,8 +94,8 @@ class Interface(param.Parameterized):
     Although it may cause 'watching' parameters to fire.
     """
 
-    gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
-    An ``AnnotatedGEM`` object."""), default=None, precedence=-1.0)
+    gem = param.ClassSelector(class_=AnnotatedGEM, doc="""\
+    An ``AnnotatedGEM`` object.""", default=None, precedence=-1.0)
 
     gene_set_collection = param.ClassSelector(class_=GeneSetCollection, doc=dedent("""\
     A ``GeneSetCollection`` object."""), default=None, precedence=-1.0)
@@ -155,6 +155,10 @@ class Interface(param.Parameterized):
     count_transform = param.Callable(default=None, precedence=-1.0, doc=dedent("""\
     A transform that will be run on the `x_data` that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
+
+    ###########################################################################
+    # Initialization and dispatch handling.
+    ###########################################################################
 
     @singledispatchmethod
     def __interface_dispatch(*args, **params):
@@ -237,6 +241,11 @@ class Interface(param.Parameterized):
 
         return params
 
+    ###########################################################################
+    # Public API.
+    ###########################################################################
+
+    # TODO: Consider name clarity, selected_index().
     def get_gene_index(self, count_variable=None) -> np.array:
         """
         Get the currently selected gene index as a numpy array.
@@ -410,3 +419,25 @@ class Interface(param.Parameterized):
         if len(self.annotation_variables) == 1:
             return subset[self.annotation_variables[0]].copy()
         return subset[self.annotation_variables].copy()
+
+    def get_gem_data(self, tuple_output=True, output_type='xarray'):
+
+        output_switch = {
+            'xarray': lambda data_: data_,
+            'pandas': lambda data_: data_.to_dataframe() if data_ else None,
+            'numpy': lambda data_: data_.values if data_ else None
+        }
+
+        if output_type not in output_switch.keys():
+            raise ValueError(f'output_type given: {output_type} is not one of the available'
+                             f'types: {list(output_switch.keys())}')
+
+        tuple_switch = {
+            True: lambda self_: (self_.x_count_data, self_.y_annotation_data),
+            False: lambda self_: self_.selection
+        }
+
+        data = tuple_switch[tuple_output](self)
+        data = tuple(map(output_switch[output_type], data)) if isinstance(data, tuple) \
+            else output_switch[output_type](data)
+        return data
