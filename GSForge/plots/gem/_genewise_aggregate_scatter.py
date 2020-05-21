@@ -72,7 +72,7 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
                                            objects=axis_functions.keys())
 
     axis_transform = param.Parameter(default=lambda ds: np.log2(ds.where(ds > 0)),
-                                     doc="A transform (usually log) for getting a viewable spread of the results.")
+                                     doc="A transform (usually log2) for getting a viewable spread of the results.")
 
     @staticmethod
     def bokeh_opts():

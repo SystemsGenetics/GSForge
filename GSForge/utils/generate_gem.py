@@ -4,6 +4,7 @@ import pandas as pd
 from ..models import AnnotatedGEM
 
 
+# TODO: Add count distribution control.
 def generated_random_gem(kind="default", **kwargs):
     options = {
         "default": dict(),

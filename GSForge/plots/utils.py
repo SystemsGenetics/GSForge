@@ -72,11 +72,11 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
             default_argument = set.intersection(set(source.variables.keys()), DGE_DEFAULT_KWARGS[key])
             if len(default_argument) == 0:
                 continue
-            #     raise ValueError("Unable to automatically infer variable names, please explicitly"
-            #                      " provide them.")
+
             if len(default_argument) > 1:
                 raise ValueError("More than one potential default found. Explicitly set the arguments"
                                  "to this function.")
+
             default_argument = list(default_argument)[0]
             if default_argument is not None:
                 kwargs[key] = default_argument
@@ -103,6 +103,12 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         inst.__init__(**params)
         return inst.__call__(*args, **params)
 
+    def __call__(self, *args, **params):
+        layout = self.process()
+        if self.apply_default_opts is False:
+            return layout
+        return layout.opts(self.get_default_options())
+
     @singledispatchmethod
     def __dispatch_input_args(self, source, *args, **params):
         """Dispatches *args based on the first time to be parsed and joined with an updated params dict."""
@@ -121,14 +127,6 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         print("Converting `pandas.DataFrame` to an `xarray` object.")
         return {"source": source.to_xarray(), **params}
 
-    def __call__(self, *args, **params):
-        # if args:
-        #     params = {**self.__dispatch_input_args(*args), **params}
-        # super().__init__(**params)
-        layout = self.process()
-        if self.apply_default_opts is False:
-            return layout
-        return layout.opts(self.get_default_options())
 
 # class CollectionOperation(AbstractPlottingOperation):
 #     """
