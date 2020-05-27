@@ -63,7 +63,7 @@ setup(
     install_requires=requirements,
     extras_require={
         'docs': [
-            'nbsite==0.6.7',
+            'nbsite',
             'nbsphinx',
             'selenium',
             'sphinx_ioam_theme',
