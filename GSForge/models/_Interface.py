@@ -412,3 +412,25 @@ class Interface(param.Parameterized):
         if len(self.annotation_variables) == 1:
             return subset[self.annotation_variables[0]].copy()
         return subset[self.annotation_variables].copy()
+
+    def get_gem_data(self, tuple_output=True, output_type='xarray'):
+
+        output_switch = {
+            'xarray': lambda data_: data_,
+            'pandas': lambda data_: data_.to_dataframe() if data_ else None,
+            'numpy': lambda data_: data_.values if data_ else None
+        }
+
+        if output_type not in output_switch.keys():
+            raise ValueError(f'output_type given: {output_type} is not one of the available'
+                             f'types: {list(output_switch.keys())}')
+
+        tuple_switch = {
+            True: lambda self_: (self_.x_count_data, self_.y_annotation_data),
+            False: lambda self_: self_.selection
+        }
+
+        data = tuple_switch[tuple_output](self)
+        data = tuple(map(output_switch[output_type], data)) if isinstance(data, tuple) \
+            else output_switch[output_type](data)
+        return data
