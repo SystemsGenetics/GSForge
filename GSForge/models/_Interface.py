@@ -79,6 +79,7 @@ class Interface(param.Parameterized):
         Some common transforms:
 
         .. doctest::
+
             :options: +SKIP
 
             lambda counts: np.log2(counts.where(counts > 0)))
@@ -91,7 +92,6 @@ class Interface(param.Parameterized):
 
         >>> self.set_param(key=value)
 
-    Although it may cause 'watching' parameters to fire.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\

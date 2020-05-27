@@ -152,6 +152,7 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
             self.y_axis_selector: self.axis_functions[self.y_axis_selector](counts, self.sample_index_name),
         })
 
+        # TODO:
         if self.axis_transform:
             dataset = self.axis_transform(dataset)
 

@@ -112,7 +112,7 @@ class Volcano(ResultPlottingOperation):
         for key, selection in gene_groups.items():
             df.loc[selection.values, "Gene_group"] = key
 
-        kdims = [("lfc", "log2 fold change"), ("p-values", "$-log10 p-values")]
+        kdims = [("lfc", "log2 fold change"), ("p-values", "log10 p-values")]
         vdims = ["Gene_group", "Gene"]
 
         groups = df.groupby("Gene_group").groups

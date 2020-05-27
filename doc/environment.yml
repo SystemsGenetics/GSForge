@@ -2,7 +2,6 @@ name: Py38_GSForge
 channels:
   - conda-forge
   - bioconda
-  - r
 dependencies:
   - python=3.8
   - pip

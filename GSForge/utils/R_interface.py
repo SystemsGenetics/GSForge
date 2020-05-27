@@ -38,6 +38,9 @@ def Py_counts_to_R(counts: xr.DataArray):
     # Since we are stacking a named array, the outer level index will remain.
     # Remove this index level via:
     count_df = count_df.droplevel(level=0, axis=1)
+
+    # Ensure the samples are returned in their original order.
+    count_df = count_df[counts[counts.dims[0]].values]
     return count_df
 
 

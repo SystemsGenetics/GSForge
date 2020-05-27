@@ -43,7 +43,7 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     """
     hue = param.String(default=None, doc="Color by which to shade the observations.")
 
-    soft_max = param.Integer(default=50, precedence=-1.0, doc=dedent("""\
+    soft_max = param.Integer(default=250, precedence=-1.0, doc=dedent("""\
     The number of genes above which this function will return a ValueError rather than attempt to 
     plot an unreasonable number of genes."""))
 

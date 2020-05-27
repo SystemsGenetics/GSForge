@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+import copy
+import functools
 import itertools
 import os
-import copy
-from pathlib import Path
+from collections import defaultdict
 from functools import reduce
+from pathlib import Path
 from textwrap import dedent
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr, FrozenSet
-from collections import defaultdict
 
 # import methodtools
 import numpy as np
@@ -479,6 +480,20 @@ class GeneSetCollection(param.Parameterized):
 
         return standard_spec
 
+    @staticmethod
+    def merge_specifications(*specs):
+        """
+        Merges sets of defaultdict(list) objects with common keys.
+        """
+        # TODO: Document me.
+        keys = functools.reduce(set.union, [set(d.keys()) for d in specs])
+        output_spec = defaultdict(list)
+        for key in keys:
+            for spec in specs:
+                if spec.get(key):
+                    output_spec[key].extend(spec.get(key))
+        return output_spec
+
     def process_set_operation_specification(self, specification: dict = None) -> dict:
         """
         Calls and stores the results from a specification. The specification must declare
@@ -502,7 +517,7 @@ class GeneSetCollection(param.Parameterized):
 
         processed_spec = dict()
 
-        for key, function in function_map.items():
+        for key, function in function_map.copy().items():
             if specification.get(key):
                 for entry in specification.get(key):
                     name = entry.pop('name')
@@ -514,6 +529,26 @@ class GeneSetCollection(param.Parameterized):
     ###############################################################################################
     # CONSTRUCTOR FUNCTIONS
     ###############################################################################################
+    @classmethod
+    def from_specification(cls, source_collection, specification=None, name="processed_specification"):
+
+        if specification is None:
+            specification = source_collection.construct_standard_specification()
+
+        processed_specification = source_collection.process_set_operation_specification(specification)
+
+        collection = cls(gem=source_collection.gem, name=name)
+
+        for key, genes in processed_specification.items():
+            collection[key] = GeneSet.from_gene_array(
+                name=key,
+                selected_gene_array=genes,
+                complete_gene_index=source_collection.gem.gene_index)
+
+        collection.gene_sets = {**collection.gene_sets, **source_collection.gene_sets}
+
+        return collection
+
     @classmethod
     def from_folder(cls, gem: AnnotatedGEM, target_dir: Union[str, Path, IO[AnyStr]], glob_filter: str = "*.nc",
                     filter_func: Callable = None, **params) -> GeneSetCollection:
