@@ -239,6 +239,25 @@ class Interface(param.Parameterized):
 
         return params
 
+    @property
+    def active_count_variable(self) -> str:
+        """Returns the name of the currently active count matrix."""
+        if self.count_variable is not None:
+            count_variable = self.count_variable
+        else:
+            count_variable = self.gem.count_array_name
+        return count_variable
+
+    @property
+    def gene_index_name(self) -> str:
+        """Returns the name of the gene index."""
+        return self.gem.gene_index_name
+
+    @property
+    def sample_index_name(self) -> str:
+        """Returns the name of the sample index."""
+        return self.gem.sample_index_name
+
     def get_gene_index(self, count_variable=None) -> np.array:
         """
         Get the currently selected gene index as a numpy array.
@@ -291,25 +310,6 @@ class Interface(param.Parameterized):
         genes = masked_counts[self.gem.gene_index_name].values.copy()
         return genes
 
-    @property
-    def active_count_variable(self) -> str:
-        """Returns the name of the currently active count matrix."""
-        if self.count_variable is not None:
-            count_variable = self.count_variable
-        else:
-            count_variable = self.gem.count_array_name
-        return count_variable
-
-    @property
-    def gene_index_name(self) -> str:
-        """Returns the name of the gene index."""
-        return self.gem.gene_index_name
-
-    @property
-    def sample_index_name(self) -> str:
-        """Returns the name of the sample index."""
-        return self.gem.sample_index_name
-
     def get_sample_index(self) -> np.ndarray:
         """
         Get the currently selected sample index as a numpy array.
@@ -340,23 +340,26 @@ class Interface(param.Parameterized):
         return {self.gem.gene_index_name: self.get_gene_index(),
                 self.gem.sample_index_name: self.get_sample_index()}
 
-    @property
-    def selection(self) -> xr.Dataset:
-        """Returns the currently selected data as an ``xarray.Dataset`` object.."""
-        selected_variables = [self.active_count_variable]
-
-        if self.annotation_variables is not None:
-            selected_variables += self.annotation_variables
-
-        selection = self.gem.data[selected_variables].sel({
-            self.gem.gene_index_name: self.get_gene_index(),
-            self.gem.sample_index_name: self.get_sample_index()})
-
-        # Optional transform.
-        if self.count_transform is not None:
-            selection[self.count_variable] = self.count_transform(selection[self.count_variable])
-
-        return selection
+    # # TODO: Remove this function / replace its guts with calls to x_count_data.
+    # @property
+    # def selection(self) -> xr.Dataset:
+    #     """Returns the currently selected data as an ``xarray.Dataset`` object.."""
+    #     return self.x_count_data, self.y_annotation_data
+    #     # TODO: Missing zero fill! Redunant code...?
+        # selected_variables = [self.active_count_variable]
+        #
+        # if self.annotation_variables is not None:
+        #     selected_variables += self.annotation_variables
+        #
+        # selection = self.gem.data[selected_variables].sel({
+        #     self.gem.gene_index_name: self.get_gene_index(),
+        #     self.gem.sample_index_name: self.get_sample_index()})
+        #
+        # # Optional transform.
+        # if self.count_transform is not None:
+        #     selection[self.count_variable] = self.count_transform(selection[self.count_variable])
+        #
+        # return selection
 
     @property
     def x_count_data(self) -> xr.DataArray:
@@ -427,7 +430,7 @@ class Interface(param.Parameterized):
 
         tuple_switch = {
             True: lambda self_: (self_.x_count_data, self_.y_annotation_data),
-            False: lambda self_: self_.selection
+            False: lambda self_: self_.x_count_data.update(self_.y_annotation_data)
         }
 
         data = tuple_switch[tuple_output](self)

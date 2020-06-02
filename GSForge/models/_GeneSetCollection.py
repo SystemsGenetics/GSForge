@@ -4,13 +4,11 @@ import copy
 import functools
 import itertools
 import os
-from collections import defaultdict
+from collections import defaultdict, UserDict
 from functools import reduce
 from pathlib import Path
-from textwrap import dedent
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr, FrozenSet
 
-# import methodtools
 import numpy as np
 import pandas as pd
 import param
@@ -18,6 +16,47 @@ import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
+from .._singledispatchmethod import singledispatchmethod
+
+
+class GeneSetDictionary(UserDict):
+    """
+    A dictionary with hooks to update support arrays.
+    """
+
+    @singledispatchmethod
+    def __dispatch(*args, **params):
+        raise TypeError(f"Source of type: {type(args[0])} not supported.")
+
+    @__dispatch.register(list)
+    @__dispatch.register(tuple)
+    def __from_iterable(self, source):
+        for gs in source:
+            self.__setitem__(gs.name, gs)
+
+    @__dispatch.register(dict)
+    def __from_dict(self, source):
+        for name, gs in source.items():
+            self.__setitem__(name, gs)
+
+    def __init__(self, parent_index, source=None):
+        super().__init__()  # Gives us a dictionary as a .data attribute.
+        self.parent_index = parent_index
+        if source:
+            self.__dispatch(source)
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __setitem__(self, key, gene_set):
+        """Ensures that the support array references the correct index, given by parent_index."""
+        # Ensure all provided genes are within the parent index.
+        gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
+        # Raise an error if this is not the case?
+        # Update the geneset data index.
+        updated_support_index = np.asarray(np.isin(self.parent_index, gene_set.gene_support()), dtype=bool)
+        gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
+        self.data[key] = gene_set
 
 
 class GeneSetCollection(param.Parameterized):
@@ -28,22 +67,25 @@ class GeneSetCollection(param.Parameterized):
     ###############################################################################################
     # PARAMETERS
     # See the param documentation.
+    # https://param.holoviz.org/index.html
     ###############################################################################################
 
-    gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
-    A GSForge.AnnotatedGEM object."""))
+    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=False, doc="""\
+    A GSForge.AnnotatedGEM object.""")
 
-    gene_sets = param.Dict(doc=dedent("""\
-    A dictionary of `{key: GSForge.GeneSet}`."""))
+    # gene_sets = param.Dict(doc=dedent("""\
+    # A dictionary of `{key: GSForge.GeneSet}`."""))
 
     ###############################################################################################
     # PRIVATE FUNCTIONS
     ###############################################################################################
 
     def __init__(self, **params):
+        gene_sets = None
+        if 'gene_sets' in params:
+            gene_sets = params.pop('gene_sets')
         super().__init__(**params)
-        if self.gene_sets is None:
-            self.set_param(gene_sets=dict())
+        self.gene_sets = GeneSetDictionary(parent_index=self.gem.gene_index, source=gene_sets)
 
     def __getitem__(self, item):
         return self.gene_sets[item]

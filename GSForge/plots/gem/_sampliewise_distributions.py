@@ -27,7 +27,7 @@ class SamplewiseDistributions(Interface, AbstractPlottingOperation):
                                         cmap: list = cc.glasbey) -> hv.Overlay:
         distributions = [
             univariate_kde(hv.Distribution(counts.sel(**{sample_dim: sample}).values,
-                                           ), filled=False).opts(line_color=color)
+                                           ), filled=False)#.opts(line_color=color)
             for sample, color in zip(counts[sample_dim].values, itertools.cycle(cmap))]
         return hv.Overlay(distributions).opts(show_legend=False)
 

@@ -79,6 +79,7 @@ class AnnotatedGEM(param.Parameterized):
     needed annotations. This ``xarray.Dataset`` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample').""")
 
+    # TODO: Consider name change to 'selected_count_array'.
     count_array_name = param.String(default="counts", doc="""\
     This parameter controls which variable from the ``xarray.Dataset`` should be
     considered to be the 'count' variable.
