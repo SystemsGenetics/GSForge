@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import sys
 from textwrap import dedent
 from typing import Union
 
@@ -7,9 +9,11 @@ import numpy as np
 import param
 import xarray as xr
 
+from GSForge._singledispatchmethod import singledispatchmethod
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
-from GSForge._singledispatchmethod import singledispatchmethod
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: Add .keys() and other dict like functionality.
@@ -156,6 +160,8 @@ class Interface(param.Parameterized):
     A transform that will be run on the `x_data` that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
 
+    verbose = param.Boolean(default=False)
+
     @singledispatchmethod
     def __interface_dispatch(*args, **params):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
@@ -169,6 +175,10 @@ class Interface(param.Parameterized):
             params["annotation_variables"] = [params.get("annotation_variables")]
 
         super().__init__(**params)
+        if self.verbose:
+            logging.basicConfig(format='%(asctime)s | %(levelname)s : %(message)s',
+                                level=logging.INFO, stream=sys.stdout)
+            logger.info('Log level set to verbose.')
 
         # Populate the count variable selector with valid count arrays.
         self.param["count_variable"].objects = [None] + sorted(self.gem.count_array_names)
@@ -346,20 +356,20 @@ class Interface(param.Parameterized):
     #     """Returns the currently selected data as an ``xarray.Dataset`` object.."""
     #     return self.x_count_data, self.y_annotation_data
     #     # TODO: Missing zero fill! Redunant code...?
-        # selected_variables = [self.active_count_variable]
-        #
-        # if self.annotation_variables is not None:
-        #     selected_variables += self.annotation_variables
-        #
-        # selection = self.gem.data[selected_variables].sel({
-        #     self.gem.gene_index_name: self.get_gene_index(),
-        #     self.gem.sample_index_name: self.get_sample_index()})
-        #
-        # # Optional transform.
-        # if self.count_transform is not None:
-        #     selection[self.count_variable] = self.count_transform(selection[self.count_variable])
-        #
-        # return selection
+    # selected_variables = [self.active_count_variable]
+    #
+    # if self.annotation_variables is not None:
+    #     selected_variables += self.annotation_variables
+    #
+    # selection = self.gem.data[selected_variables].sel({
+    #     self.gem.gene_index_name: self.get_gene_index(),
+    #     self.gem.sample_index_name: self.get_sample_index()})
+    #
+    # # Optional transform.
+    # if self.count_transform is not None:
+    #     selection[self.count_variable] = self.count_transform(selection[self.count_variable])
+    #
+    # return selection
 
     @property
     def x_count_data(self) -> xr.DataArray:
@@ -407,7 +417,7 @@ class Interface(param.Parameterized):
         :return:
             An `xarray.Dataset` or `xarray.DataArray` object of the currently selected y_data.
         """
-        if self.annotation_variables is None:
+        if (self.annotation_variables is None) or (self.annotation_variables is []):
             return None
 
         sample_index = self.get_sample_index()
@@ -416,24 +426,61 @@ class Interface(param.Parameterized):
             return subset[self.annotation_variables[0]].copy()
         return subset[self.annotation_variables].copy()
 
-    def get_gem_data(self, tuple_output=True, output_type='xarray'):
+    def get_gem_data(self, single_object=False, output_type='xarray'):
+        """
+        Returns count [and annotation] data based on the current parameters.
 
-        output_switch = {
-            'xarray': lambda data_: data_,
-            'pandas': lambda data_: data_.to_dataframe() if data_ else None,
-            'numpy': lambda data_: data_.values if data_ else None
+        Allows selection of the type and grouping of the output.
+
+        Parameters
+        ----------
+        single_object
+        output_type
+
+        Returns
+        -------
+
+        """
+
+        def xarray_single(self_):
+            logger.info('Returning data as a single xarray.Dataset.')
+            selected_vars = [self.active_count_variable]
+            if self.annotation_variables is not None:
+                selected_vars = [var for var in [self.active_count_variable] + self.annotation_variables]
+            selection_indices = self.get_selection_indexes()
+            data = self_.gem.data.sel(selection_indices)[selected_vars]
+            return data
+
+        def xarray_tuple(self_):
+            logger.info('Returning counts as an xarray.DataArray and annotations as an xarray.Dataset.')
+            return self_.x_count_data, self_.y_annotation_data
+
+        def pandas_single(self_):
+            logger.info('Returning counts and annotations as a single pandas.DataFrame.')
+            return xarray_single(self_).to_dataframe()
+
+        def pandas_tuple(self_):
+            logger.info('Returning a tuple of counts and annotations each as a pandas.DataFrame.')
+            return self_.x_count_data.to_dataframe(), self_.y_annotation_data.to_dataframe()
+
+        def numpy_single(self_):
+            return self_.x_count_data.values, self_.y_annotation_data.values
+
+        def numpy_tuple(self_):
+            return np.dstack(self_.x_count_data.values, self_.y_annotation_data.values)
+
+        modes = {
+            ('xarray', True): xarray_single,
+            ('xarray', False): xarray_tuple,
+            ('pandas', True): pandas_single,
+            ('pandas', False): pandas_tuple,
+            ('numpy', True): numpy_single,
+            ('numpy', False): numpy_tuple,
         }
+        key = (output_type, single_object)
+        # TODO: Clarify error message.
+        if key not in modes.keys():
+            raise ValueError(f'key given: {key} is not one of the available'
+                             f'types: {list(modes.keys())}')
 
-        if output_type not in output_switch.keys():
-            raise ValueError(f'output_type given: {output_type} is not one of the available'
-                             f'types: {list(output_switch.keys())}')
-
-        tuple_switch = {
-            True: lambda self_: (self_.x_count_data, self_.y_annotation_data),
-            False: lambda self_: self_.x_count_data.update(self_.y_annotation_data)
-        }
-
-        data = tuple_switch[tuple_output](self)
-        data = tuple(map(output_switch[output_type], data)) if isinstance(data, tuple) \
-            else output_switch[output_type](data)
-        return data
+        return modes[key](self)

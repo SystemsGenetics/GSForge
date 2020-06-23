@@ -79,7 +79,8 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
                              f"Provide an array of genes to `selected_genes` less than (or override) "
                              f"the `soft_max` parameter of {self.soft_max}")
 
-        layout = self.genewise_scatter(data=self.selection.to_dataframe().reset_index(),
+        data, labels = self.get_gem_data(group_output=False, output_type='pandas')
+        layout = self.genewise_scatter(data=data,
                                        hue=self.hue,
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,

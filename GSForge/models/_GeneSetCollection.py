@@ -50,11 +50,14 @@ class GeneSetDictionary(UserDict):
 
     def __setitem__(self, key, gene_set):
         """Ensures that the support array references the correct index, given by parent_index."""
+        # TODO: Add a check for a support array.
+        #       If no support array is found and the shape is less than the complete index, use the
+        #       provided index as an implicit support index.
         # Ensure all provided genes are within the parent index.
         gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
         # Raise an error if this is not the case?
         # Update the geneset data index.
-        updated_support_index = np.asarray(np.isin(self.parent_index, gene_set.gene_support()), dtype=bool)
+        updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
         gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
         self.data[key] = gene_set
 

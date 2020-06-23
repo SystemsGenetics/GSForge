@@ -11,6 +11,8 @@ from ...models import Interface
 from ..utils import AbstractPlottingOperation
 
 
+# TODO: Display for the user information on how the plot was created.
+# TODO: Add n_samples for univariate kde function.
 class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
     """
     Displays the output of selected aggregations upon the count array on a scatter plot with optional
@@ -88,12 +90,11 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
     @staticmethod
     def matplotlib_opts():
         return [
-            hv.opts.Points(fig_size=250, bgcolor="lightgrey", s=1.2, muted_alpha=0.05,
-                           show_grid=True),
+            hv.opts.Points(fig_size=250, aspect=1.0, bgcolor="lightgrey", s=1.2, show_grid=True),
             hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25),
-            hv.opts.Area("dist_x", width=150),
-            hv.opts.Area("dist_y", height=150),
-            hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True),
+            hv.opts.Area("dist_x"),
+            hv.opts.Area("dist_y"),
+            hv.opts.RGB(fig_size=250, aspect=1.0, bgcolor="lightgrey", show_grid=True),
         ]
 
     @staticmethod

@@ -7,6 +7,8 @@ import holoviews as hv
 from ..utils import ResultPlottingOperation
 
 
+# TODO: Add a catch for when there are no genes found within the cutoffs.
+# TODO: Add datashade version.
 class Volcano(ResultPlottingOperation):
     """
     A volcano plot for examining differential gene expression results.
@@ -73,7 +75,7 @@ class Volcano(ResultPlottingOperation):
                            alpha=0.5),
             hv.opts.HLine(backend='matplotlib', linewidth=0.5, linestyle="dashdot", color="black"),
             hv.opts.VLine(backend='matplotlib', color="black", linewidth=0.5, linestyle="dashdot"),
-            hv.opts.Labels(backend='matplotlib', xoffset=0.6, yoffset=3, size=8),
+            hv.opts.Labels(backend='matplotlib', xoffset=0.6, yoffset=0, size=8),
             hv.opts.Points("No Signal", color="black"),
             hv.opts.Points("LFC within pval", color="red"),
             hv.opts.Points("LFC outside pval", color="green"),
