@@ -15,6 +15,7 @@ import xarray as xr
 __all__ = [
     "Py_counts_to_R",
     "R_counts_to_Py_counts",
+    "Py_labels_to_R",
 ]
 
 
@@ -64,3 +65,9 @@ def R_counts_to_Py_counts(r_count_array, original_count_array):
     """
     values = r_count_array.transpose()
     return xr.DataArray(values, coords=original_count_array.coords)
+
+
+def Py_labels_to_R(label_ds):
+    df = label_ds.to_dataframe()
+    df.index.name = None
+    return df
