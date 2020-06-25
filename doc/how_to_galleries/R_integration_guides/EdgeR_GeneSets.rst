@@ -8,7 +8,7 @@ ______________
 -------
 
 .. notebook:: GSForge ../../../examples/how_to_galleries/R_integration_guides/EdgeR_GeneSets.ipynb
-    :execute: False
+    :skip: True
 
 -------
 
