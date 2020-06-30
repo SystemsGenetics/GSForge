@@ -5,7 +5,6 @@ import holoviews as hv
 import pandas as pd
 import param
 
-from ..utils import AbstractPlottingOperation
 from ...models import Interface
 from ..abstract_plot_models import AbstractPlottingOperation
 

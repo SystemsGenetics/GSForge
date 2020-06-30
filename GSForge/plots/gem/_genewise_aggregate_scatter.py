@@ -16,7 +16,8 @@ from ..abstract_plot_models import AbstractPlottingOperation
 class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
     """
     Displays the output of selected aggregations upon the count array on a scatter plot with optional
-    adjoined kernel density estimates. e.g. mean counts vs mean variance etc.
+    adjoined kernel density estimates. e.g. mean counts vs mean variance etc. By default such outputs are
+    log2 transformed as well.
 
     This function is a `GSForge.OperationInterface` method, and shares those common parameters.
 
@@ -153,7 +154,6 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
             self.y_axis_selector: self.axis_functions[self.y_axis_selector](counts.values),
         })
 
-        # TODO:
         if self.axis_transform:
             dataset = self.axis_transform(dataset)
 

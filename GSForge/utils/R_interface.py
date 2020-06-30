@@ -14,7 +14,7 @@ import xarray as xr
 
 __all__ = [
     "Py_counts_to_R",
-    "R_counts_to_Py_counts",
+    "R_counts_to_Py",
     "Py_labels_to_R",
 ]
 

@@ -1,4 +1,8 @@
+import holoviews as hv
+import numpy as np
+import param
 
+from ...models import Interface
 
 
 class GeneCountOverTime(Interface):
