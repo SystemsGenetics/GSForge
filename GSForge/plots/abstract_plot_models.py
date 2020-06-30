@@ -5,8 +5,8 @@ import pandas as pd
 import param
 import xarray as xr
 
+from .._singledispatchmethod import singledispatchmethod
 from ..models import GeneSet
-from GSForge._singledispatchmethod import singledispatchmethod
 
 DGE_DEFAULT_KWARGS = dict(
     log_fold_change_var=[
