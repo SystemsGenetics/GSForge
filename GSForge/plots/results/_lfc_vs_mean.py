@@ -5,7 +5,7 @@ import param
 
 import holoviews as hv
 
-from ..utils import ResultPlottingOperation
+from ..abstract_plot_models import ResultPlottingOperation
 
 
 class MeanVsLFC(ResultPlottingOperation):

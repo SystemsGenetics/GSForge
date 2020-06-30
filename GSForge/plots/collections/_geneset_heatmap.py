@@ -2,11 +2,15 @@ import holoviews as hv
 import itertools
 import param
 
-from ...models import GeneSetCollection, Interface
-from ..utils import AbstractPlottingOperation
+from ..abstract_plot_models import InterfacePlottingBase
 
 
-class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
+# from ...models import GeneSetCollection, Interface
+# from ..abstract_plot_models import AbstractPlottingOperation
+
+
+# class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
+class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
     mode = param.ObjectSelector(default="overlap", objects=["overlap", "percent"])
 
     @staticmethod
@@ -39,7 +43,6 @@ class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
     def process(self):
         gene_dict = self.gene_set_collection.as_dict(self.selected_gene_sets)
         return self.within_collection_overlap(gene_dict, mode=self.mode)
-
 
 # TODO: Re-implement below.
 # class BetweenCollectionOverlap(AbstractPlottingOperation):

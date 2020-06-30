@@ -7,7 +7,7 @@ import param
 import warnings
 
 from ...models import Interface
-from ..utils import AbstractPlottingOperation
+from ..abstract_plot_models import AbstractPlottingOperation
 
 
 class RasterGEM(Interface, AbstractPlottingOperation):

@@ -4,7 +4,7 @@ import pandas as pd
 from textwrap import dedent
 
 from ...models import Interface
-from ..utils import AbstractPlottingOperation
+from ..abstract_plot_models import AbstractPlottingOperation
 
 
 class GeneVsCountsScatter(Interface, AbstractPlottingOperation):

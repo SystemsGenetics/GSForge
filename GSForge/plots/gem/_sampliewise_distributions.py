@@ -5,7 +5,7 @@ import holoviews as hv
 import xarray as xr
 from holoviews.operation.stats import univariate_kde
 
-from ..utils import AbstractPlottingOperation
+from ..abstract_plot_models import AbstractPlottingOperation
 from ...models import Interface
 
 

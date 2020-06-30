@@ -8,7 +8,7 @@ from holoviews.operation import datashader
 import warnings
 
 from ...models import Interface
-from ..utils import AbstractPlottingOperation
+from ..abstract_plot_models import AbstractPlottingOperation
 
 
 class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
@@ -52,13 +52,13 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
         selected backend.
     """
     axis_functions = {
-        "frequency": lambda counts, dim: (counts > 0).sum(dim=dim) / counts[dim].shape,
-        "mean": lambda counts, dim: counts.mean(dim=dim),
-        "variance": lambda counts, dim: counts.var(dim=dim),
-        "standard_dev": lambda counts, dim: counts.std(dim=dim),
-        "fano": lambda counts, dim: counts.var(dim=dim) / counts.mean(dim=dim),
-        "mean_rank": lambda counts, dim: counts.mean(dim=dim).rank(dim="Gene"),
-        "cv_squared": lambda counts, dim: counts.var(dim=dim) / counts.mean(dim=dim) ** 2
+        "frequency": lambda counts, dim: (counts > 0).sum(axis=1) / counts[dim].shape,
+        "mean": lambda counts, dim: counts.mean(axis=1),
+        "variance": lambda counts, dim: counts.var(axis=1),
+        "standard_dev": lambda counts, dim: counts.std(axis=1),
+        "fano": lambda counts, dim: counts.var(axis=1) / counts.mean(axis=1),
+        "mean_rank": lambda counts, dim: np.rank(counts.mean(axis=1)),
+        "cv_squared": lambda counts, dim: counts.var(axis=1) / counts.mean(axis=1) ** 2
     }
 
     datashade = param.Boolean(default=False)
@@ -148,8 +148,8 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
     def process(self):
         counts = self.x_count_data
         dataset = xr.Dataset({
-            self.x_axis_selector: self.axis_functions[self.x_axis_selector](counts, self.sample_index_name),
-            self.y_axis_selector: self.axis_functions[self.y_axis_selector](counts, self.sample_index_name),
+            self.x_axis_selector: self.axis_functions[self.x_axis_selector](counts.values),
+            self.y_axis_selector: self.axis_functions[self.y_axis_selector](counts.values),
         })
 
         if self.axis_transform:

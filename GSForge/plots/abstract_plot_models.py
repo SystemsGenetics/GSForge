@@ -6,7 +6,8 @@ import param
 import xarray as xr
 
 from .._singledispatchmethod import singledispatchmethod
-from ..models import GeneSet
+from ..models._GeneSet import GeneSet
+from ..models._Interface import Interface
 
 DGE_DEFAULT_KWARGS = dict(
     log_fold_change_var=[
@@ -93,6 +94,13 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
         return self.default_process()
 
 
+class InterfacePlottingBase(Interface, AbstractPlottingOperation):
+    """
+    This abstract base class should be used for plotting operations that act upon a GSForge interface object,
+    and which directly return a plot.
+    """
+
+
 class ResultPlottingOperation(AbstractPlottingOperation):
     source = param.Parameter()
 
@@ -126,7 +134,6 @@ class ResultPlottingOperation(AbstractPlottingOperation):
     def __parse_pandas_dataframe(self, source: pd.DataFrame, **params) -> dict:
         print("Converting `pandas.DataFrame` to an `xarray` object.")
         return {"source": source.to_xarray(), **params}
-
 
 # class CollectionOperation(AbstractPlottingOperation):
 #     """
