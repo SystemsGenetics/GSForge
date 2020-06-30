@@ -8,6 +8,7 @@ _______________
 -------
 
 .. notebook:: GSForge ../../../examples/how_to_galleries/R_integration_guides/DESeq2_GeneSets.ipynb
+    :skip: True
 
 -------
 

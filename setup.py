@@ -15,8 +15,8 @@ from setuptools import setup, find_packages
 
 # These are the packages used by the classes in ''GSForge.models''.
 requirements = """
-numpy
-pandas
+numpy>=1.17
+pandas>=1.0
 xarray
 param
 """.split()
@@ -52,7 +52,7 @@ if not env_install_hook:
 
 setup(
     name='GSForge',
-    version='0.7.2',
+    version='v0.5beta1',
     packages=find_packages(),
     url='https://systemsgenetics.github.io/GSForge/',
     license='LICENSE.txt',
@@ -69,7 +69,7 @@ setup(
             'sphinx_ioam_theme',
         ],
         'R_support': [
-            ''
+            'rpy2'
         ]
     }
 )

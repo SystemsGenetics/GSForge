@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import sys
 from textwrap import dedent
 from typing import Union
 
@@ -7,9 +9,11 @@ import numpy as np
 import param
 import xarray as xr
 
+from GSForge._singledispatchmethod import singledispatchmethod
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
-from GSForge._singledispatchmethod import singledispatchmethod
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: Add .keys() and other dict like functionality.
@@ -79,6 +83,7 @@ class Interface(param.Parameterized):
         Some common transforms:
 
         .. doctest::
+
             :options: +SKIP
 
             lambda counts: np.log2(counts.where(counts > 0)))
@@ -91,7 +96,6 @@ class Interface(param.Parameterized):
 
         >>> self.set_param(key=value)
 
-    Although it may cause 'watching' parameters to fire.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc="""\
@@ -156,9 +160,7 @@ class Interface(param.Parameterized):
     A transform that will be run on the `x_data` that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
 
-    ###########################################################################
-    # Initialization and dispatch handling.
-    ###########################################################################
+    verbose = param.Boolean(default=False)
 
     @singledispatchmethod
     def __interface_dispatch(*args, **params):
@@ -173,12 +175,18 @@ class Interface(param.Parameterized):
             params["annotation_variables"] = [params.get("annotation_variables")]
 
         super().__init__(**params)
+        if self.verbose:
+            logging.basicConfig(format='%(asctime)s | %(levelname)s : %(message)s',
+                                level=logging.INFO, stream=sys.stdout)
+            logger.info('Log level set to verbose.')
 
         # Populate the count variable selector with valid count arrays.
         self.param["count_variable"].objects = [None] + sorted(self.gem.count_array_names)
 
         if self.count_variable is None:
             self.set_param(**{"count_variable": self.gem.count_array_name})
+
+        self.param["count_variable"].objects = self.gem.count_array_names + [None]
 
         if self.gene_set_collection is not None:
             avail_mappings = list(self.gene_set_collection.gene_sets.keys())
@@ -241,11 +249,25 @@ class Interface(param.Parameterized):
 
         return params
 
-    ###########################################################################
-    # Public API.
-    ###########################################################################
+    @property
+    def active_count_variable(self) -> str:
+        """Returns the name of the currently active count matrix."""
+        if self.count_variable is not None:
+            count_variable = self.count_variable
+        else:
+            count_variable = self.gem.count_array_name
+        return count_variable
 
-    # TODO: Consider name clarity, selected_index().
+    @property
+    def gene_index_name(self) -> str:
+        """Returns the name of the gene index."""
+        return self.gem.gene_index_name
+
+    @property
+    def sample_index_name(self) -> str:
+        """Returns the name of the sample index."""
+        return self.gem.sample_index_name
+
     def get_gene_index(self, count_variable=None) -> np.array:
         """
         Get the currently selected gene index as a numpy array.
@@ -298,25 +320,6 @@ class Interface(param.Parameterized):
         genes = masked_counts[self.gem.gene_index_name].values.copy()
         return genes
 
-    @property
-    def active_count_variable(self) -> str:
-        """Returns the name of the currently active count matrix."""
-        if self.count_variable is not None:
-            count_variable = self.count_variable
-        else:
-            count_variable = self.gem.count_array_name
-        return count_variable
-
-    @property
-    def gene_index_name(self) -> str:
-        """Returns the name of the gene index."""
-        return self.gem.gene_index_name
-
-    @property
-    def sample_index_name(self) -> str:
-        """Returns the name of the sample index."""
-        return self.gem.sample_index_name
-
     def get_sample_index(self) -> np.ndarray:
         """
         Get the currently selected sample index as a numpy array.
@@ -347,23 +350,26 @@ class Interface(param.Parameterized):
         return {self.gem.gene_index_name: self.get_gene_index(),
                 self.gem.sample_index_name: self.get_sample_index()}
 
-    @property
-    def selection(self) -> xr.Dataset:
-        """Returns the currently selected data as an ``xarray.Dataset`` object.."""
-        selected_variables = [self.active_count_variable]
-
-        if self.annotation_variables is not None:
-            selected_variables += self.annotation_variables
-
-        selection = self.gem.data[selected_variables].sel({
-            self.gem.gene_index_name: self.get_gene_index(),
-            self.gem.sample_index_name: self.get_sample_index()})
-
-        # Optional transform.
-        if self.count_transform is not None:
-            selection[self.count_variable] = self.count_transform(selection[self.count_variable])
-
-        return selection
+    # # TODO: Remove this function / replace its guts with calls to x_count_data.
+    # @property
+    # def selection(self) -> xr.Dataset:
+    #     """Returns the currently selected data as an ``xarray.Dataset`` object.."""
+    #     return self.x_count_data, self.y_annotation_data
+    #     # TODO: Missing zero fill! Redunant code...?
+    # selected_variables = [self.active_count_variable]
+    #
+    # if self.annotation_variables is not None:
+    #     selected_variables += self.annotation_variables
+    #
+    # selection = self.gem.data[selected_variables].sel({
+    #     self.gem.gene_index_name: self.get_gene_index(),
+    #     self.gem.sample_index_name: self.get_sample_index()})
+    #
+    # # Optional transform.
+    # if self.count_transform is not None:
+    #     selection[self.count_variable] = self.count_transform(selection[self.count_variable])
+    #
+    # return selection
 
     @property
     def x_count_data(self) -> xr.DataArray:
@@ -411,7 +417,7 @@ class Interface(param.Parameterized):
         :return:
             An `xarray.Dataset` or `xarray.DataArray` object of the currently selected y_data.
         """
-        if self.annotation_variables is None:
+        if (self.annotation_variables is None) or (self.annotation_variables is []):
             return None
 
         sample_index = self.get_sample_index()
@@ -420,24 +426,61 @@ class Interface(param.Parameterized):
             return subset[self.annotation_variables[0]].copy()
         return subset[self.annotation_variables].copy()
 
-    def get_gem_data(self, tuple_output=True, output_type='xarray'):
+    def get_gem_data(self, single_object=False, output_type='xarray'):
+        """
+        Returns count [and annotation] data based on the current parameters.
 
-        output_switch = {
-            'xarray': lambda data_: data_,
-            'pandas': lambda data_: data_.to_dataframe() if data_ else None,
-            'numpy': lambda data_: data_.values if data_ else None
+        Allows selection of the type and grouping of the output.
+
+        Parameters
+        ----------
+        single_object
+        output_type
+
+        Returns
+        -------
+
+        """
+
+        def xarray_single(self_):
+            logger.info('Returning data as a single xarray.Dataset.')
+            selected_vars = [self.active_count_variable]
+            if self.annotation_variables is not None:
+                selected_vars = [var for var in [self.active_count_variable] + self.annotation_variables]
+            selection_indices = self.get_selection_indexes()
+            data = self_.gem.data.sel(selection_indices)[selected_vars]
+            return data
+
+        def xarray_tuple(self_):
+            logger.info('Returning counts as an xarray.DataArray and annotations as an xarray.Dataset.')
+            return self_.x_count_data, self_.y_annotation_data
+
+        def pandas_single(self_):
+            logger.info('Returning counts and annotations as a single pandas.DataFrame.')
+            return xarray_single(self_).to_dataframe()
+
+        def pandas_tuple(self_):
+            logger.info('Returning a tuple of counts and annotations each as a pandas.DataFrame.')
+            return self_.x_count_data.to_dataframe(), self_.y_annotation_data.to_dataframe()
+
+        def numpy_single(self_):
+            return self_.x_count_data.values, self_.y_annotation_data.values
+
+        def numpy_tuple(self_):
+            return np.dstack(self_.x_count_data.values, self_.y_annotation_data.values)
+
+        modes = {
+            ('xarray', True): xarray_single,
+            ('xarray', False): xarray_tuple,
+            ('pandas', True): pandas_single,
+            ('pandas', False): pandas_tuple,
+            ('numpy', True): numpy_single,
+            ('numpy', False): numpy_tuple,
         }
+        key = (output_type, single_object)
+        # TODO: Clarify error message.
+        if key not in modes.keys():
+            raise ValueError(f'key given: {key} is not one of the available'
+                             f'types: {list(modes.keys())}')
 
-        if output_type not in output_switch.keys():
-            raise ValueError(f'output_type given: {output_type} is not one of the available'
-                             f'types: {list(output_switch.keys())}')
-
-        tuple_switch = {
-            True: lambda self_: (self_.x_count_data, self_.y_annotation_data),
-            False: lambda self_: self_.selection
-        }
-
-        data = tuple_switch[tuple_output](self)
-        data = tuple(map(output_switch[output_type], data)) if isinstance(data, tuple) \
-            else output_switch[output_type](data)
-        return data
+        return modes[key](self)

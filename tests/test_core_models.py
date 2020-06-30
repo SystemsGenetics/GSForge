@@ -23,14 +23,14 @@ def test_gene_set_collection_creation(random_gene_set_collection):
     for key, values in as_dict.items():
         print(key, values.shape)
 
-    set_operations = dict(
-        intersection=random_gene_set_collection.intersection(),
-        union=random_gene_set_collection.union(),
-        difference=random_gene_set_collection.difference())
-
-    print("set operation shapes:")
-    for key, values in set_operations.items():
-        print(key, values.shape)
+    # set_operations = dict(
+    #     intersection=random_gene_set_collection.intersection(),
+    #     union=random_gene_set_collection.union(),
+    #     difference=random_gene_set_collection.difference())
+    #
+    # print("set operation shapes:")
+    # for key, values in set_operations.items():
+    #     print(key, values.shape)
 
 
 def test_interface(random_gene_set_collection):

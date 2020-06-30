@@ -9,7 +9,6 @@ datashader
 h5py
 holoviews
 matplotlib
-jupyterlab
 graphviz
 methodtools
 netcdf4

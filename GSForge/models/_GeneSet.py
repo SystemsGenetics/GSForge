@@ -13,7 +13,7 @@ import pandas as pd
 import param
 import xarray as xr
 
-from GSForge._singledispatchmethod import singledispatchmethod
+from .._singledispatchmethod import singledispatchmethod
 
 
 class GeneSet(param.Parameterized):

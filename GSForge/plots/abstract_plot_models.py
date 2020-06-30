@@ -14,8 +14,14 @@ DGE_DEFAULT_KWARGS = dict(
         "logFC",  # from EdgeR.
         "log2FoldChange",  # from DESeq2.
     ],
-    mean_value_var=["baseMean", "logCPM"],
-    p_value_var=["pvalue", "PValue"]
+    mean_value_var=[
+        "baseMean",
+        "logCPM",
+    ],
+    p_value_var=[
+        "pvalue",
+        "PValue",
+    ]
 )
 
 

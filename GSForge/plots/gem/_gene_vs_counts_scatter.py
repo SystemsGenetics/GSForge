@@ -1,10 +1,15 @@
-import holoviews as hv
-import param
-import pandas as pd
+import logging
 from textwrap import dedent
 
+import holoviews as hv
+import pandas as pd
+import param
+
+from ..utils import AbstractPlottingOperation
 from ...models import Interface
 from ..abstract_plot_models import AbstractPlottingOperation
+
+logger = logging.getLogger(__name__)
 
 
 class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
@@ -43,18 +48,17 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     """
     hue = param.String(default=None, doc="Color by which to shade the observations.")
 
-    soft_max = param.Integer(default=50, precedence=-1.0, doc=dedent("""\
+    soft_max = param.Integer(default=250, precedence=-1.0, doc=dedent("""\
     The number of genes above which this function will return a ValueError rather than attempt to 
     plot an unreasonable number of genes."""))
 
     @staticmethod
     def genewise_scatter(data: pd.DataFrame, hue: str = None, gene_dim: str = "Gene", sample_dim: str = "Sample",
                          count_dim: str = "counts"):
-        hvds = hv.Dataset(data)
         kdims = [gene_dim, count_dim]
         vdims = [sample_dim] if hue is None else [sample_dim, hue]
 
-        scatter = hv.Scatter(hvds, kdims=kdims, vdims=vdims)
+        scatter = hv.Scatter(data, kdims=kdims, vdims=vdims)
 
         if hue is not None:
             overlays = {key: scatter.select(**{hue: key}) for key in scatter.data[hue].unique()}
@@ -64,7 +68,9 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
 
     @staticmethod
     def bokeh_opts():
-        return hv.opts.Scatter(jitter=0.2, width=800, height=500, legend_position="right", xrotation=90, padding=0.1,
+        return hv.opts.Scatter(jitter=0.2, width=800, height=500,
+                               legend_position="right",
+                               xrotation=90, padding=0.1,
                                backend="bokeh")
 
     @staticmethod
@@ -79,7 +85,8 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
                              f"Provide an array of genes to `selected_genes` less than (or override) "
                              f"the `soft_max` parameter of {self.soft_max}")
 
-        layout = self.genewise_scatter(data=self.selection.to_dataframe().reset_index(),
+        data = self.get_gem_data(single_object=True, output_type='pandas')
+        layout = self.genewise_scatter(data=data,
                                        hue=self.hue,
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,

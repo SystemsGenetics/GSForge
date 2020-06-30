@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+import copy
+import functools
 import itertools
 import os
-import copy
-from pathlib import Path
+from collections import defaultdict, UserDict
 from functools import reduce
-from textwrap import dedent
+from pathlib import Path
 from typing import Dict, Tuple, List, Union, Callable, IO, AnyStr, FrozenSet
 
-import methodtools
 import numpy as np
 import pandas as pd
 import param
@@ -16,6 +16,50 @@ import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
+from .._singledispatchmethod import singledispatchmethod
+
+
+class GeneSetDictionary(UserDict):
+    """
+    A dictionary with hooks to update support arrays.
+    """
+
+    @singledispatchmethod
+    def __dispatch(*args, **params):
+        raise TypeError(f"Source of type: {type(args[0])} not supported.")
+
+    @__dispatch.register(list)
+    @__dispatch.register(tuple)
+    def __from_iterable(self, source):
+        for gs in source:
+            self.__setitem__(gs.name, gs)
+
+    @__dispatch.register(dict)
+    def __from_dict(self, source):
+        for name, gs in source.items():
+            self.__setitem__(name, gs)
+
+    def __init__(self, parent_index, source=None):
+        super().__init__()  # Gives us a dictionary as a .data attribute.
+        self.parent_index = parent_index
+        if source:
+            self.__dispatch(source)
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __setitem__(self, key, gene_set):
+        """Ensures that the support array references the correct index, given by parent_index."""
+        # TODO: Add a check for a support array.
+        #       If no support array is found and the shape is less than the complete index, use the
+        #       provided index as an implicit support index.
+        # Ensure all provided genes are within the parent index.
+        gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
+        # Raise an error if this is not the case?
+        # Update the geneset data index.
+        updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
+        gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
+        self.data[key] = gene_set
 
 
 class GeneSetCollection(param.Parameterized):
@@ -26,22 +70,25 @@ class GeneSetCollection(param.Parameterized):
     ###############################################################################################
     # PARAMETERS
     # See the param documentation.
+    # https://param.holoviz.org/index.html
     ###############################################################################################
 
-    gem = param.ClassSelector(class_=AnnotatedGEM, doc=dedent("""\
-    A GSForge.AnnotatedGEM object."""))
+    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=False, doc="""\
+    A GSForge.AnnotatedGEM object.""")
 
-    gene_sets = param.Dict(doc=dedent("""\
-    A dictionary of `{key: GSForge.GeneSet}`."""))
+    # gene_sets = param.Dict(doc=dedent("""\
+    # A dictionary of `{key: GSForge.GeneSet}`."""))
 
     ###############################################################################################
     # PRIVATE FUNCTIONS
     ###############################################################################################
 
     def __init__(self, **params):
+        gene_sets = None
+        if 'gene_sets' in params:
+            gene_sets = params.pop('gene_sets')
         super().__init__(**params)
-        if self.gene_sets is None:
-            self.set_param(gene_sets=dict())
+        self.gene_sets = GeneSetDictionary(parent_index=self.gem.gene_index, source=gene_sets)
 
     def __getitem__(self, item):
         return self.gene_sets[item]
@@ -205,17 +252,15 @@ class GeneSetCollection(param.Parameterized):
     def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
         return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
 
-    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None,
-                    empty_supports: bool = False) -> Tuple[AnyStr]:
+    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple[AnyStr]:
         # Use all keys in the collection if none are provided.
-        keys = self.gene_sets.keys() if keys is None else keys
+        keys = list(self.gene_sets.keys()) if keys is None else list(keys)
+        exclude = [] if exclude is None else exclude
 
         # Ensure all keys provided are actually within the collection.
-        if not all(key in self.gene_sets.keys() for key in keys):
-            raise ValueError(f"Not all keys given were found in the available keys: {list(self.gene_sets.keys())}")
-
-        if empty_supports is False:
-            keys = [key for key in keys if self.gene_sets[key].support_exists]
+        for key in keys + exclude:
+            if key not in self.gene_sets.keys():
+                raise ValueError(f"Key {key} not found in available keys:\n{list(self.gene_sets.keys())}")
 
         if exclude is not None:
             keys = [key for key in keys if key not in exclude]
@@ -246,7 +291,7 @@ class GeneSetCollection(param.Parameterized):
         -------
         dict : Dictionary of {name: supported_genes} for each GeneSet.
         """
-        sorted_keys = self._parse_keys(keys, exclude, empty_supports)
+        sorted_keys = self._parse_keys(keys, exclude)
         return self._as_dict(sorted_keys)
 
     # @methodtools.lru_cache()
@@ -445,9 +490,110 @@ class GeneSetCollection(param.Parameterized):
                 for (ak, av), (bk, bv) in itertools.permutations(zero_filtered_dict.items(), 2)
                 if ak != bk]
 
+    def construct_standard_specification(self, include: List[str] = None, exclude=None) -> dict:
+        """
+        Construct a standard specification that can be used to view unions, intersections and
+        differences (unique genes) of the sets within this collection.
+
+        Parameters
+        ----------
+        include : List[str]
+            An optional list of gene_set keys to return, by default all keys are selected.
+
+        exclude : List[str]
+            An optional list of `GeneSet` keys to exclude from the returned dictionary.
+
+        Returns
+        -------
+        dict: A specification dictionary.
+        """
+
+        include = self._parse_keys(include, exclude)
+        standard_spec = defaultdict(list)
+
+        standard_spec['union'].append({'name': f'{self.name}__standard_union',
+                                       'keys': include})
+
+        standard_spec['intersection'].append({'name': f'{self.name}__standard_intersection',
+                                              'keys': include})
+
+        for primary_key in include:
+            other_keys = [key for key in include if primary_key != key]
+            standard_spec['difference'].append({'name': f'{self.name}__{primary_key}__unique',
+                                                'primary_key': primary_key,
+                                                'other_keys': other_keys})
+
+        return standard_spec
+
+    @staticmethod
+    def merge_specifications(*specs):
+        """
+        Merges sets of defaultdict(list) objects with common keys.
+        """
+        # TODO: Document me.
+        keys = functools.reduce(set.union, [set(d.keys()) for d in specs])
+        output_spec = defaultdict(list)
+        for key in keys:
+            for spec in specs:
+                if spec.get(key):
+                    output_spec[key].extend(spec.get(key))
+        return output_spec
+
+    def process_set_operation_specification(self, specification: dict = None) -> dict:
+        """
+        Calls and stores the results from a specification. The specification must declare
+        set operation functions and their arguments.
+
+        Parameters
+        ----------
+        specification : Dict
+        """
+        # TODO: Add input validation for the specification.
+
+        function_map = {
+            'intersection': self.intersection,
+            'union': self.union,
+            'difference': self.difference,
+            'joint_difference': self.joint_difference,
+            'pairwise_unions': self.pairwise_unions,
+            'pairwise_intersection': self.pairwise_intersection,
+            'pairwise_percent_intersection': self.pairwise_percent_intersection,
+        }
+
+        processed_spec = dict()
+
+        for key, function in function_map.copy().items():
+            if specification.get(key):
+                for entry in specification.get(key):
+                    name = entry.pop('name')
+                    # print(entry)
+                    processed_spec[name] = function(**entry)
+
+        return processed_spec
+
     ###############################################################################################
     # CONSTRUCTOR FUNCTIONS
     ###############################################################################################
+    @classmethod
+    def from_specification(cls, source_collection, specification=None, name="processed_specification"):
+
+        if specification is None:
+            specification = source_collection.construct_standard_specification()
+
+        processed_specification = source_collection.process_set_operation_specification(specification)
+
+        collection = cls(gem=source_collection.gem, name=name)
+
+        for key, genes in processed_specification.items():
+            collection[key] = GeneSet.from_gene_array(
+                name=key,
+                selected_gene_array=genes,
+                complete_gene_index=source_collection.gem.gene_index)
+
+        collection.gene_sets = {**collection.gene_sets, **source_collection.gene_sets}
+
+        return collection
+
     @classmethod
     def from_folder(cls, gem: AnnotatedGEM, target_dir: Union[str, Path, IO[AnyStr]], glob_filter: str = "*.nc",
                     filter_func: Callable = None, **params) -> GeneSetCollection:

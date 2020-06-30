@@ -14,7 +14,7 @@ import xarray as xr
 
 __all__ = [
     "Py_counts_to_R",
-    "R_counts_to_Py",
+    "R_counts_to_Py_counts",
     "Py_labels_to_R",
 ]
 
@@ -39,6 +39,9 @@ def Py_counts_to_R(counts: xr.DataArray):
     # Since we are stacking a named array, the outer level index will remain.
     # Remove this index level via:
     count_df = count_df.droplevel(level=0, axis=1)
+
+    # Ensure the samples are returned in their original order.
+    count_df = count_df[counts[counts.dims[0]].values]
     return count_df
 
 
@@ -64,7 +67,7 @@ def R_counts_to_Py(r_count_array, original_count_array):
     return xr.DataArray(values, coords=original_count_array.coords)
 
 
-def Py_labels_to_R(label_data: xr.Dataset):
-    df = label_data.to_dataframe()
+def Py_labels_to_R(label_ds):
+    df = label_ds.to_dataframe()
     df.index.name = None
     return df

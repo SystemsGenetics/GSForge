@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from textwrap import dedent
 from typing import List, Union, AnyStr, IO, Dict
@@ -10,13 +11,15 @@ import pandas as pd
 import param
 import xarray as xr
 
+from GSForge._singledispatchmethod import singledispatchmethod
 from ._utils import (
     infer_xarray_variables,
     xrarray_gem_from_pandas,
     load_count_df,
     load_label_df,
 )
-from GSForge._singledispatchmethod import singledispatchmethod
+
+logger = logging.getLogger(__name__)
 
 
 class AnnotatedGEM(param.Parameterized):
@@ -79,6 +82,7 @@ class AnnotatedGEM(param.Parameterized):
     needed annotations. This ``xarray.Dataset`` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample').""")
 
+    # TODO: Consider name change to 'selected_count_array'.
     count_array_name = param.String(default="counts", doc="""\
     This parameter controls which variable from the ``xarray.Dataset`` should be
     considered to be the 'count' variable.
@@ -100,7 +104,9 @@ class AnnotatedGEM(param.Parameterized):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
     def __init__(self, *args, **params) -> None:
+        logger.debug('Creating new AnnotatedGEM.')
         if args:
+            logger.debug('Parsing source argument...')
             params = self.__annotated_gem_dispatch(*args, **params)
         super().__init__(**params)
 
@@ -371,5 +377,5 @@ class AnnotatedGEM(param.Parameterized):
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
         self.data.attrs.update({"__GSForge.AnnotatedGEM.params": params_str})
-        self.data.to_netcdf(path, mode="w")
+        self.data.to_netcdf(path)
         return path

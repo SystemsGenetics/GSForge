@@ -7,6 +7,8 @@ import holoviews as hv
 from ..abstract_plot_models import ResultPlottingOperation
 
 
+# TODO: Add a catch for when there are no genes found within the cutoffs.
+# TODO: Add datashade version.
 class Volcano(ResultPlottingOperation):
     """
     A volcano plot for examining differential gene expression results.
@@ -61,9 +63,9 @@ class Volcano(ResultPlottingOperation):
             hv.opts.VLine(backend='bokeh', color="black", line_width=0.75, line_dash='dashed'),
             hv.opts.Labels(backend='bokeh', xoffset=0.6, yoffset=3, text_font_size='7pt'),
             hv.opts.Points("No Signal", color="black"),
-            hv.opts.Points("LFC within pval", color="red"),
+            hv.opts.Points("LFC within pval", color="red", tools=['hover']),
             hv.opts.Points("LFC outside pval", color="green"),
-            hv.opts.Points("No LFC within pval", color="blue"),
+            hv.opts.Points("No LFC within pval", color="blue", tools=['hover']),
         ]
 
     @staticmethod
@@ -73,7 +75,7 @@ class Volcano(ResultPlottingOperation):
                            alpha=0.5),
             hv.opts.HLine(backend='matplotlib', linewidth=0.5, linestyle="dashdot", color="black"),
             hv.opts.VLine(backend='matplotlib', color="black", linewidth=0.5, linestyle="dashdot"),
-            hv.opts.Labels(backend='matplotlib', xoffset=0.6, yoffset=3, size=8),
+            hv.opts.Labels(backend='matplotlib', xoffset=0.6, yoffset=0, size=8),
             hv.opts.Points("No Signal", color="black"),
             hv.opts.Points("LFC within pval", color="red"),
             hv.opts.Points("LFC outside pval", color="green"),
@@ -112,7 +114,7 @@ class Volcano(ResultPlottingOperation):
         for key, selection in gene_groups.items():
             df.loc[selection.values, "Gene_group"] = key
 
-        kdims = [("lfc", "$log_2$ fold change"), ("p-values", "$-log_{10}$ p-values")]
+        kdims = [("lfc", "log2 fold change"), ("p-values", "log10 p-values")]
         vdims = ["Gene_group", "Gene"]
 
         groups = df.groupby("Gene_group").groups
@@ -131,7 +133,7 @@ class Volcano(ResultPlottingOperation):
                  * hv.VLine(log_fold_change_cutoff) \
                  * hv.VLine(-log_fold_change_cutoff)
 
-        return layout
+        return layout.opts(title=f'Volcano with p-value: {p_value_cutoff}, LFC: {log_fold_change_cutoff}')
 
     def process(self):
         kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.volcano),
