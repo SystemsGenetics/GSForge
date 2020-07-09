@@ -23,6 +23,7 @@ class GeneSetDictionary(UserDict):
     """
     A dictionary with hooks to update support arrays.
     """
+    # TODO: Add warnings if provided genes are not found within the given GEM index.
 
     @singledispatchmethod
     def __dispatch(*args, **params):

@@ -105,6 +105,7 @@ class InterfacePlottingBase(Interface, AbstractPlottingOperation):
     This abstract base class should be used for plotting operations that act upon a GSForge interface object,
     and which directly return a plot.
     """
+    pass
 
 
 class ResultPlottingOperation(AbstractPlottingOperation):
@@ -119,6 +120,7 @@ class ResultPlottingOperation(AbstractPlottingOperation):
 
     def __call__(self, *args, **params):
         layout = self.process()
+        # TODO: Raise an error if a backend has not been loaded.
         if self.apply_default_opts is False:
             return layout
         return layout.opts(self.get_default_options())

@@ -11,6 +11,7 @@ from ..abstract_plot_models import AbstractPlottingOperation
 logger = logging.getLogger(__name__)
 
 
+# TODO: Add option to catogorize by geneset membership?
 class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     """
     Display the counts of a small selection of genes on a scatter plot (genes vs counts).
@@ -77,7 +78,8 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
         return hv.opts.Scatter(fig_size=250, aspect=1.8, xrotation=90, padding=0.1, backend="matplotlib")
 
     def process(self):
-        self.set_param(annotation_variables=[self.hue])
+        self.param.set_param(annotation_variables=[self.hue])
+
         if self.get_gene_index().shape[0] > self.soft_max:
             genes_selected = self.get_gene_index().shape[0]
             raise ValueError(f"Selected number of genes: {genes_selected} is likely too much."

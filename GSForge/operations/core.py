@@ -20,8 +20,10 @@ class get_gem_data(param.ParameterizedFunction, Interface):
     output_type = param.ObjectSelector(default="xarray", objects=["xarray", "pandas", "numpy"])
 
     def __new__(cls, *args, **params):
+        if args:
+            params = Interface._interface_dispatch(*args, **params)
         inst = cls.instance(**params)
-        inst.__init__(*args, **params)
+#         inst.__init__(*args, **params)
         return inst.__call__()
 
     def __call__(self):

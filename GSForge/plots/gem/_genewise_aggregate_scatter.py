@@ -55,17 +55,19 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
         selected backend.
     """
     axis_functions = {
-        "frequency": lambda counts, dim: (counts > 0).sum(axis=1) / counts[dim].shape,
-        "mean": lambda counts, dim: counts.mean(axis=1),
-        "variance": lambda counts, dim: counts.var(axis=1),
-        "standard_dev": lambda counts, dim: counts.std(axis=1),
-        "fano": lambda counts, dim: counts.var(axis=1) / counts.mean(axis=1),
-        "mean_rank": lambda counts, dim: np.rank(counts.mean(axis=1)),
-        "cv_squared": lambda counts, dim: counts.var(axis=1) / counts.mean(axis=1) ** 2
+        "frequency": lambda counts: (counts > 0).sum(axis=0) / counts[dim].shape,
+        "mean": lambda counts: counts.mean(axis=0),
+        "variance": lambda counts: counts.var(axis=0),
+        "standard_dev": lambda counts: counts.std(axis=0),
+        "fano": lambda counts: counts.var(axis=0) / counts.mean(axis=0),
+        "mean_rank": lambda counts: np.rank(counts.mean(axis=0)),
+        "cv_squared": lambda counts: counts.var(axis=0) / counts.mean(axis=0) ** 2
     }
 
     datashade = param.Boolean(default=False)
     dynspread = param.Boolean(default=False)
+    
+    adjoint_distributions = param.Boolean(default=True)
 
     x_axis_selector = param.ObjectSelector(default="mean", doc="Select from the available axis aggregation functions.",
                                            objects=axis_functions.keys())
@@ -76,6 +78,7 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
 
     axis_transform = param.Parameter(default=lambda ds: np.log2(ds.where(ds > 0)),
                                      doc="A transform (usually log2) for getting a viewable spread of the results.")
+    axis_transform_name = param.String(default='log 2')
 
     @staticmethod
     def bokeh_opts():
@@ -91,17 +94,17 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
     @staticmethod
     def matplotlib_opts():
         return [
-            hv.opts.Points(fig_size=250, aspect=1.0, bgcolor="lightgrey", s=1.2, show_grid=True),
+            hv.opts.Points(aspect=1.0, bgcolor="lightgrey", s=1.2, show_grid=True),
             hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25),
-            hv.opts.Area("dist_x"),
-            hv.opts.Area("dist_y"),
-            hv.opts.RGB(fig_size=250, aspect=1.0, bgcolor="lightgrey", show_grid=True),
+            hv.opts.RGB(bgcolor="lightgrey", show_grid=True, aspect=1.0),
         ]
-
+            
     @staticmethod
     def scatter_dist(dataset, x_kdims, y_kdims,
                      datashade=False,
-                     dynspread=False):
+                     dynspread=False,
+                     adjoint_distributions=True,
+                     options=None):
 
         if dynspread and not datashade:
             warnings.warn("Dynspread can only be used with datashade, setting both to true.")
@@ -110,15 +113,28 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
         df = dataset[[x_kdims, y_kdims]].to_dataframe()
         points = hv.Points(df, kdims=[x_kdims, y_kdims])
 
-        dist_x = univariate_kde(hv.Distribution(points, kdims=[y_kdims], group="dist_x"), n_samples=1000)
-        dist_y = univariate_kde(hv.Distribution(points, kdims=[x_kdims], group="dist_y"), n_samples=1000)
+        # The distributions must be completed before the datashader operation occurs.
+        if adjoint_distributions:
+            dist_x = univariate_kde(hv.Distribution(points, kdims=[y_kdims], group="dist_x"), n_samples=1000)
+            dist_y = univariate_kde(hv.Distribution(points, kdims=[x_kdims], group="dist_y"), n_samples=1000)
 
         if datashade:
             points = datashader.datashade(points)
             if dynspread:
                 points = datashader.dynspread(points)
+                
+                
+        # This must be done here to prevent the options getting lost upon creation of the
+        # holoviews.AdjointLayout object.
+        if options:
+            points = points.opts(options)
 
-        return points << dist_x << dist_y
+        if adjoint_distributions:
+            return points << dist_x << dist_y
+        else:
+            return points
+
+        return layout
 
     @staticmethod
     def scatter_dist_by_mappings(dataset, x_kdims, y_kdims,
@@ -149,31 +165,50 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
 
     def process(self):
         counts = self.x_count_data
-        dataset = xr.Dataset({
-            self.x_axis_selector: self.axis_functions[self.x_axis_selector](counts.values),
-            self.y_axis_selector: self.axis_functions[self.y_axis_selector](counts.values),
+        
+        # Prepare axis labels based on the aggregation and transforms selected.
+        if self.axis_transform is not None and self.axis_transform_name is not None:
+            x_axis_name = f'{self.axis_transform_name} {self.x_axis_selector}'
+            y_axis_name = f'{self.axis_transform_name} {self.y_axis_selector}'
+        else:
+            x_axis_name = f'{self.x_axis_selector}'
+            y_axis_name = f'{self.y_axis_selector}'
+        
+        
+        data = xr.Dataset({
+            x_axis_name: self.axis_functions[self.x_axis_selector](counts),
+            y_axis_name: self.axis_functions[self.y_axis_selector](counts),
         })
 
         if self.axis_transform:
-            dataset = self.axis_transform(dataset)
+            data = self.axis_transform(data)
+        
+        options = None
+        if self.apply_default_opts is True:
+            options = self.get_default_options()
+
+        if self.axis_transform:
+            dataset = self.axis_transform(data)
 
         if self.selected_gene_sets == [None] or not self.gene_set_collection:
 
             layout = self.scatter_dist(
-                dataset=dataset,
-                x_kdims=self.x_axis_selector,
-                y_kdims=self.y_axis_selector,
+                dataset=data,
+                x_kdims=x_axis_name,
+                y_kdims=y_axis_name,
                 datashade=self.datashade,
                 dynspread=self.dynspread,
+                adjoint_distributions=self.adjoint_distributions,
+                options=options,
             )
 
         else:
             mappings = self.gene_set_collection.as_dict(self.selected_gene_sets)
 
             layout = self.scatter_dist_by_mappings(
-                dataset=dataset,
-                x_kdims=self.x_axis_selector,
-                y_kdims=self.y_axis_selector,
+                dataset=data,
+                x_kdims=x_axis_name,
+                y_kdims=y_axis_name,
                 mappings=mappings,
                 datashade=self.datashade,
                 dynspread=self.dynspread,

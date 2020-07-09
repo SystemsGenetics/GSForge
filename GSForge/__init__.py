@@ -20,6 +20,11 @@ from .models import *
 from .operations.core import *
 
 import os
+# import logging
+# import sys
+
+
+# logging.basicConfig(stream=sys.stdout, level=logging.WARNING)
 
 
 if "GSFORGE_INSTALL_MODE" not in os.environ:
