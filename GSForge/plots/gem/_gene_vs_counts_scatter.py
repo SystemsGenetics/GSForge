@@ -6,13 +6,14 @@ import pandas as pd
 import param
 
 from ...models import Interface
-from ..abstract_plot_models import AbstractPlottingOperation
+# from ..abstract_plot_models import AbstractPlottingOperation
+from ..abstract_plot_models import InterfacePlottingBase
 
 logger = logging.getLogger(__name__)
 
 
 # TODO: Add option to catogorize by geneset membership?
-class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
+class GeneVsCountsScatter(InterfacePlottingBase):
     """
     Display the counts of a small selection of genes on a scatter plot (genes vs counts).
 
@@ -77,7 +78,7 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     def matplotlib_opts():
         return hv.opts.Scatter(fig_size=250, aspect=1.8, xrotation=90, padding=0.1, backend="matplotlib")
 
-    def process(self):
+    def __call__(self, *args, **params):
         self.param.set_param(annotation_variables=[self.hue])
 
         if self.get_gene_index().shape[0] > self.soft_max:

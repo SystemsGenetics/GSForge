@@ -7,7 +7,7 @@ import xarray as xr
 
 from .._singledispatchmethod import singledispatchmethod
 from ..models._GeneSet import GeneSet
-from ..models._Interface import Interface
+from ..models._Interface import Interface, CallableInterface
 
 DGE_DEFAULT_KWARGS = dict(
     log_fold_change_var=[
@@ -40,9 +40,9 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
     def matplotlib_opts():
         raise NotImplementedError("'matplotlib' options are not supported for this plotting function.")
 
-    def process(self):
-        """The core plotting function that must be defined for subclasses."""
-        raise NotImplementedError("Sub-classes of PlottingOperation must define a `process` function.")
+    # def process(self):
+    #     """The core plotting function that must be defined for subclasses."""
+    #     raise NotImplementedError("Sub-classes of PlottingOperation must define a `process` function.")
 
     def get_default_options(self):
         """Apply default styling options by default."""
@@ -52,12 +52,12 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
             raise ValueError(f"{backend} is not a valid backend selection. Select from 'bokeh' or 'matplotlib'.")
         return backend_options[backend]()
 
-    def default_process(self):
-        """The core plotting function with backend-specific default options applied."""
-        layout = self.process()
-        if self.apply_default_opts is False:
-            return layout
-        return layout.opts(self.get_default_options())
+    # def apply_options(self):
+    #     """The core plotting function with backend-specific default options applied."""
+    #     layout = self.process()
+    #     if self.apply_default_opts is False:
+    #         return layout
+    #     return layout.opts(self.get_default_options())
 
     def get_param_process_overlap_kwargs(self, process) -> dict:
         """Gets overlapping kwargs of the given process and parameters of a Parameterized class,
@@ -90,17 +90,18 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
 
         return kwargs
 
-    def __new__(cls, *args, **params):
-        inst = cls.instance(**params)
-        # TODO: Use __new__ in Interface singledispatch?
-        inst.__init__(*args, **params)
-        return inst.__call__()
+    # def __new__(cls, *args, **params):
+    #     inst = cls.instance(**params)
+    #     # TODO: Use __new__ in Interface singledispatch?
+    #     inst.__init__(*args, **params)
+    #     return inst.__call__()
 
-    def __call__(self):
-        return self.default_process()
+    def __call__(self, *args, **params):
+        raise NotImplementedError("Sub-classes of PlottingOperation must define a `__call__` function.")
+    #     return self.default_process()
 
 
-class InterfacePlottingBase(Interface, AbstractPlottingOperation):
+class InterfacePlottingBase(CallableInterface, AbstractPlottingOperation):
     """
     This abstract base class should be used for plotting operations that act upon a GSForge interface object,
     and which directly return a plot.
@@ -119,11 +120,13 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         return inst.__call__(*args, **params)
 
     def __call__(self, *args, **params):
-        layout = self.process()
-        # TODO: Raise an error if a backend has not been loaded.
-        if self.apply_default_opts is False:
-            return layout
-        return layout.opts(self.get_default_options())
+        raise NotImplementedError("Sub-classes of PlottingOperation must define a `__call__` function.")
+
+        # layout = self.process()
+        # # TODO: Raise an error if a backend has not been loaded.
+        # if self.apply_default_opts is False:
+        #     return layout
+        # return layout.opts(self.get_default_options())
 
     @singledispatchmethod
     def __dispatch_input_args(self, source, *args, **params):

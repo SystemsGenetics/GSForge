@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import functools
 import itertools
+import logging
 import os
 from collections import defaultdict, UserDict
 from functools import reduce
@@ -18,11 +19,15 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from .._singledispatchmethod import singledispatchmethod
 
+logger = logging.getLogger("GSForge")
+
 
 class GeneSetDictionary(UserDict):
     """
     A dictionary with hooks to update support arrays.
     """
+
+    # TODO: Redo the saving and loading functions so that we can use one netcdf file ( with groups).
     # TODO: Add warnings if provided genes are not found within the given GEM index.
 
     @singledispatchmethod
@@ -55,11 +60,14 @@ class GeneSetDictionary(UserDict):
         #       If no support array is found and the shape is less than the complete index, use the
         #       provided index as an implicit support index.
         # Ensure all provided genes are within the parent index.
-        gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
+        # gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
         # Raise an error if this is not the case?
         # Update the geneset data index.
-        updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
-        gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
+        # if gene_set.data.Gene.shape
+        # TODO: Add a check so this only runs if the incoming geneset has a larger gene-index
+        # than the existing one. or perhaps through an error or warning instead.
+        # updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
+        # gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
         self.data[key] = gene_set
 
 
@@ -85,11 +93,13 @@ class GeneSetCollection(param.Parameterized):
     ###############################################################################################
 
     def __init__(self, **params):
+        logger.debug('Initializing a new gsforge.GeneSetCollection object...')
         gene_sets = None
         if 'gene_sets' in params:
             gene_sets = params.pop('gene_sets')
         super().__init__(**params)
         self.gene_sets = GeneSetDictionary(parent_index=self.gem.gene_index, source=gene_sets)
+        logger.debug('GeneSetCollection initialization complete.')
 
     def __getitem__(self, item):
         return self.gene_sets[item]
@@ -107,12 +117,17 @@ class GeneSetCollection(param.Parameterized):
         return counts
 
     def __repr__(self) -> str:
+        """
+        Construct a user-friendly representation of this GeneSetCollection.
+        """
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [self.name]
-        # summary += [indent(self.gem.name, "    ")]
         gene_set_info = self.summarize_gene_sets()
         summary += [f"GeneSets ({len(gene_set_info)} total): Support Count"]
-        summary += [f"    {k}: {v}" for k, v in itertools.islice(self.summarize_gene_sets().items(), 10)]
+        gene_summary = self.summarize_gene_sets()
+        summary += [f"    {k}: {v}" for k, v in itertools.islice(self.summarize_gene_sets().items(), 5)]
+        if len(gene_summary) > 5:
+            summary += [f"... and {len(gene_summary) - 5} more."]
         return "\n".join(summary)
 
     ###############################################################################################
@@ -254,8 +269,25 @@ class GeneSetCollection(param.Parameterized):
         return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
 
     def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple[AnyStr]:
+        """
+        Takes a set of keys to be incldued, and a set of keys to be excluded.
+        Parameters
+        ----------
+        keys
+        exclude
+
+        Returns
+        -------
+
+        """
+        logger.debug(f'Parsing keys: {keys}, excluding: {exclude}')
+
         # Use all keys in the collection if none are provided.
-        keys = list(self.gene_sets.keys()) if keys is None else list(keys)
+        if keys == [None] or keys is None:
+            # keys = list(self.gene_sets.keys()) if keys is None else list(keys)
+            keys = list(self.gene_sets.keys())
+        else:
+            keys = list(keys)
         exclude = [] if exclude is None else exclude
 
         # Ensure all keys provided are actually within the collection.
@@ -268,6 +300,8 @@ class GeneSetCollection(param.Parameterized):
 
         # Sort the remaining keys and pass them as a 'hash-able' tuple to the cached function.
         sorted_keys = tuple(sorted(keys))
+        logger.debug(f'Parsed to:  {sorted_keys}')
+
         return sorted_keys
 
     def as_dict(self, keys: List[str] = None, exclude: List[str] = None,
@@ -388,7 +422,7 @@ class GeneSetCollection(param.Parameterized):
         return self._difference(primary_key, other_keys_set, mode)
 
     def joint_difference(self, primary_keys: List[str], other_keys: List[str] = None,
-                         primary_join_mode: str = 'intersection',
+                         primary_join_mode: str = 'union',
                          others_join_mode: str = 'union'):
         """
 

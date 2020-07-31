@@ -5,17 +5,12 @@ import param
 from ..abstract_plot_models import InterfacePlottingBase
 
 
-# from ...models import GeneSetCollection, Interface
-# from ..abstract_plot_models import AbstractPlottingOperation
-
-
-# class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
 class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
     mode = param.ObjectSelector(default="overlap", objects=["overlap", "percent"])
 
     @staticmethod
     def bokeh_opts():
-        return hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[], colorbar=True)
+        return hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[])
 
     @staticmethod
     def matplotlib_opts():
@@ -40,9 +35,16 @@ class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
         heatmap = hv.HeatMap(data, vdims=overlap_dim)
         return heatmap * hv.Labels(heatmap)
 
-    def process(self):
-        gene_dict = self.gene_set_collection.as_dict(self.selected_gene_sets)
-        return self.within_collection_overlap(gene_dict, mode=self.mode)
+    def __call__(self, *args, **params):
+        if self.selected_gene_sets == [None] or self.gene_set_collection is None:
+            gene_dict = self.gene_set_collection.as_dict(self.selected_gene_sets)
+        else:
+            gene_dict = self.gene_set_collection.as_dict()
+
+        plot = self.within_collection_overlap(gene_dict, mode=self.mode)
+        if self.apply_default_opts is True:
+            plot = plot.opts(self.get_default_options())
+        return plot
 
 # TODO: Re-implement below.
 # class BetweenCollectionOverlap(AbstractPlottingOperation):

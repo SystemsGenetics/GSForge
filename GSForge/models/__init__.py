@@ -51,11 +51,12 @@ Order of operations applied for GSForge index selection.
   :alt: GSForge Index Selection
 
 """
+# import xarray as xr
 
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from ._GeneSetCollection import GeneSetCollection
-from ._Interface import Interface
+from ._Interface import Interface, CallableInterface
 
 
 __all__ = [
@@ -63,4 +64,25 @@ __all__ = [
     "GeneSet",
     "GeneSetCollection",
     "Interface",
+    "CallableInterface",
 ]
+
+#
+# @xr.register_dataset_accessor("gsforge")
+# class AnnotatedGEMAccessor:
+#
+#     # @property
+#     # def incomplete_gene_index(self):
+#     #     return
+#     #
+#     # @property
+#     # def incomplete_sample_index(self):
+#     #     return
+#
+#     @property
+#     def dropped_gene_index(self):
+#         return counts.where(counts > 0.0)
+#
+#     @property
+#     def dropped_sample_index(self):
+#         return

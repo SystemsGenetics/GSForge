@@ -559,7 +559,7 @@ class GeneSet(param.Parameterized):
         output_path = os.path.join(target_dir, active_name + ".nc")
 
         # Save some parameters that may be unique to this instance.
-        params_to_save = {key: value for key, value in self.get_param_values()
+        params_to_save = {key: value for key, value in self.param.get_param_values()
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
         self.data.attrs.update({"__GSForge.GeneSet.params": params_str})

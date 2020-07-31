@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from textwrap import dedent
+# from textwrap import dedent
 from typing import List, Union, AnyStr, IO, Dict
 
 import numpy as np
@@ -15,13 +15,15 @@ from GSForge._singledispatchmethod import singledispatchmethod
 from ._utils import (
     infer_xarray_variables,
     xrarray_gem_from_pandas,
-    load_count_df,
+    # load_count_df,
     load_label_df,
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("GSForge")
 
 
+# TODO: Add warnings / information output for sample index mis-matches between
+#       the count and annotation variables.
 class AnnotatedGEM(param.Parameterized):
     """
     A data class for a gene expression matrix and any associated sample or gene annotations.
@@ -105,15 +107,19 @@ class AnnotatedGEM(param.Parameterized):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
 
     def __init__(self, *args, **params) -> None:
+        logger.debug('Initializing a new gsforge.AnnotatedGEM object...')
         if args:
             params = self.__annotated_gem_dispatch(*args, **params)
         super().__init__(**params)
+        logger.debug('AnnotatedGEM initialization complete.')
 
     def __repr__(self) -> str:
         """Display a summary of this AnnotatedGEM."""
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"Selected GEM Variable: '{self.count_array_name}'"]
+        # TODO: This summary call should directly access the xarray object, and should not depend
+        #       On the configuration of the GEM!
         summary += [f"    {self.gene_index_name}   {self.data[self.gene_index_name].shape[0]}"]
         summary += [f"    {self.sample_index_name} {self.data[self.sample_index_name].shape[0]}"]
         return "\n".join(summary)
@@ -299,21 +305,25 @@ class AnnotatedGEM(param.Parameterized):
                                 label_df: pd.DataFrame = None,
                                 transpose_counts: bool = True) -> xr.Dataset:
         """Stitch together a gene expression and annotation DataFrames into
-        a single `xarray.Dataset` object.
+        a single ``xarray.Dataset`` object.
 
-        :param count_df: The gene expression matrix as a `pandas.DataFrame`.
-            This file is assumed to have genes as rows and samples as columns.
+        Parameters
+        ----------
+        count_df : pd.DataFrame
+            The gene expression matrix as a `pandas.DataFrame`; assumed to have genes as rows and
+            samples as columns.
 
-        :param label_df: The gene annotation data as a `pandas.DataFrame`.
-            This file is assumed to have samples as rows and annotation observations
-            as columns.
+        label_df : pd.DataFrame
+            The gene annotation data as a `pandas.DataFrame`; assumed to have samples as rows and
+            annotations as columns.
 
-        :param transpose_count_df: Whether to transpose the count matrix from the typical creation
-            format (genes as rows, samples as columns) to the more standard (samples as rows,
-            observations as columns).
+        transpose_counts : bool
+            Transpose the count matrix from (genes as rows, samples as columns)
+            to (samples as rows, observations as columns).
 
-        :return: An `xarray.Dataset` containing the gene expression matrix and
-            the gene annotation data.
+        Returns
+        -------
+        xarray.Dataset : Containing the gene expression matrix and the gene annotation data.
         """
         # TODO: Add input validation.
         # Shape validation.
@@ -329,7 +339,7 @@ class AnnotatedGEM(param.Parameterized):
         )
 
         if transpose_counts is True:
-            logger.info(f'Transposing count array (shape: {count_array.shape}).')
+            logger.info(f'Transposing count array (shape: {count_array["counts"].shape}).')
             count_array = count_array.transpose()
 
         if label_df is None:
@@ -371,11 +381,11 @@ class AnnotatedGEM(param.Parameterized):
             label_df = None
 
         # Check to ensure the indexes match.
-        if label_path and all(label_sample not in count_df.columns.values
-                              for label_sample in label_df.index.values):
-            raise ValueError(dedent("""Files cannot be automatically processed, please
-        load your data in to ``pandas.DataFrame`` objects and provide them to the
-        ``AnnotatedGEM.from_pandas`` constructor instead."""))
+        # if label_path and all(label_sample not in count_df.columns.values
+        #                       for label_sample in label_df.index.values):
+        #     raise ValueError(dedent("""Files cannot be automatically processed, please
+        # load your data in to ``pandas.DataFrame`` objects and provide them to the
+        # ``AnnotatedGEM.from_pandas`` constructor instead."""))
 
         data = cls.xrarray_gem_from_pandas(count_df, label_df, transpose_counts)
 
@@ -412,10 +422,11 @@ class AnnotatedGEM(param.Parameterized):
         """
         logger.info('Parsing text file(s) for AnnotatedGEM creation.')
         params = cls._parse_files(count_path=count_path, label_path=label_path,
-                                  count_kwargs=count_kwargs, label_kwargs=label_kwargs, **params)
+                                  count_kwargs=count_kwargs, label_kwargs=label_kwargs,
+                                  transpose_counts=transpose_counts, **params)
         return cls(**params)
 
-    def save(self, path: Union[str, Path, IO[AnyStr]]) -> str:
+    def save(self, path: Union[str, Path, IO[AnyStr]], **kwargs) -> str:
         """
         Save as a netcdf (.nc) to the file at ``path``.
 
@@ -435,6 +446,7 @@ class AnnotatedGEM(param.Parameterized):
         params_to_save = {key: value for key, value in self.param.get_param_values()
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
+        logger.debug(f'Saving the following parameters: {params_str}')
         self.data.attrs.update({"__GSForge.AnnotatedGEM.params": params_str})
-        self.data.to_netcdf(path)
+        self.data.to_netcdf(path, **kwargs)
         return path

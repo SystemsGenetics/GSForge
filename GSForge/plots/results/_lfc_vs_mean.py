@@ -136,7 +136,7 @@ class MeanVsLFC(ResultPlottingOperation):
 
         return layout
 
-    def process(self):
+    def __call__(self, *args, **params):
         kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.mean_vs_lfc),
                   **self.get_param_process_overlap_kwargs(self.mean_vs_lfc)}
         return self.mean_vs_lfc(**kwargs)

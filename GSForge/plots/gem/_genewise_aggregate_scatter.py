@@ -7,13 +7,13 @@ from holoviews.operation.stats import univariate_kde
 from holoviews.operation import datashader
 import warnings
 
-from ...models import Interface
-from ..abstract_plot_models import AbstractPlottingOperation
+# from ...models import Interface
+from ..abstract_plot_models import InterfacePlottingBase
 
 
 # TODO: Display for the user information on how the plot was created.
 # TODO: Add n_samples for univariate kde function.
-class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
+class GenewiseAggregateScatter(InterfacePlottingBase):
     """
     Displays the output of selected aggregations upon the count array on a scatter plot with optional
     adjoined kernel density estimates. e.g. mean counts vs mean variance etc. By default such outputs are
@@ -55,13 +55,13 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
         selected backend.
     """
     axis_functions = {
-        "frequency": lambda counts: (counts > 0).sum(axis=0) / counts[dim].shape,
+        "frequency": lambda counts: (counts > 0).sum(axis=0) / counts.shape[1],
         "mean": lambda counts: counts.mean(axis=0),
         "variance": lambda counts: counts.var(axis=0),
         "standard_dev": lambda counts: counts.std(axis=0),
         "fano": lambda counts: counts.var(axis=0) / counts.mean(axis=0),
         "mean_rank": lambda counts: np.rank(counts.mean(axis=0)),
-        "cv_squared": lambda counts: counts.var(axis=0) / counts.mean(axis=0) ** 2
+        "cv_squared": lambda counts: (counts.std(axis=0) / counts.mean(axis=0)) ** 2
     }
 
     datashade = param.Boolean(default=False)
@@ -76,18 +76,17 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
                                            doc="Select from the available axis aggregation functions.",
                                            objects=axis_functions.keys())
 
-    axis_transform = param.Parameter(default=lambda ds: np.log2(ds.where(ds > 0)),
+    axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds.where(ds > 0))),
                                      doc="A transform (usually log2) for getting a viewable spread of the results.")
-    axis_transform_name = param.String(default='log 2')
+    # axis_transform_name = param.String(default='log 2')
 
     @staticmethod
     def bokeh_opts():
         return [
-            hv.opts.Points(width=500, height=500, bgcolor="lightgrey", size=1.2, muted_alpha=0.05,
-                           show_grid=True),
+            hv.opts.Points(width=500, height=500, bgcolor="lightgrey", size=1.2, muted_alpha=0.05, show_grid=True),
             hv.opts.Area(bgcolor="lightgrey", show_grid=True, show_legend=False, alpha=0.25),
-            hv.opts.Area("dist_x", width=150),
-            hv.opts.Area("dist_y", height=150),
+            hv.opts.Area("dist_x", width=100),
+            hv.opts.Area("dist_y", height=100),
             hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True),
         ]
 
@@ -122,17 +121,17 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
             points = datashader.datashade(points)
             if dynspread:
                 points = datashader.dynspread(points)
-                
-                
+
+        layout = points
         # This must be done here to prevent the options getting lost upon creation of the
         # holoviews.AdjointLayout object.
         if options:
             points = points.opts(options)
 
-        if adjoint_distributions:
-            return points << dist_x << dist_y
-        else:
-            return points
+            if adjoint_distributions:
+                dist_x = dist_x.opts(options)
+                dist_y = dist_y.opts(options)
+                layout = points << dist_x << dist_y
 
         return layout
 
@@ -163,32 +162,28 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
 
         return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
 
-    def process(self):
+    def __call__(self):
         counts = self.x_count_data
         
         # Prepare axis labels based on the aggregation and transforms selected.
-        if self.axis_transform is not None and self.axis_transform_name is not None:
-            x_axis_name = f'{self.axis_transform_name} {self.x_axis_selector}'
-            y_axis_name = f'{self.axis_transform_name} {self.y_axis_selector}'
+        if self.axis_transform:
+            x_axis_name = f'{self.axis_transform[0]} {self.x_axis_selector}'
+            y_axis_name = f'{self.axis_transform[0]} {self.y_axis_selector}'
         else:
             x_axis_name = f'{self.x_axis_selector}'
             y_axis_name = f'{self.y_axis_selector}'
-        
-        
+
         data = xr.Dataset({
             x_axis_name: self.axis_functions[self.x_axis_selector](counts),
             y_axis_name: self.axis_functions[self.y_axis_selector](counts),
         })
 
         if self.axis_transform:
-            data = self.axis_transform(data)
+            data = self.axis_transform[1](data)
         
         options = None
         if self.apply_default_opts is True:
             options = self.get_default_options()
-
-        if self.axis_transform:
-            dataset = self.axis_transform(data)
 
         if self.selected_gene_sets == [None] or not self.gene_set_collection:
 
@@ -215,3 +210,4 @@ class GenewiseAggregateScatter(Interface, AbstractPlottingOperation):
             )
 
         return layout
+

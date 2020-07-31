@@ -135,7 +135,7 @@ class Volcano(ResultPlottingOperation):
 
         return layout.opts(title=f'Volcano with p-value: {p_value_cutoff}, LFC: {log_fold_change_cutoff}')
 
-    def process(self):
+    def __call__(self, *args, **params):
         kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.volcano),
                   **self.get_param_process_overlap_kwargs(self.volcano)}
         return self.volcano(**kwargs)
