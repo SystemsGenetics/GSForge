@@ -26,11 +26,16 @@ DGE_DEFAULT_KWARGS = dict(
 
 
 class AbstractPlottingOperation(param.ParameterizedFunction):
+
     backend = param.ObjectSelector(default=None, objects=["bokeh", "matplotlib"], doc="""
         The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"].""")
 
     apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc="""
         Whether to apply the default styling based on the current backend.""")
+
+    plot_options = param.Parameter(default=None, doc="""
+    User supplied options to the plotting functions. If provided (and is not None), these will take
+    precedence over a functions built-in defaults.""")
 
     @staticmethod
     def bokeh_opts():
@@ -40,24 +45,16 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
     def matplotlib_opts():
         raise NotImplementedError("'matplotlib' options are not supported for this plotting function.")
 
-    # def process(self):
-    #     """The core plotting function that must be defined for subclasses."""
-    #     raise NotImplementedError("Sub-classes of PlottingOperation must define a `process` function.")
-
     def get_default_options(self):
         """Apply default styling options by default."""
-        backend_options = {"bokeh": self.bokeh_opts, "matplotlib": self.matplotlib_opts}
-        backend = hv.Store.current_backend if self.backend is None else "bokeh"
-        if backend not in backend_options.keys():
-            raise ValueError(f"{backend} is not a valid backend selection. Select from 'bokeh' or 'matplotlib'.")
-        return backend_options[backend]()
-
-    # def apply_options(self):
-    #     """The core plotting function with backend-specific default options applied."""
-    #     layout = self.process()
-    #     if self.apply_default_opts is False:
-    #         return layout
-    #     return layout.opts(self.get_default_options())
+        if self.plot_options is not None:
+            return self.plot_options
+        else:
+            backend_options = {"bokeh": self.bokeh_opts, "matplotlib": self.matplotlib_opts}
+            backend = hv.Store.current_backend if self.backend is None else "bokeh"
+            if backend not in backend_options.keys():
+                raise ValueError(f"{backend} is not a valid backend selection. Select from 'bokeh' or 'matplotlib'.")
+            return backend_options[backend]()
 
     def get_param_process_overlap_kwargs(self, process) -> dict:
         """Gets overlapping kwargs of the given process and parameters of a Parameterized class,
@@ -90,15 +87,8 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
 
         return kwargs
 
-    # def __new__(cls, *args, **params):
-    #     inst = cls.instance(**params)
-    #     # TODO: Use __new__ in Interface singledispatch?
-    #     inst.__init__(*args, **params)
-    #     return inst.__call__()
-
     def __call__(self, *args, **params):
         raise NotImplementedError("Sub-classes of PlottingOperation must define a `__call__` function.")
-    #     return self.default_process()
 
 
 class InterfacePlottingBase(CallableInterface, AbstractPlottingOperation):

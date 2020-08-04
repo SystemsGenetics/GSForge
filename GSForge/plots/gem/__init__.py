@@ -1,4 +1,4 @@
-from ._sampliewise_distributions import SamplewiseDistributions
+from ._sampliewise_distributions import SamplewiseDistributions, EmpiricalCumulativeDistribution
 from ._gene_vs_counts_scatter import GeneVsCountsScatter
 # from ._gene_mass import
 from ._genewise_aggregate_scatter import GenewiseAggregateScatter
@@ -10,5 +10,6 @@ __all__ = [
     "GeneVsCountsScatter",
     "GenewiseAggregateScatter",
     "RasterGEM",
-    "GroupedGeneCovariance"
+    "GroupedGeneCovariance",
+    "EmpiricalCumulativeDistribution",
 ]

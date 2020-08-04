@@ -297,7 +297,8 @@ class Interface(param.Parameterized):
         selected_samples = subset[self.gem.sample_index_name].values.copy()
         return selected_samples
 
-    def get_selection_indexes(self) -> dict:
+    @property
+    def selection_indexes(self) -> dict:
         """Returns the currently selected indexes as a dictionary."""
         return {self.gem.gene_index_name: self.get_gene_index(),
                 self.gem.sample_index_name: self.get_sample_index()}
