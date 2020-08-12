@@ -35,7 +35,8 @@ class GroupedGeneCovariance(InterfacePlottingBase):
     @staticmethod
     def bokeh_opts():
         return [
-            hv.opts.Points(backend="bokeh", size=2, padding=0.05, width=500, height=500, show_grid=True),
+            hv.opts.Points(backend="bokeh", size=2, bgcolor="lightgrey", padding=0.05, width=500, height=500,
+                           show_grid=True),
             hv.opts.RGB(width=500, height=500, bgcolor="lightgrey", show_grid=True),
         ]
 

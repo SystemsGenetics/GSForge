@@ -45,9 +45,10 @@ class GeneSetDictionary(UserDict):
         for name, gs in source.items():
             self.__setitem__(name, gs)
 
-    def __init__(self, parent_index, source=None):
+    def __init__(self, parent_index=None, source=None):
         super().__init__()  # Gives us a dictionary as a .data attribute.
-        self.parent_index = parent_index
+        if parent_index is not None:
+            self.parent_index = parent_index
         if source:
             self.__dispatch(source)
 
@@ -56,6 +57,8 @@ class GeneSetDictionary(UserDict):
 
     def __setitem__(self, key, gene_set):
         """Ensures that the support array references the correct index, given by parent_index."""
+        # if gene_set.name != key:
+        #     gene_set.param.set_param(name=key)
         # TODO: Add a check for a support array.
         #       If no support array is found and the shape is less than the complete index, use the
         #       provided index as an implicit support index.
@@ -82,7 +85,7 @@ class GeneSetCollection(param.Parameterized):
     # https://param.holoviz.org/index.html
     ###############################################################################################
 
-    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=False, doc="""\
+    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=True, doc="""\
     A GSForge.AnnotatedGEM object.""")
 
     # gene_sets = param.Dict(doc=dedent("""\
@@ -98,7 +101,8 @@ class GeneSetCollection(param.Parameterized):
         if 'gene_sets' in params:
             gene_sets = params.pop('gene_sets')
         super().__init__(**params)
-        self.gene_sets = GeneSetDictionary(parent_index=self.gem.gene_index, source=gene_sets)
+        parent_index = self.gem.gene_index if self.gem else None
+        self.gene_sets = GeneSetDictionary(parent_index=parent_index, source=gene_sets)
         logger.debug('GeneSetCollection initialization complete.')
 
     def __getitem__(self, item):
@@ -127,7 +131,7 @@ class GeneSetCollection(param.Parameterized):
         gene_summary = self.summarize_gene_sets()
         summary += [f"    {k}: {v}" for k, v in itertools.islice(self.summarize_gene_sets().items(), 5)]
         if len(gene_summary) > 5:
-            summary += [f"... and {len(gene_summary) - 5} more."]
+            summary += [f"    ... and {len(gene_summary) - 5} more."]
         return "\n".join(summary)
 
     ###############################################################################################
@@ -148,36 +152,6 @@ class GeneSetCollection(param.Parameterized):
         np.ndarray : An array of the genes that make up the support of this ``GeneSet``.
         """
         return self.gene_sets[key].gene_support()
-
-    def save(self, target_dir: str, keys: List[str] = None) -> None:
-        """
-        Save  this collection to ``target_dir``. Each GeneSet will be saved as a separate
-        .netcdf file within this directory.
-
-        Parameters
-        ----------
-        target_dir : str
-            The path to which GeneSet ``xarray.Dataset`` .netcdf files will be written.
-
-        keys : List[str]
-            The list of GeneSet keys that should be saved. If this is not provided, all
-            GeneSet objects are saved.
-
-        Returns
-        -------
-        None
-        """
-        # Save all the gene sets in this collection in the target_dir path.
-        if keys is None:
-            keys = self.gene_sets.keys()
-
-        # Create any needed intermediate directories.
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-
-        for key in keys:
-            save_path = self.gene_sets[key].save_as_netcdf(target_dir)
-            print(save_path)
 
     def gene_sets_to_dataframes(self, keys: List[str] = None, only_supported: bool = True) -> Dict[str, pd.DataFrame]:
         """
@@ -681,3 +655,33 @@ class GeneSetCollection(param.Parameterized):
             gene_sets[name] = new_gene_set
 
         return cls(gem=gem, gene_sets=gene_sets, **params)
+
+    def save(self, target_dir: str, keys: List[str] = None) -> None:
+        """
+        Save  this collection to ``target_dir``. Each GeneSet will be saved as a separate
+        .netcdf file within this directory.
+
+        Parameters
+        ----------
+        target_dir : str
+            The path to which GeneSet ``xarray.Dataset`` .netcdf files will be written.
+
+        keys : List[str]
+            The list of GeneSet keys that should be saved. If this is not provided, all
+            GeneSet objects are saved.
+
+        Returns
+        -------
+        None
+        """
+        # Save all the gene sets in this collection in the target_dir path.
+        if keys is None:
+            keys = self.gene_sets.keys()
+
+        # Create any needed intermediate directories.
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
+        for key in keys:
+            save_path = self.gene_sets[key].save_as_netcdf(target_dir)
+            # print(save_path)

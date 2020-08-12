@@ -1,6 +1,7 @@
 import holoviews as hv
 import itertools
 import param
+import numpy as np
 
 from ..abstract_plot_models import InterfacePlottingBase
 
@@ -18,9 +19,10 @@ class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
 
     @staticmethod
     def within_collection_overlap(gene_dict, mode="overlap"):
-        modes = {"overlap": lambda va, vb: len(set.intersection(set(va), set(vb))),
-                 "percent": lambda va, vb: len(set.intersection(set(va), set(vb))) / len(set(va))}
-
+        modes = {"overlap": lambda va, vb: np.intersect1d(va, vb).shape[0],
+                 "percent": lambda va, vb: np.intersect1d(va, vb).shape[0] / va.shape[0]}
+        # modes = {"overlap": lambda va, vb: len(set.intersection(set(va), set(vb))),
+                 # "percent": lambda va, vb: len(set.intersection(set(va), set(vb))) / len(set(va))}
         mode_formaters = {"overlap": lambda x: f"{x}",
                           "percent": lambda x: f"{x:.0%}"}
 
@@ -29,14 +31,14 @@ class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
 
         mode_func = modes[mode]
         overlap_dim = hv.Dimension(f"Overlap {mode}", value_format=mode_formaters[mode])
-        data = [(ak, bk, mode_func(av, bv))
+        data = [(f'{ak} {len(av)}', f'{bk} {len(bv)}', mode_func(av, bv))
                 for (ak, av), (bk, bv) in itertools.permutations(gene_dict.items(), 2)
                 if ak != bk]
         heatmap = hv.HeatMap(data, vdims=overlap_dim)
         return heatmap * hv.Labels(heatmap)
 
     def __call__(self, *args, **params):
-        if self.selected_gene_sets == [None] or self.gene_set_collection is None:
+        if self.selected_gene_sets == [None]:
             gene_dict = self.gene_set_collection.as_dict(self.selected_gene_sets)
         else:
             gene_dict = self.gene_set_collection.as_dict()

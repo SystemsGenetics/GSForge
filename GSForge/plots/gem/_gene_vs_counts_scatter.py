@@ -70,6 +70,7 @@ class GeneVsCountsScatter(InterfacePlottingBase):
     @staticmethod
     def bokeh_opts():
         return hv.opts.Scatter(jitter=0.2, width=800, height=500,
+                               size=1,
                                legend_position="right",
                                xrotation=90, padding=0.1,
                                backend="bokeh")
@@ -93,4 +94,6 @@ class GeneVsCountsScatter(InterfacePlottingBase):
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,
                                        count_dim=self.count_variable)
+        if self.apply_default_opts is True:
+            layout = layout.opts(self.get_default_options())
         return layout

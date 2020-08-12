@@ -7,7 +7,6 @@ from holoviews.operation.stats import univariate_kde
 from holoviews.operation import datashader
 import warnings
 
-# from ...models import Interface
 from ..abstract_plot_models import InterfacePlottingBase
 
 

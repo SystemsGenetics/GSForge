@@ -2,15 +2,14 @@ import inspect
 import logging
 
 import holoviews as hv
+import pandas as pd
 import panel as pn
 import param
 import umap
 from bokeh.models import HoverTool
-from methodtools import lru_cache
-import pandas as pd
-from holoviews.operation import datashader
-# from holoviews.operation.datashader import datashade, dynspread
 from datashader.reductions import count_cat
+from holoviews.operation import datashader
+from methodtools import lru_cache
 
 from .utils import generate_help_pane
 from ..models._Interface import Interface
@@ -19,6 +18,7 @@ logger = logging.getLogger("GSForge")
 
 
 # TODO: Allow size selection of the points drawn.
+# TODO: Disable initial transform.
 class UMAP_Interface(Interface):
     """A UMAP Panel Exploration Tool."""
 
@@ -84,8 +84,6 @@ class UMAP_Interface(Interface):
         default=None
     )
 
-    color_map = param.Parameter()
-
     # marker_variable = param.Parameter(default=None)
 
     datashade = param.Boolean(default=None)
@@ -97,26 +95,9 @@ class UMAP_Interface(Interface):
     @staticmethod
     def bokeh_opts():
         return [
-            hv.opts.Points(
-                cmap="Set1",
-                legend_position='right',
-                axiswise=True,
-                xaxis=None,
-                yaxis=None,
-                padding=0.05,
-                show_grid=True,
-                bgcolor="lightgrey",
-                width=900,
-                height=600,
-                backend="bokeh"),
-            hv.opts.RGB(
-                show_grid=True,
-                bgcolor="lightgrey",
-                xaxis=None,
-                yaxis=None,
-                width=900,
-                height=600,
-            )
+            hv.opts.Points(cmap="Set1", legend_position='bottom_right', axiswise=True, xaxis=None, yaxis=None,
+                           padding=0.05, show_grid=True, bgcolor="lightgrey", width=900, height=600),
+            hv.opts.RGB(show_grid=True, bgcolor="lightgrey", xaxis=None, yaxis=None, width=900, height=600)
         ]
 
     @staticmethod
@@ -125,9 +106,15 @@ class UMAP_Interface(Interface):
 
     def __init__(self, *args, **params):
         logger.info('Creating UMAP Interface...')
-        super().__init__(*args, **params)  # This may be fragile.
+        super().__init__(*args, **params)
 
-        # Infer the variable categories of the supplied dataframe.
+        if self.count_variable is None:
+            self.param.set_param(**{"count_variable": self.gem.count_array_name})
+        self.param["count_variable"].objects = sorted(self.gem.count_array_names)
+        avail_mappings = [None] + list(sorted(self.gene_set_collection.gene_sets.keys()))
+        self.param["selected_gene_sets"].objects = avail_mappings
+
+        # Infer the variable categories of the supplied annotations.
         if self.annotation_categories is None:
             logger.info('No annotations selected, this causes all available annotations to be available by default.')
             self.param.set_param(annotation_categories=self.gem.infer_variables())
@@ -177,9 +164,6 @@ class UMAP_Interface(Interface):
         transform_state = frozenset(self.get_transform_kwargs().items())
         count_array_state = frozenset(self.count_variable)
 
-        if len(gene_set) == 0:
-            return pn.pane.Markdown('No genes in selected set.')
-
         logger.info('Construction annotations...')
         if self.hue:
             labels = list(set([self.hue] + self.annotation_variables)) if self.annotation_variables else [self.hue]
@@ -200,13 +184,7 @@ class UMAP_Interface(Interface):
         hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in vdims])
         points = hv.Points(df, kdims=["x", "y"], vdims=vdims).opts(tools=[hover])
 
-        # if self.marker_variable:
-        #     markers = hv.Cycle(['o', 's', '^', 'v', '*', 'D', 'h', 'x', '+', '8', 'p', '<', '>', 'd', 'H'])
-        # marker_mapping = {k: v for k, v in zip(df[self.marker_variable].unique(), markers)}
-        # points = points.opts(marker=hv.dim(self.marker_variable))
-
         if self.hue:
-            # points = points.groupby([self.hue], container_type=hv.NdOverlay)
             points = points.opts(color=self.hue)
 
         return points.opts(self.bokeh_opts())
@@ -222,10 +200,15 @@ class UMAP_Interface(Interface):
             plot = datashader.datashade(points, cmap='darkblue')
         return plot.opts(self.bokeh_opts())
 
-    @param.depends('update', 'hue')
-    def view(self):
+    @param.depends('update')
+    def view(self, **params):
         """A `holoviews.Points` plot of the selected transform."""
-        # Call to bokeh or datashade?
+        if params:
+            self.param.set_param(**params)
+
+        if self.selected_gene_sets is [None]:
+            return pn.pane.HTML('Select Genes and press "Update".')
+
         if self.dynspread is True and self.datashade is False:
             logger.warning('Setting dynspread=True has no effect without also setting datashader=True.')
 
@@ -240,6 +223,9 @@ class UMAP_Interface(Interface):
 
     def panel(self):
         """Interactive panel application for transform exploration."""
+        # Set the selected sets to None so that the user does not have to wait for the UMAP transform to complete.
+        if self.selected_gene_sets is None:
+            self.param.set_param(selected_gene_sets=[None])
         # Update styles or types of buttons for the interface.
         transform_controls = pn.Param(self.param, widgets={
             'update': {'type': pn.widgets.Button, 'button_type': 'primary'},

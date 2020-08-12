@@ -39,6 +39,7 @@ scipy
 seaborn
 statsmodels
 umap_learn
+selenium
 """.split()
 
 

@@ -17,6 +17,9 @@ from ..utils import transient_log_handler
 logger = logging.getLogger("GSForge")
 
 
+
+
+
 # TODO: Add .keys() and other dict like functionality.
 class Interface(param.Parameterized):
     """
@@ -179,17 +182,7 @@ class Interface(param.Parameterized):
 
         super().__init__(**params)
 
-        # Populate the count variable selector with valid count arrays.
-        self.param["count_variable"].objects = [None] + sorted(self.gem.count_array_names)
 
-        if self.count_variable is None:
-            self.param.set_param(**{"count_variable": self.gem.count_array_name})
-
-        self.param["count_variable"].objects = self.gem.count_array_names# + [None]
-
-        if self.gene_set_collection is not None:
-            avail_mappings = list(self.gene_set_collection.gene_sets.keys())
-            self.param["selected_gene_sets"].objects = avail_mappings + [None]
 
     @_interface_dispatch.register(AnnotatedGEM)
     @staticmethod
@@ -279,6 +272,9 @@ class Interface(param.Parameterized):
         logger.info(f'Determining sample index.')
 
         if self.sample_subset is not None:
+            # We need to load the data if a user-list is supplied to prevent some straneg issues
+            # with nested numpy arrays being returned.
+            self.gem.data.load()
             subset = self.gem.data.sel({self.gem.sample_index_name: self.sample_subset})
             logger.info('No sample subset selected.')
         else:
@@ -294,7 +290,7 @@ class Interface(param.Parameterized):
             logger.info(
                 f'Dropped samples with missing labels, {subset[self.gem.sample_index_name].shape[0]} samples remain.')
 
-        selected_samples = subset[self.gem.sample_index_name].values.copy()
+        selected_samples = subset[self.gem.sample_index_name].copy(deep=True).values
         return selected_samples
 
     @property
@@ -305,7 +301,7 @@ class Interface(param.Parameterized):
 
     # TODO: Consider adding a copy option.
     @property
-    def x_count_data(self) -> xr.DataArray:
+    def x_count_data(self) -> Union[xr.DataArray, None]:
         """
         Returns the currently selected 'x_data'. Usually this will be a subset of the active count array.
         
@@ -346,9 +342,12 @@ class Interface(param.Parameterized):
             logger.info(f'No collection or gene selection provided, using the entire gene index.')
 
         # If a collection has been provided, but no genesets have been selected,  use the entire index.
-        elif self.selected_gene_sets == [None] or self.gene_set_collection is None:
+        elif self.gene_set_collection is None:
             support = self.gem.gene_index
-            logger.info(f'No genesets selected, using the entire gene index.')
+            logger.info(f'No collection provided; using the entire gene index.')
+
+        # elif self.selected_gene_sets == [None]:
+        #     logger.info(f'No collection provided; using the entire gene index.')
 
         # Otherwise, use  some combination of GeneSet supports should be used.
         else:
@@ -356,8 +355,14 @@ class Interface(param.Parameterized):
             logger.info(
                 f'Selected {len(self.selected_gene_sets)} GeneSets, using mode: {self.gene_set_mode} for a support of size: {support.shape[0]}.')
 
+        # # Now check if there are any genes selected. It is ok to return 'None'.
+        # if support.shape[0] == 0:
+        #     return None
+        #
         # Now the counts can be selected based on the gene support, and the selected samples.
         sample_support = self.get_sample_index()
+        # if sample_support.shape[0] == 0:
+        #     return None
 
         counts = self.gem.data.sel({self.gem.gene_index_name: support,
                                     self.gem.sample_index_name: sample_support})[count_variable]
@@ -383,7 +388,7 @@ class Interface(param.Parameterized):
             An array of the currently selected genes.
         """
         logger.info(f'Preparing the gene index, this requires determining x_data.')
-        return self.x_count_data[self.gene_index_name].values.copy()
+        return self.x_count_data[self.gene_index_name].values.copy(deep=True)
 
     @property
     def y_annotation_data(self) -> Union[xr.Dataset, xr.DataArray, None]:
@@ -400,11 +405,13 @@ class Interface(param.Parameterized):
 
         logger.info(f'The following annotations where selected: {self.annotation_variables}.')
         sample_index = self.get_sample_index()
-        subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
+        # subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
         # If only one label has been selected, return this as an xarray.DataArray.
         if len(self.annotation_variables) == 1:
-            return subset[self.annotation_variables[0]].copy()
-        return subset[self.annotation_variables].copy()
+            return self.gem.data[self.annotation_variables].sel(
+                {self.gem.sample_index_name: sample_index})[self.annotation_variables[0]].copy(deep=True)
+
+        return self.gem.data[self.annotation_variables].copy(deep=True)
 
     # TODO: Should this be a private function?
     #       Users should call gsf.get_gem_data..., or should agem.get_gem_data...
