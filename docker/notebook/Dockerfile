@@ -8,6 +8,8 @@ FROM jupyter/datascience-notebook:latest
 
 RUN mkdir $HOME/gsforge
 COPY . $HOME/gsforge
-RUN pip install --user $HOME/gsforge
+RUN pip install --user $HOME/gsforge&& \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
 
 COPY ./examples $HOME/examples/
