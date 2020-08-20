@@ -87,3 +87,4 @@ builtdocs/
 *.gtf
 *.gff3
 *.db
+/examples/how_to_galleries/core_guides/figures/
