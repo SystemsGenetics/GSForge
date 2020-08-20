@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.7
 ENV GSFORGE_INSTALL_CORE=true
 
 #RUN groupadd -r gsf_user && \
