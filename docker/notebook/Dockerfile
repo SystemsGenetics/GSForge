@@ -8,6 +8,6 @@ FROM jupyter/datascience-notebook:latest
 
 RUN mkdir $HOME/gsforge
 COPY . $HOME/gsforge
-RUN pip install $HOME/gsforge
+RUN pip install --user $HOME/gsforge
 
 COPY ./examples $HOME/examples/
