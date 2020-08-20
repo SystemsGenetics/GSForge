@@ -84,10 +84,9 @@ class UMAP_Interface(Interface):
         default=None
     )
 
-    # marker_variable = param.Parameter(default=None)
-
     datashade = param.Boolean(default=None)
     dynspread = param.Boolean(default=None)
+    datashade_kwargs = param.Dict(default=None)
 
     # Create a button so that the transform only occurs when clicked.
     update = param.Action(lambda self: self.param.trigger('update'))
@@ -97,7 +96,7 @@ class UMAP_Interface(Interface):
         return [
             hv.opts.Points(cmap="Set1", legend_position='bottom_right', axiswise=True, xaxis=None, yaxis=None,
                            padding=0.05, show_grid=True, bgcolor="lightgrey", width=900, height=600),
-            hv.opts.RGB(show_grid=True, bgcolor="lightgrey", xaxis=None, yaxis=None, width=900, height=600)
+            hv.opts.RGB(bgcolor="black", xaxis=None, yaxis=None, width=900, height=600)
         ]
 
     @staticmethod
@@ -111,7 +110,11 @@ class UMAP_Interface(Interface):
         if self.count_variable is None:
             self.param.set_param(**{"count_variable": self.gem.count_array_name})
         self.param["count_variable"].objects = sorted(self.gem.count_array_names)
-        avail_mappings = [None] + list(sorted(self.gene_set_collection.gene_sets.keys()))
+
+        avail_mappings = [None]
+        if self.gene_set_collection is not None:
+            avail_mappings = list(sorted(self.gene_set_collection.gene_sets.keys()))
+
         self.param["selected_gene_sets"].objects = avail_mappings
 
         # Infer the variable categories of the supplied annotations.
@@ -193,12 +196,18 @@ class UMAP_Interface(Interface):
         df = self.build_embedding_data_frame()
         vdims = [col for col in df.columns if not any(col == kdim for kdim in ['x', 'y'])]
         points = hv.Points(df, kdims=["x", "y"], vdims=vdims).opts(self.bokeh_opts())
+
+        kwargs = {}
+
+        if self.datashade_kwargs:
+            kwargs = {**self.datashade_kwargs}
+
         if self.hue:
             points = points.groupby([self.hue], container_type=hv.NdOverlay)
-            plot = datashader.datashade(points, aggregator=count_cat(self.hue))
-        else:
-            plot = datashader.datashade(points, cmap='darkblue')
-        return plot.opts(self.bokeh_opts())
+            colors = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=len(df[self.hue].unique()))
+            kwargs = {**kwargs, 'aggregator': count_cat(self.hue), 'color_key': colors}
+
+        return datashader.datashade(points, **kwargs).opts(self.bokeh_opts())
 
     @param.depends('update')
     def view(self, **params):

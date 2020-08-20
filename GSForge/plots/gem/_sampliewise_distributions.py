@@ -1,20 +1,25 @@
+import logging
+
+import datashader
 import holoviews as hv
+import holoviews.operation.datashader
 import holoviews.plotting
 import numpy as np
 import pandas as pd
 import param
 import scipy.stats
 import xarray as xr
-import datashader
-import holoviews.operation.datashader
+
 from ..abstract_plot_models import InterfacePlottingBase
 
+logger = logging.getLogger("GSForge")
 
-def generate_color_key_array(label_series: pd.Series):
+
+def generate_color_key_array(label_series: pd.Series, cmap='glasbey'):
     unique_keys = label_series.unique()
-    colors = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=len(unique_keys))
+    colors = hv.plotting.util.process_cmap(cmap=cmap, ncolors=len(unique_keys))
     hue_colors = {label: color for label, color in zip(unique_keys, colors)}
-    color_key = label_series.map(hue_colors)
+    color_key = list(label_series.map(hue_colors).values)
     return color_key
 
 
@@ -28,12 +33,11 @@ class SamplewiseDistributions(InterfacePlottingBase):
     sample_colormap = param.Parameter(doc=""" """)
     x_axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds + 0.25)),
                                        doc="A transform (usually log2) for getting a viewable spread of the results.")
-    y_axis_transform = param.Parameter(default=None,  # ('log 2', lambda ds: np.log2(ds.where(ds > 0))),
-                                       doc="A transform (usually log2) for getting a viewable spread of the results.")
 
     datashade = param.Boolean(default=False)
     dynspread = param.Boolean(default=False)
     kde_kwargs = param.Dict(default={'filled': False})
+    kde_sample_size = param.Integer(default=200)
 
     @staticmethod
     def bokeh_opts():
@@ -64,17 +68,17 @@ class SamplewiseDistributions(InterfacePlottingBase):
         return kde_model.evaluate(x_space)
 
     @classmethod
-    def plot_sample_wise_kde(cls, count_array, sample_dim='Sample', color_key=None):
+    def plot_sample_wise_kde(cls, count_array, sample_dim='Sample', color_key=None, x_axis_name='counts', sample_size=100):
         bin_range = (count_array.min().values, count_array.max().values)
 
-        x_space = cls.kde_linespace(count_array.values, bin_range=bin_range, sample_size=50)
+        x_space = cls.kde_linespace(count_array.values, bin_range=bin_range, sample_size=sample_size)
         kde_dist_y = np.apply_along_axis(func1d=cls.evaluate_kde, axis=1, arr=count_array.values, x_space=x_space)
 
         df = pd.DataFrame(kde_dist_y, columns=x_space, index=count_array[sample_dim].values)
 
         overlay = hv.NdOverlay(kdims=sample_dim)
         for index, (sample_name, row_series) in enumerate(df.iterrows()):
-            plot = hv.Curve((df.columns.values, row_series.values))
+            plot = hv.Curve((df.columns.values, row_series.values), kdims=x_axis_name, vdims='Distribution')
             if color_key is not None:
                 plot = plot.opts(color=color_key[index])
             overlay[sample_name] = plot
@@ -86,29 +90,29 @@ class SamplewiseDistributions(InterfacePlottingBase):
         # if self.dynspread is True and (self.datashader is False): ...
         # self.param.set_param(count_mask='masked')
         # Prepare and optionally transform the data and axis labels.
+
         x_axis_name = self.count_variable
         counts = self.x_count_data
+
         if self.x_axis_transform:
             x_axis_name = f'{self.x_axis_transform[0]} {x_axis_name}'
             counts = self.x_axis_transform[1](counts)
+
         if self.hue_key is not None:
             self.param.set_param(annotation_variables=[self.hue_key])
             color_key = generate_color_key_array(self.y_annotation_data.to_series())
         else:
             color_key = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=counts[self.sample_index_name].shape[0])
+            # color_key = None
 
         # Construct the plot.
-        plot = self.plot_sample_wise_kde(counts, sample_dim=self.sample_index_name, color_key=color_key)
+        plot = self.plot_sample_wise_kde(counts, sample_dim=self.sample_index_name,
+                                         color_key=color_key, x_axis_name=x_axis_name, sample_size=self.kde_sample_size)
 
         if self.datashade is True:
-            if self.hue_key is not None:
-                plot = hv.operation.datashader.datashade(plot,
-                                                         aggregator=datashader.count_cat(self.sample_index_name))
-
-            else:
-                plot = hv.operation.datashader.datashade(plot,
-                                                         color_key=color_key,
-                                                         aggregator=datashader.count_cat(self.sample_index_name))
+            plot = hv.operation.datashader.datashade(plot,
+                                                     color_key=color_key,
+                                                     aggregator=datashader.count_cat(self.sample_index_name))
 
             if self.dynspread is True:
                 plot = hv.operation.datashader.dynspread(plot)
@@ -126,7 +130,7 @@ class EmpiricalCumulativeDistribution(InterfacePlottingBase):
     cmap = param.Parameter('glasbey')
 
     sample_colormap = param.Parameter(doc=""" """)
-    x_axis_transform = param.Parameter(default=None,  # ('log 2', lambda ds: np.log2(ds.where(ds > 0))),
+    x_axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds + 0.25)),
                                        doc="A transform (usually log2) for getting a viewable spread of the results.")
     datashade = param.Boolean(default=False)
     dynspread = param.Boolean(default=False)
@@ -135,7 +139,7 @@ class EmpiricalCumulativeDistribution(InterfacePlottingBase):
     def plot_sample_wise_ecdf(counts: xr.DataArray,
                               sample_dim: str = "Sample",
                               color_key: np.ndarray = None,
-                              x_axis_name='Expression'):
+                              x_axis_name='counts'):
         """Draw sample-wise empirical cumulative distribution functions."""
         sorted_counts = np.apply_along_axis(np.sort, 1, counts.values)
         y_axis_values = np.arange(1, counts.shape[1] + 1 / counts.shape[1])
@@ -147,14 +151,6 @@ class EmpiricalCumulativeDistribution(InterfacePlottingBase):
                 plot = plot.opts(color=color_key[index])
             overlay[sample] = plot
         return overlay
-
-    # @staticmethod
-    # def plot_ecdf(values: np.ndarray, xaxis_name='expression', yaxis_name='ECDF'):
-    #     df = pd.DataFrame({
-    #         xaxis_name: np.sort(values),
-    #         yaxis_name: np.arange(1, values.shape[0] + 1) / values.shape[0]
-    #     })
-    #     return hv.Curve(df)
 
     @staticmethod
     def bokeh_opts():
@@ -170,25 +166,29 @@ class EmpiricalCumulativeDistribution(InterfacePlottingBase):
 
         self.param.set_param(count_mask='masked')
 
-        if self.hue_key:
-            self.param.set_param(annotation_variables=[self.hue_key])
-            color_key = generate_color_key_array(self.y_annotation_data.to_series())
-
         x_axis_name = self.count_variable
-
         counts = self.x_count_data
+
         if self.x_axis_transform is not None:
             x_axis_name = f'{self.x_axis_transform[0]} {x_axis_name}'
             counts = self.x_axis_transform[1](counts)
 
-        plot = self.plot_sample_wise_ecdf(counts=counts, sample_dim=self.sample_index_name,
-                                          color_key=color_key if self.hue_key else None,
+        if self.hue_key is not None:
+            self.param.set_param(annotation_variables=[self.hue_key])
+            color_key = generate_color_key_array(self.y_annotation_data.to_series())
+        else:
+            color_key = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=counts[self.sample_index_name].shape[0])
+
+        plot = self.plot_sample_wise_ecdf(counts=counts,
+                                          sample_dim=self.sample_index_name,
+                                          color_key=color_key,
                                           x_axis_name=x_axis_name)
 
         if self.datashade is True:
             plot = hv.operation.datashader.datashade(plot,
-                                                     color_key=self.hue_key if self.hue_key is not None else None,
+                                                     color_key=color_key,
                                                      aggregator=datashader.count_cat(self.sample_index_name))
+
             if self.dynspread is True:
                 plot = hv.operation.datashader.dynspread(plot)
 

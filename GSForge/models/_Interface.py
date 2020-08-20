@@ -13,11 +13,7 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSetCollection import GeneSetCollection
 from ..utils import transient_log_handler
 
-
 logger = logging.getLogger("GSForge")
-
-
-
 
 
 # TODO: Add .keys() and other dict like functionality.
@@ -182,8 +178,6 @@ class Interface(param.Parameterized):
 
         super().__init__(**params)
 
-
-
     @_interface_dispatch.register(AnnotatedGEM)
     @staticmethod
     def _parse_annotated_gem(annotated_gem: AnnotatedGEM, *_args, **params) -> dict:
@@ -341,13 +335,9 @@ class Interface(param.Parameterized):
             support = self.gem.gene_index
             logger.info(f'No collection or gene selection provided, using the entire gene index.')
 
-        # If a collection has been provided, but no genesets have been selected,  use the entire index.
-        elif self.gene_set_collection is None:
+        elif self.selected_gene_sets == [None]:
             support = self.gem.gene_index
             logger.info(f'No collection provided; using the entire gene index.')
-
-        # elif self.selected_gene_sets == [None]:
-        #     logger.info(f'No collection provided; using the entire gene index.')
 
         # Otherwise, use  some combination of GeneSet supports should be used.
         else:
@@ -355,14 +345,8 @@ class Interface(param.Parameterized):
             logger.info(
                 f'Selected {len(self.selected_gene_sets)} GeneSets, using mode: {self.gene_set_mode} for a support of size: {support.shape[0]}.')
 
-        # # Now check if there are any genes selected. It is ok to return 'None'.
-        # if support.shape[0] == 0:
-        #     return None
-        #
         # Now the counts can be selected based on the gene support, and the selected samples.
         sample_support = self.get_sample_index()
-        # if sample_support.shape[0] == 0:
-        #     return None
 
         counts = self.gem.data.sel({self.gem.gene_index_name: support,
                                     self.gem.sample_index_name: sample_support})[count_variable]
@@ -388,7 +372,7 @@ class Interface(param.Parameterized):
             An array of the currently selected genes.
         """
         logger.info(f'Preparing the gene index, this requires determining x_data.')
-        return self.x_count_data[self.gene_index_name].values.copy(deep=True)
+        return self.x_count_data[self.gene_index_name].values.copy()
 
     @property
     def y_annotation_data(self) -> Union[xr.Dataset, xr.DataArray, None]:

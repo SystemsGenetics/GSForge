@@ -7,26 +7,10 @@ import xarray as xr
 
 from .._singledispatchmethod import singledispatchmethod
 from ..models._GeneSet import GeneSet
-from ..models._Interface import Interface, CallableInterface
-
-DGE_DEFAULT_KWARGS = dict(
-    log_fold_change_var=[
-        "logFC",  # from EdgeR.
-        "log2FoldChange",  # from DESeq2.
-    ],
-    mean_value_var=[
-        "baseMean",
-        "logCPM",
-    ],
-    p_value_var=[
-        "pvalue",
-        "PValue",
-    ]
-)
+from ..models._Interface import CallableInterface
 
 
 class AbstractPlottingOperation(param.ParameterizedFunction):
-
     backend = param.ObjectSelector(default=None, objects=["bokeh", "matplotlib"], doc="""
         The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"].""")
 
@@ -56,36 +40,12 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
                 raise ValueError(f"{backend} is not a valid backend selection. Select from 'bokeh' or 'matplotlib'.")
             return backend_options[backend]()
 
-    def get_param_process_overlap_kwargs(self, process) -> dict:
-        """Gets overlapping kwargs of the given process and parameters of a Parameterized class,
-        and returns them as a dictionary."""
-        key_set = set.intersection(set(inspect.signature(process).parameters.keys()),
-                                   set(self.param.objects().keys()))
-        return {key: getattr(self, key) for key in key_set if getattr(self, key) is not None}
-
-    @staticmethod
-    def infer_kwarg_defaults_from_data(source: xr.Dataset, function) -> dict:
-        """Try to infer variable names for plotting functions.
-        e.g. Try to find what the 'p-value' column.
-        """
-        kwargs = dict()
-        key_overlap = set.intersection(set(inspect.signature(function).parameters.keys()),
-                                       set(DGE_DEFAULT_KWARGS.keys()))
-
-        for key in key_overlap:
-            default_argument = set.intersection(set(source.variables.keys()), DGE_DEFAULT_KWARGS[key])
-            if len(default_argument) == 0:
-                continue
-
-            if len(default_argument) > 1:
-                raise ValueError("More than one potential default found. Explicitly set the arguments"
-                                 "to this function.")
-
-            default_argument = list(default_argument)[0]
-            if default_argument is not None:
-                kwargs[key] = default_argument
-
-        return kwargs
+    # def get_param_process_overlap_kwargs(self, process) -> dict:
+    #     """Gets overlapping kwargs of the given process and parameters of a Parameterized class,
+    #     and returns them as a dictionary."""
+    #     key_set = set.intersection(set(inspect.signature(process).parameters.keys()),
+    #                                set(self.param.objects().keys()))
+    #     return {key: getattr(self, key) for key in key_set if getattr(self, key) is not None}
 
     def __call__(self, *args, **params):
         raise NotImplementedError("Sub-classes of PlottingOperation must define a `__call__` function.")
@@ -101,6 +61,20 @@ class InterfacePlottingBase(CallableInterface, AbstractPlottingOperation):
 
 class ResultPlottingOperation(AbstractPlottingOperation):
     source = param.Parameter()
+    DGE_DEFAULT_KWARGS = dict(
+        log_fold_change_var=[
+            "logFC",  # from EdgeR.
+            "log2FoldChange",  # from DESeq2.
+        ],
+        mean_value_var=[
+            "baseMean",
+            "logCPM",
+        ],
+        p_value_var=[
+            "pvalue",
+            "PValue",
+        ]
+    )
 
     def __new__(cls, *args, **params):
         inst = cls.instance()
@@ -112,11 +86,29 @@ class ResultPlottingOperation(AbstractPlottingOperation):
     def __call__(self, *args, **params):
         raise NotImplementedError("Sub-classes of PlottingOperation must define a `__call__` function.")
 
-        # layout = self.process()
-        # # TODO: Raise an error if a backend has not been loaded.
-        # if self.apply_default_opts is False:
-        #     return layout
-        # return layout.opts(self.get_default_options())
+    @classmethod
+    def infer_kwarg_defaults_from_data(cls, source: xr.Dataset, function) -> dict:
+        """Try to infer variable names for plotting functions.
+        e.g. Try to find what the 'p-value' column.
+        """
+        kwargs = dict()
+        key_overlap = set.intersection(set(inspect.signature(function).parameters.keys()),
+                                       set(cls.DGE_DEFAULT_KWARGS.keys()))
+
+        for key in key_overlap:
+            default_argument = set.intersection(set(source.variables.keys()), cls.DGE_DEFAULT_KWARGS[key])
+            if len(default_argument) == 0:
+                continue
+
+            if len(default_argument) > 1:
+                raise ValueError("More than one potential default found. Explicitly set the arguments"
+                                 "to this function.")
+
+            default_argument = list(default_argument)[0]
+            if default_argument is not None:
+                kwargs[key] = default_argument
+
+        return kwargs
 
     @singledispatchmethod
     def __dispatch_input_args(self, source, *args, **params):
