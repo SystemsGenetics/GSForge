@@ -574,9 +574,9 @@ class GeneSetCollection(param.Parameterized):
         for key, function in function_map.copy().items():
             if specification.get(key):
                 for entry in specification.get(key):
-                    name = entry.pop('name')
-                    # print(entry)
-                    processed_spec[name] = function(**entry)
+                    entry_kwargs = {k: v for k, v in entry.items() if k != 'name'}
+                    name = entry.get('name')
+                    processed_spec[name] = function(**entry_kwargs)
 
         return processed_spec
 

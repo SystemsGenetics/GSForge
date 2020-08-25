@@ -2,6 +2,7 @@ import inspect
 import logging
 
 import holoviews as hv
+import holoviews.plotting
 import pandas as pd
 import panel as pn
 import param
@@ -84,6 +85,13 @@ class UMAP_Interface(Interface):
         default=None
     )
 
+    apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc="""
+        Whether to apply the default styling based on the current backend.""")
+
+    plot_options = param.Parameter(default=None, doc="""
+    User supplied options to the plotting functions. If provided (and is not None), these will take
+    precedence over a functions built-in defaults.""")
+
     datashade = param.Boolean(default=None)
     dynspread = param.Boolean(default=None)
     datashade_kwargs = param.Dict(default=None)
@@ -96,12 +104,26 @@ class UMAP_Interface(Interface):
         return [
             hv.opts.Points(cmap="Set1", legend_position='bottom_right', axiswise=True, xaxis=None, yaxis=None,
                            padding=0.05, show_grid=True, bgcolor="lightgrey", width=900, height=600),
-            hv.opts.RGB(bgcolor="black", xaxis=None, yaxis=None, width=900, height=600)
+            hv.opts.RGB(bgcolor="black", xaxis=None, yaxis=None, width=900, height=600, backend='bokeh'),
         ]
+
+    # @staticmethod
+    # def datashader_opts():
+    #     return [
+    #         hv.opts.RGB(bgcolor="black", xaxis=None, yaxis=None, width=900, height=600, backend='bokeh'),
+    #         hv.opts.Points(bgcolor="black", xaxis=None, yaxis=None, backend='matplotlib'),
+    #         hv.opts.Image(bgcolor="black", xaxis=None, yaxis=None, backend='matplotlib'),
+    #     ]
 
     @staticmethod
     def matplotlib_opts():
-        raise NotImplementedError("'matplotlib' options are not supported for this plotting function.")
+        return [
+            # show_grid may not be functional, see this issue:
+            # https://github.com/holoviz/holoviews/issues/3729#issue-447808528
+            hv.opts.Points(cmap="Set1", fig_inches=12, axiswise=True, xaxis=None, yaxis=None,
+                           padding=0.05, show_grid=True, bgcolor="lightgrey", aspect=1),
+            hv.opts.RGB(bgcolor="black", padding=0.05, fig_inches=12, xaxis=None, yaxis=None, aspect=1),
+        ]
 
     def __init__(self, *args, **params):
         logger.info('Creating UMAP Interface...')
@@ -181,21 +203,22 @@ class UMAP_Interface(Interface):
 
         return df
 
-    def bokeh_view(self):
-        df = self.build_embedding_data_frame()
+    def build_plot(self, df, opts):
         vdims = [col for col in df.columns if not any(col == kdim for kdim in ['x', 'y'])]
-        hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in vdims])
-        points = hv.Points(df, kdims=["x", "y"], vdims=vdims).opts(tools=[hover])
+
+        points = hv.Points(df, kdims=["x", "y"], vdims=vdims).opts(opts)
+
+        if hv.Store.current_backend == 'bokeh':
+            hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in vdims])
+            points = points.opts(tools=[hover])
 
         if self.hue:
             points = points.opts(color=self.hue)
 
-        return points.opts(self.bokeh_opts())
+        return points
 
-    def datashaded_view(self):
-        df = self.build_embedding_data_frame()
-        vdims = [col for col in df.columns if not any(col == kdim for kdim in ['x', 'y'])]
-        points = hv.Points(df, kdims=["x", "y"], vdims=vdims).opts(self.bokeh_opts())
+    def datashaded_view(self, df, opts):
+        points = hv.Points(df, kdims=["x", "y"]).opts(opts)
 
         kwargs = {}
 
@@ -207,7 +230,7 @@ class UMAP_Interface(Interface):
             colors = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=len(df[self.hue].unique()))
             kwargs = {**kwargs, 'aggregator': count_cat(self.hue), 'color_key': colors}
 
-        return datashader.datashade(points, **kwargs).opts(self.bokeh_opts())
+        return datashader.datashade(points, **kwargs).opts(opts)
 
     @param.depends('update')
     def view(self, **params):
@@ -221,12 +244,23 @@ class UMAP_Interface(Interface):
         if self.dynspread is True and self.datashade is False:
             logger.warning('Setting dynspread=True has no effect without also setting datashader=True.')
 
+        df = self.build_embedding_data_frame()
+
+        if self.plot_options is not None:
+            opts = self.plot_options
+        else:
+            backend_options = {"bokeh": self.bokeh_opts, "matplotlib": self.matplotlib_opts}
+            backend = hv.Store.current_backend
+            # if backend not in backend_options.keys():
+            #     raise ValueError(f"{backend} is not a valid backend selection. Select from 'bokeh' or 'matplotlib'.")
+            opts = backend_options[backend]()
+
         if self.datashade is True:
-            plot = self.datashaded_view()
+            plot = self.datashaded_view(df, opts)
             if self.dynspread is True:
                 plot = datashader.dynspread(plot)
         else:
-            plot = self.bokeh_view()
+            plot = self.build_plot(df, opts)
 
         return plot
 

@@ -11,8 +11,8 @@ from ..models._Interface import CallableInterface
 
 
 class AbstractPlottingOperation(param.ParameterizedFunction):
-    backend = param.ObjectSelector(default=None, objects=["bokeh", "matplotlib"], doc="""
-        The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"].""")
+    # backend = param.ObjectSelector(default=None, objects=["bokeh", "matplotlib"], doc="""
+    #     The selected plotting backend to use for display. Options are ["bokeh", "matplotlib"].""")
 
     apply_default_opts = param.Boolean(default=True, precedence=-1.0, doc="""
         Whether to apply the default styling based on the current backend.""")
@@ -35,17 +35,17 @@ class AbstractPlottingOperation(param.ParameterizedFunction):
             return self.plot_options
         else:
             backend_options = {"bokeh": self.bokeh_opts, "matplotlib": self.matplotlib_opts}
-            backend = hv.Store.current_backend if self.backend is None else "bokeh"
+            backend = hv.Store.current_backend if hv.Store.current_backend else "bokeh"
             if backend not in backend_options.keys():
                 raise ValueError(f"{backend} is not a valid backend selection. Select from 'bokeh' or 'matplotlib'.")
             return backend_options[backend]()
 
-    # def get_param_process_overlap_kwargs(self, process) -> dict:
-    #     """Gets overlapping kwargs of the given process and parameters of a Parameterized class,
-    #     and returns them as a dictionary."""
-    #     key_set = set.intersection(set(inspect.signature(process).parameters.keys()),
-    #                                set(self.param.objects().keys()))
-    #     return {key: getattr(self, key) for key in key_set if getattr(self, key) is not None}
+    def get_param_process_overlap_kwargs(self, process) -> dict:
+        """Gets overlapping kwargs of the given process and parameters of a Parameterized class,
+        and returns them as a dictionary."""
+        key_set = set.intersection(set(inspect.signature(process).parameters.keys()),
+                                   set(self.param.objects().keys()))
+        return {key: getattr(self, key) for key in key_set if getattr(self, key) is not None}
 
     def __call__(self, *args, **params):
         raise NotImplementedError("Sub-classes of PlottingOperation must define a `__call__` function.")
@@ -94,9 +94,9 @@ class ResultPlottingOperation(AbstractPlottingOperation):
         kwargs = dict()
         key_overlap = set.intersection(set(inspect.signature(function).parameters.keys()),
                                        set(cls.DGE_DEFAULT_KWARGS.keys()))
-
         for key in key_overlap:
             default_argument = set.intersection(set(source.variables.keys()), cls.DGE_DEFAULT_KWARGS[key])
+
             if len(default_argument) == 0:
                 continue
 

@@ -21,8 +21,6 @@ class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
     def within_collection_overlap(gene_dict, mode="overlap"):
         modes = {"overlap": lambda va, vb: np.intersect1d(va, vb).shape[0],
                  "percent": lambda va, vb: np.intersect1d(va, vb).shape[0] / va.shape[0]}
-        # modes = {"overlap": lambda va, vb: len(set.intersection(set(va), set(vb))),
-                 # "percent": lambda va, vb: len(set.intersection(set(va), set(vb))) / len(set(va))}
         mode_formaters = {"overlap": lambda x: f"{x}",
                           "percent": lambda x: f"{x:.0%}"}
 

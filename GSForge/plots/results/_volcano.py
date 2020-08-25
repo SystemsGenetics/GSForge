@@ -138,4 +138,8 @@ class Volcano(ResultPlottingOperation):
     def __call__(self, *args, **params):
         kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.volcano),
                   **self.get_param_process_overlap_kwargs(self.volcano)}
-        return self.volcano(**kwargs)
+
+        plot = self.volcano(**kwargs)
+        if self.apply_default_opts is True:
+            plot = plot.opts(self.get_default_options())
+        return plot
