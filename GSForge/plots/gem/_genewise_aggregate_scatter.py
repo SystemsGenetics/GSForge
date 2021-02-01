@@ -207,6 +207,7 @@ class GenewiseAggregateScatter(InterfacePlottingBase):
                 datashade=self.datashade,
                 dynspread=self.dynspread,
             )
-
+        if self.apply_default_opts is True:
+            layout = layout.opts(self.get_default_options())
         return layout
 

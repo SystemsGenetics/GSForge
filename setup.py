@@ -29,7 +29,6 @@ datashader
 h5py
 holoviews
 matplotlib
-jupyterlab
 graphviz
 methodtools
 netcdf4
@@ -69,6 +68,7 @@ setup(
             'nbsphinx',
             'selenium',
             'sphinx_ioam_theme',
+            'jupyterlab',
         ],
         'R_support': [
             'rpy2'

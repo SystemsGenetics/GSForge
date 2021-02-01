@@ -1,5 +1,6 @@
 import csv
 
+import numpy as np
 import pandas as pd
 import xarray as xr
 
@@ -58,7 +59,8 @@ def infer_xarray_variables(xr_dataset: xr.Dataset,
         quantile_variables = [var for var in selected_variables
                               if xr_dataset[var].to_series().nunique() < quantile_size]
         continuous_variables = [var for var in selected_variables
-                                if var not in quantile_variables]
+                                if var not in quantile_variables
+                                and np.issubdtype(xr_dataset[var].dtype, np.number)]
 
         return {'all_labels': selected_variables, 'discrete': discrete_variables,
                 'continuous': continuous_variables, 'quantile': quantile_variables,

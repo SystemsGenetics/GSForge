@@ -6,6 +6,7 @@ import numpy as np
 from ..abstract_plot_models import InterfacePlottingBase
 
 
+# TODO: FIX ME. Ignores selected_gene_sets argument.
 class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
     mode = param.ObjectSelector(default="overlap", objects=["overlap", "percent"])
 
@@ -27,13 +28,12 @@ class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
         if mode not in modes.keys():
             raise ValueError(f"{mode} is not a valid mode. Select from {list(modes.keys())}.)")
 
-        mode_func = modes[mode]
         overlap_dim = hv.Dimension(f"Overlap {mode}", value_format=mode_formaters[mode])
-        data = [(f'{ak} {len(av)}', f'{bk} {len(bv)}', mode_func(av, bv))
+        data = [(f'{ak}:{len(av)}', f'{bk}:{len(bv)}', modes[mode](av, bv))
                 for (ak, av), (bk, bv) in itertools.permutations(gene_dict.items(), 2)
                 if ak != bk]
         heatmap = hv.HeatMap(data, vdims=overlap_dim)
-        return heatmap * hv.Labels(heatmap)
+        return heatmap #* hv.Labels(heatmap)  # Causes an error with matplotlib.
 
     def __call__(self, *args, **params):
         if self.selected_gene_sets == [None]:

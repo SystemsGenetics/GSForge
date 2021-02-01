@@ -191,7 +191,8 @@ class AnnotatedGEM(param.Parameterized):
             skip = self.count_array_names + [self.sample_index_name, self.gene_index_name]
 
         sample_dim = {self.sample_index_name}
-        gene_annots = [var for var in self.data.data_vars if set(self.data[var].dims) != sample_dim]
+        # gene_annots = [var for var in self.data.data_vars if set(self.data[var].dims) != sample_dim]
+        gene_annots = [var for var in self.data.data_vars if self.gene_index_name in set(self.data[var].dims)]
         if gene_annots:
             skip += gene_annots
 

@@ -5,7 +5,7 @@ work
 docs/_build/
 nextflow
 .idea/
-.ipynb_checkpoints
+.ipynb_checkpoints/
 .csv
 .nc
 # Byte-compiled / optimized / DLL files
@@ -88,3 +88,4 @@ builtdocs/
 *.gff3
 *.db
 /examples/how_to_galleries/core_guides/figures/
+dev_examples/

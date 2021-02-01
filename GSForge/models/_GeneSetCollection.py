@@ -22,6 +22,7 @@ from .._singledispatchmethod import singledispatchmethod
 logger = logging.getLogger("GSForge")
 
 
+# TODO: Add warning if .from_folder() or other creation function is empty.A{P
 class GeneSetDictionary(UserDict):
     """
     A dictionary with hooks to update support arrays.
@@ -68,7 +69,7 @@ class GeneSetDictionary(UserDict):
         # Update the geneset data index.
         # if gene_set.data.Gene.shape
         # TODO: Add a check so this only runs if the incoming geneset has a larger gene-index
-        # than the existing one. or perhaps through an error or warning instead.
+        #   than the existing one. or perhaps through an error or warning instead.
         # updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
         # gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
         self.data[key] = gene_set

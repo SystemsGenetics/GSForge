@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from textwrap import dedent
 from typing import Union
+import warnings
 
 import numpy as np
 import param
@@ -155,7 +156,7 @@ class Interface(param.Parameterized):
         Returns the entire target array.
     **dropped** 
         Returns the target array without samples that have zero or missing values.
-    """), default='complete', objects=["complete", "dropped"], precedence=1.0)
+    """), default='complete', objects=["complete", "dropped"], precedence=-1.0)
 
     count_transform = param.Callable(default=None, precedence=-1.0, doc=dedent("""\
     A transform that will be run on the `x_data` that is supplied by this Interface. 
@@ -172,6 +173,9 @@ class Interface(param.Parameterized):
         # If the user passes a string, place it as a single item within a list.
         if isinstance(params.get("annotation_variables"), str):
             params["annotation_variables"] = [params.get("annotation_variables")]
+
+        if isinstance(params.get("selected_gene_sets"), str):
+            params["selected_gene_sets"] = [params.get("selected_gene_sets")]
 
         if args:
             params = self._interface_dispatch(*args, **params)
@@ -325,30 +329,44 @@ class Interface(param.Parameterized):
         count_variable = self.count_variable if self.count_variable is not None else self.gem.count_array_name
 
         logger.info(f'Preparing count data from the variable {count_variable}.')
+        if self.selected_gene_sets == ['all']:
+            self.param.set_param(selected_gene_sets=list(self.gene_set_collection.gene_sets.keys()))
 
         if self.selected_genes is not None:
             support = self.selected_genes
             logger.info(f'Gene selection of: {support.shape[0]} genes provided.')
 
+
         # Check if a collection was provided, if not: return the entire gene index for masking.
-        elif self.gene_set_collection is None:
-            support = self.gem.gene_index
-            logger.info(f'No collection or gene selection provided, using the entire gene index.')
+        # elif self.gene_set_collection is None:
+        #     support = self.gem.gene_index
+        #     logger.info(f'No collection or gene selection provided, using the entire gene index.')
 
         elif self.selected_gene_sets == [None]:
             support = self.gem.gene_index
-            logger.info(f'No collection provided; using the entire gene index.')
 
         # Otherwise, use  some combination of GeneSet supports should be used.
         else:
             support = gene_set_combinations[self.gene_set_mode](self.selected_gene_sets)
             logger.info(
-                f'Selected {len(self.selected_gene_sets)} GeneSets, using mode: {self.gene_set_mode} for a support of size: {support.shape[0]}.')
+                f'Selected {len(self.selected_gene_sets)} GeneSets, '
+                f'using mode: {self.gene_set_mode} for a support of size: {support.shape[0]}.')
 
         # Now the counts can be selected based on the gene support, and the selected samples.
         sample_support = self.get_sample_index()
 
-        counts = self.gem.data.sel({self.gem.gene_index_name: support,
+        # Check the overlap of the selected genes with those in the GEM index.
+        # Give the user a warning if any unavailable genes are requested, but still
+        # return the available genes.
+        avail_support = np.intersect1d(self.gem.gene_index, support)
+        if len(avail_support) < len(support):
+            diff = len(support) - len(avail_support)
+            warnings.warn(
+                f'{diff} Unavailable genes of the {len(support)} requested. '
+                f'Using the {len(avail_support)} available.',
+                UserWarning)
+
+        counts = self.gem.data.sel({self.gem.gene_index_name: avail_support,
                                     self.gem.sample_index_name: sample_support})[count_variable]
         logger.info(f'Selected count array of shape: {counts.shape}')
 
@@ -442,8 +460,12 @@ class Interface(param.Parameterized):
             return data.to_dataframe()
 
         def pandas_tuple(self_):
+            # It may be faster to call .values and create a new dataframe instead of unstacking.
             logger.info('Returning a tuple of counts and annotations each as a pandas.DataFrame.')
-            return self_.x_count_data.to_dataframe(), self_.y_annotation_data.to_dataframe()
+            if self_.y_annotation_data is not None:
+                return self_.x_count_data.to_dataframe().unstack().droplevel(0, axis=1), self_.y_annotation_data.to_dataframe()
+            else:
+                return self_.x_count_data.to_dataframe().unstack().droplevel(0, axis=1), self_.y_annotation_data
 
         def numpy_single(self_):
             return np.dstack(self_.x_count_data.values, self_.y_annotation_data.values)
@@ -475,6 +497,12 @@ class CallableInterface(Interface, param.ParameterizedFunction):
         logger.debug('Creating a new GSForge.CallableInterface instance.')
         if args:
             params = Interface._interface_dispatch(*args, **params)
+            # TODO: Convert to a helper function or consider the implementation in operations.core (commented out).
+            if isinstance(params.get("annotation_variables"), str):
+                params["annotation_variables"] = [params.get("annotation_variables")]
+
+            if isinstance(params.get("selected_gene_sets"), str):
+                params["selected_gene_sets"] = [params.get("selected_gene_sets")]
         inst = cls.instance(**params)  # See the param code for more on this `instance` function.
         return inst.__call__()
 

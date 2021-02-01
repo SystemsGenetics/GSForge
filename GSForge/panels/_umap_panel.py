@@ -20,6 +20,7 @@ logger = logging.getLogger("GSForge")
 
 # TODO: Allow size selection of the points drawn.
 # TODO: Disable initial transform.
+# TODO: Disable selected gene sets when only an AnnotatedGEM is supplied.
 class UMAP_Interface(Interface):
     """A UMAP Panel Exploration Tool."""
 
@@ -94,7 +95,7 @@ class UMAP_Interface(Interface):
 
     datashade = param.Boolean(default=None)
     dynspread = param.Boolean(default=None)
-    datashade_kwargs = param.Dict(default=None)
+    datashade_kwargs = param.Dict(default=None, precedence=-1.0)
 
     # Create a button so that the transform only occurs when clicked.
     update = param.Action(lambda self: self.param.trigger('update'))
@@ -102,9 +103,9 @@ class UMAP_Interface(Interface):
     @staticmethod
     def bokeh_opts():
         return [
-            hv.opts.Points(cmap="Set1", legend_position='bottom_right', axiswise=True, xaxis=None, yaxis=None,
-                           padding=0.05, show_grid=True, bgcolor="lightgrey", width=900, height=600),
-            hv.opts.RGB(bgcolor="black", xaxis=None, yaxis=None, width=900, height=600, backend='bokeh'),
+            hv.opts.Points(cmap="glasbey_cool", legend_position='top_right', axiswise=True, xaxis=None, yaxis=None,
+                           padding=0.05, show_grid=True, bgcolor="lightgrey", width=600, height=600),
+            hv.opts.RGB(bgcolor="black", xaxis=None, yaxis=None, width=600, height=600, backend='bokeh'),
         ]
 
     # @staticmethod
@@ -117,12 +118,15 @@ class UMAP_Interface(Interface):
 
     @staticmethod
     def matplotlib_opts():
+        def hook(plot, element):
+            for i, _ in enumerate(plot.handles['legend'].legendHandles):
+                plot.handles['legend'].legendHandles[i]._sizes = [30]
         return [
             # show_grid may not be functional, see this issue:
             # https://github.com/holoviz/holoviews/issues/3729#issue-447808528
-            hv.opts.Points(cmap="Set1", fig_inches=12, axiswise=True, xaxis=None, yaxis=None,
-                           padding=0.05, show_grid=True, bgcolor="lightgrey", aspect=1),
+            hv.opts.Points(s=4, padding=0.05, aspect=1, bgcolor="lightgrey", cmap="glasbey_cool"),
             hv.opts.RGB(bgcolor="black", padding=0.05, fig_inches=12, xaxis=None, yaxis=None, aspect=1),
+            hv.opts.NdOverlay(xaxis=None, yaxis=None, legend_position='right', fig_inches=8, hooks=[hook]),
         ]
 
     def __init__(self, *args, **params):
@@ -194,6 +198,7 @@ class UMAP_Interface(Interface):
             labels = list(set([self.hue] + self.annotation_variables)) if self.annotation_variables else [self.hue]
             self.param.set_param(annotation_variables=labels)
             df = self.y_annotation_data.to_dataframe()
+            # colors = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=len(df[self.hue].unique()))
         else:
             df = pd.DataFrame()
 
@@ -206,16 +211,17 @@ class UMAP_Interface(Interface):
     def build_plot(self, df, opts):
         vdims = [col for col in df.columns if not any(col == kdim for kdim in ['x', 'y'])]
 
-        points = hv.Points(df, kdims=["x", "y"], vdims=vdims).opts(opts)
+        points = hv.Points(df, kdims=["x", "y"], vdims=vdims)
 
         if hv.Store.current_backend == 'bokeh':
             hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in vdims])
             points = points.opts(tools=[hover])
 
         if self.hue:
-            points = points.opts(color=self.hue)
+            # points = points.opts(color=self.hue)
+            points = points.groupby([self.hue], container_type=hv.NdOverlay)
 
-        return points
+        return points.opts(opts)
 
     def datashaded_view(self, df, opts):
         points = hv.Points(df, kdims=["x", "y"]).opts(opts)
@@ -274,8 +280,9 @@ class UMAP_Interface(Interface):
             'update': {'type': pn.widgets.Button, 'button_type': 'primary'},
         })
 
-        tab_layout = pn.Tabs(
-            ("UMAP", pn.Row(transform_controls, self.view)),
-            ("Documentation", generate_help_pane(self))
-        )
-        return tab_layout
+        # tab_layout = pn.Tabs(
+        #     ("UMAP", pn.Row(self.view, transform_controls)),
+        #     ("Documentation", generate_help_pane(self))
+        # )
+        return pn.Row(transform_controls, self.view)
+        # return tab_layout

@@ -33,9 +33,14 @@ class GeneCountOverTime(InterfacePlottingBase):
             dispersion_var,
             count_var,
             gene_var,
+            count_transform=None,
     ):
         active_variables = list(filter(None, [time_var, treatment_var, dispersion_var, count_var]))
         gene_subset = dataset.sel({gene_var: selected_gene})[active_variables]
+
+        if count_transform is not None:
+            gene_subset[count_var] = count_transform(gene_subset[count_var])
+
         df = gene_subset.to_dataframe().reset_index()
         return df.copy(deep=True)
 
@@ -48,6 +53,7 @@ class GeneCountOverTime(InterfacePlottingBase):
             dispersion_var=self.dispersion_variable,
             count_var=self.count_variable,
             gene_var=self.gem.gene_index_name,
+            count_transform=self.count_transform
         )
 
     @staticmethod
@@ -72,6 +78,8 @@ class GeneCountOverTime(InterfacePlottingBase):
     def get_spread_dataframe(self):
         return self.create_spread_dataframe(self.get_plot_dataframe(),
                                             time_var=self.time_variable,
+                                            log_fold_spread=self.log_fold_change,
+                                            count_var=self.active_count_variable,
                                             treatment_var=self.treatment_variable,
                                             dispersion_var=self.dispersion_variable
                                             )

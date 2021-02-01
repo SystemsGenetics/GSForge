@@ -41,14 +41,14 @@ class SamplewiseDistributions(InterfacePlottingBase):
 
     @staticmethod
     def bokeh_opts():
-        return [hv.opts.NdOverlay(width=600, height=400, show_legend=False),
-                hv.opts.Overlay(width=600, height=400, show_legend=False),
-                hv.opts.Curve(width=600, height=400, line_width=1, bgcolor="lightgrey", show_grid=True, padding=0.02),
-                hv.opts.RGB(width=600, height=400, show_grid=True, bgcolor="lightgrey")]
+        return [hv.opts.NdOverlay(width=600, height=600, show_legend=False),
+                hv.opts.Overlay(width=600, height=600, show_legend=False),
+                hv.opts.Curve(width=600, height=600, line_width=1, bgcolor="lightgrey", show_grid=True, padding=0.02),
+                hv.opts.RGB(width=600, height=600, show_grid=True, bgcolor="lightgrey")]
 
-    # @staticmethod
-    # def matplotlib_opts():
-    #     return hv.opts.Curve()
+    @staticmethod
+    def matplotlib_opts():
+        return hv.opts.Curve(fig_size=200, linewidth=1, bgcolor="lightgrey", show_grid=True, padding=0.02)
 
     @staticmethod
     def kde_linespace(count_array, bin_range, sample_size, cut=3):
@@ -71,8 +71,13 @@ class SamplewiseDistributions(InterfacePlottingBase):
     def plot_sample_wise_kde(cls, count_array, sample_dim='Sample', color_key=None, x_axis_name='counts', sample_size=100):
         bin_range = (count_array.min().values, count_array.max().values)
 
-        x_space = cls.kde_linespace(count_array.values, bin_range=bin_range, sample_size=sample_size)
-        kde_dist_y = np.apply_along_axis(func1d=cls.evaluate_kde, axis=1, arr=count_array.values, x_space=x_space)
+        x_space = cls.kde_linespace(count_array.fillna(0).values,
+                                    bin_range=bin_range,
+                                    sample_size=sample_size)
+        kde_dist_y = np.apply_along_axis(func1d=cls.evaluate_kde,
+                                         axis=1,
+                                         arr=count_array.fillna(0).values,
+                                         x_space=x_space)
 
         df = pd.DataFrame(kde_dist_y, columns=x_space, index=count_array[sample_dim].values)
 
