@@ -40,6 +40,7 @@ statsmodels
 umap_learn
 pynndescent
 selenium
+upsetplot
 """.split()
 
 
