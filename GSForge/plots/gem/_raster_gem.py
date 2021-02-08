@@ -33,12 +33,12 @@ class RasterGEM(InterfacePlottingBase):
         return datashader.transfer_functions.shade(cvs.raster(reset_counts))
 
     @staticmethod
-    def colorized_gem_raster(counts, labels, cmap, canvas_opts=None, ax=None):
+    def colorized_gem_raster(counts, labels, cmap=None, canvas_opts=None):
 
         if cmap is None:
             labels = pd.Series(labels)
             n_unique_labels = len(labels.unique())
-            colors = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=n_unique_labels)
+            colors = hv.plotting.util.process_cmap(cmap='glasbey', ncolors=n_unique_labels, categorical=True)
             cmap = {label: color for label, color in zip(labels.unique(), colors)}
 
         # Create a legend.
@@ -50,7 +50,7 @@ class RasterGEM(InterfacePlottingBase):
 
         sample_index = np.arange(counts.shape[0])
         gene_index = np.arange(counts.shape[1])
-        reset_counts = xr.DataArray(data=counts,
+        reset_counts = xr.DataArray(data=np.asarray(counts),
                                     name='counts',
                                     coords=[('sample_index', sample_index), ('gene_index', gene_index)])
         reset_counts = reset_counts.to_dataset()
@@ -69,12 +69,12 @@ class RasterGEM(InterfacePlottingBase):
 
         image = datashader.transfer_functions.stack(*images)
 
+        # Create a legend.
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 7), gridspec_kw={'width_ratios': [7, 1]})
         ax1.imshow(image.data.view(np.uint8).reshape(image.shape + (4,)))
         ax2.legend(handles=legend_items, loc='center')
         ax2.axis('off')
         plt.close()  # Prevents double-plotting.
-
         return fig
 
     def __call__(self):

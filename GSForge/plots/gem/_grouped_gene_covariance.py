@@ -2,8 +2,6 @@ import param
 import holoviews as hv
 from holoviews.operation import datashader
 
-# from ...models import Interface
-# from ..abstract_plot_models import AbstractPlottingOperation
 from ..abstract_plot_models import InterfacePlottingBase
 
 

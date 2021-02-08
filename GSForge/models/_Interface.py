@@ -92,10 +92,7 @@ class Interface(param.Parameterized):
 
     For updating default parameters within subclasses, use the following:
 
-    .. doctest::
-        :options: +SKIP
-
-        >>> self.param.set_param(key=value)
+    ``self.param.set_param(key=value)``
 
     """
 
@@ -336,12 +333,6 @@ class Interface(param.Parameterized):
             support = self.selected_genes
             logger.info(f'Gene selection of: {support.shape[0]} genes provided.')
 
-
-        # Check if a collection was provided, if not: return the entire gene index for masking.
-        # elif self.gene_set_collection is None:
-        #     support = self.gem.gene_index
-        #     logger.info(f'No collection or gene selection provided, using the entire gene index.')
-
         elif self.selected_gene_sets == [None]:
             support = self.gem.gene_index
 
@@ -463,7 +454,8 @@ class Interface(param.Parameterized):
             # It may be faster to call .values and create a new dataframe instead of unstacking.
             logger.info('Returning a tuple of counts and annotations each as a pandas.DataFrame.')
             if self_.y_annotation_data is not None:
-                return self_.x_count_data.to_dataframe().unstack().droplevel(0, axis=1), self_.y_annotation_data.to_dataframe()
+                return self_.x_count_data.to_dataframe().unstack().droplevel(0,
+                                                                             axis=1), self_.y_annotation_data.to_dataframe()
             else:
                 return self_.x_count_data.to_dataframe().unstack().droplevel(0, axis=1), self_.y_annotation_data
 

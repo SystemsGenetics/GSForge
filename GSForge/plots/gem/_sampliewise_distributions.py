@@ -31,8 +31,8 @@ class SamplewiseDistributions(InterfacePlottingBase):
     cmap = param.Parameter('glasbey')
 
     sample_colormap = param.Parameter(doc=""" """)
-    x_axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds + 0.25)),
-                                       doc="A transform (usually log2) for getting a viewable spread of the results.")
+    # x_axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds + 0.25)),
+    #                                    doc="A transform (usually log2) for getting a viewable spread of the results.")
 
     datashade = param.Boolean(default=False)
     dynspread = param.Boolean(default=False)
@@ -99,9 +99,9 @@ class SamplewiseDistributions(InterfacePlottingBase):
         x_axis_name = self.count_variable
         counts = self.x_count_data
 
-        if self.x_axis_transform:
-            x_axis_name = f'{self.x_axis_transform[0]} {x_axis_name}'
-            counts = self.x_axis_transform[1](counts)
+        # if self.x_axis_transform:
+        #     x_axis_name = f'{self.x_axis_transform[0]} {x_axis_name}'
+        #     counts = self.x_axis_transform[1](counts)
 
         if self.hue_key is not None:
             self.param.set_param(annotation_variables=[self.hue_key])

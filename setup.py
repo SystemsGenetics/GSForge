@@ -65,11 +65,13 @@ setup(
     install_requires=requirements,
     extras_require={
         'docs': [
-            'nbsite',
+            'sphinx',
             'nbsphinx',
             'selenium',
-            'sphinx_ioam_theme',
+            'sphinx-gallery',
+            'sphinx-rtd-theme',
             'jupyterlab',
+            'recommonmark',
         ],
         'R_support': [
             'rpy2'
