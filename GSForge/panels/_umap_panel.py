@@ -188,6 +188,7 @@ class UMAP_Interface(Interface):
         logger.info('Cached UMAP transform...')
         return self.transform()
 
+    # TODO: Prevent extra coordinates?
     def build_embedding_data_frame(self):
         gene_set = frozenset(self.get_gene_index())
         transform_state = frozenset(self.get_transform_kwargs().items())

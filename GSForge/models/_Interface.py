@@ -19,81 +19,8 @@ logger = logging.getLogger("GSForge")
 
 # TODO: Add .keys() and other dict like functionality.
 class Interface(param.Parameterized):
-    """
-    The Interface provides common API access for interacting with the ``AnnotatedGEM`` and
-    ``GeneSetCollection`` objects.
-
-    Parameters
-    ----------
-    gem : AnnotatedGEM
-        An instance of an ``AnnotatedGEM`` object that stores gene expression matrix and
-        any associated sample or gene annotations.
-
-    gene_set_collection : GeneSetCollection
-        An instance of a ``GeneSetCollection`` object.
-
-    selected_gene_sets : List[str]
-        A list of keys from the provided ``GeneSetCollection`` (stored in `gene_set_collection`)
-        that are to be used for selecting sets of genes from the count matrix.
-
-    selected_genes : Union[List, np.ndarray]
-        A list of genes to use in indexing from the count matrix. This parameter takes
-        priority over all other gene selecting methods. That means that selected
-        GeneSets (or combinations thereof) will have no effect.
-
-    gene_set_mode : str
-        Controls how any selected gene sets are returned by the interface.
-        **complete**
-            Returns the entire gene set of the ``AnnotatedGEM``.
-        **union**
-            Returns the union of the selected gene sets support.
-        **intersection**
-            Returns the intersection of the selected gene sets support.
-
-    sample_subset : Union[List, np.ndarray]
-        A list of samples to use in a given operation. These can be supplied
-        directly as a list of genes, or can be drawn from a given GeneSet.
-
-    count_variable : str
-        The name of the count matrix used.
-
-    annotation_variables : List[str]
-        The name of the active annotation variable(s). These are the annotation columns
-        that will be control the subset returned by `y_annotation_data`.
-
-    count_mask : str
-        The type of mask to use for the count matrix.
-        **complete**
-            Returns the entire count matrix as numbers.
-        **masked**
-            Returns the entire count matrix with zero or missing as NaN values.
-        **dropped**
-            Returns the count matrix without genes that have zero or missing values.
-
-    annotation_mask : str
-        The type of mask to use for the target array.
-        **complete**
-            Returns the entire target array.
-        **dropped**
-            Returns the target array without samples that have zero or missing values.
-
-    count_transform : Callable
-        A transform that will be run on the `x_data` that is supplied by this Interface.
-        The transform runs on the subset of the matrix that has been selected.
-
-        Some common transforms:
-
-        .. doctest::
-
-            :options: +SKIP
-
-            lambda counts: np.log2(counts.where(counts > 0)))
-
-
-    For updating default parameters within subclasses, use the following:
-
-    ``self.param.set_param(key=value)``
-
+    """The Interface provides common API access for interacting with the ``AnnotatedGEM``
+    and ``GeneSetCollection`` objects.
     """
 
     gem = param.ClassSelector(class_=AnnotatedGEM, doc="""\

@@ -140,6 +140,8 @@ class GenewiseAggregateScatter(InterfacePlottingBase):
                                  selection_dim="Gene",
                                  datashade=False,
                                  dynspread=False,
+                                 adjoint_distributions=True,
+                                 options=None,
                                  ):
 
         data_groups = {name: dataset.sel({selection_dim: genes}) for name, genes in mappings.items()}
@@ -159,7 +161,17 @@ class GenewiseAggregateScatter(InterfacePlottingBase):
         else:
             points_overlay = hv.NdOverlay(points)
 
-        return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
+        if options:
+            points_overlay = points_overlay.opts(options)
+
+            if adjoint_distributions:
+                dist_x = hv.NdOverlay(dist_x).opts(options)
+                dist_y = hv.NdOverlay(dist_y).opts(options)
+                points_overlay = points_overlay << dist_x << dist_y
+
+        return points_overlay
+
+        # return points_overlay << hv.NdOverlay(dist_x) << hv.NdOverlay(dist_y)
 
     def __call__(self):
         counts = self.x_count_data
@@ -206,6 +218,8 @@ class GenewiseAggregateScatter(InterfacePlottingBase):
                 mappings=mappings,
                 datashade=self.datashade,
                 dynspread=self.dynspread,
+                adjoint_distributions=self.adjoint_distributions,
+                options=options,
             )
         if self.apply_default_opts is True:
             layout = layout.opts(self.get_default_options())

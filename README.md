@@ -3,8 +3,8 @@
 
 # gsforge
 
-`gsforge` is a Python package that assists researchers in collating and comparing features (genes) selected from
-a gene expression matrix.
+`GSForge` is a library for managing species-agnostic gene selection(s) from gene expression matrices (GEMs).
+Made for the practicing researchers interested in applying and comparing multiple analysis techniques.
 
 For more information, examples and API reference consult the complete [documentation](https://systemsgenetics.github.io/GSForge/).
 
@@ -22,10 +22,6 @@ git clone https://github.com/SystemsGenetics/GSForge.git
 pip install ./GSForge/
 ```
 
+## Examples
 
-```bash
-conda env create -f environment.yml
-```
-## Development
-
-### Example Notebooks
+Link here.

@@ -33,20 +33,6 @@ class AnnotatedGEM(param.Parameterized):
     By default this dataset will be expected to have its indexes named "Gene"
     and "Sample", although there are parameters to override those arrays and
     index names used.
-
-    An AnnotatedGEM object can be created with one of the class methods:
-
-    ``from_files()``
-      A helper function for loading disparate GEM and annotation files through
-      pandas.read_csv().
-
-    ``from_pandas()``
-      Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
-      must share the same sample index.
-
-    ``from_netcdf()``
-      Reads in from a .nc filepath. Usually this means loading a previously
-      created AnnotatedGEM.
     """
 
     data = param.ClassSelector(class_=xr.Dataset, allow_None=False, doc="""\
@@ -249,7 +235,9 @@ class AnnotatedGEM(param.Parameterized):
     @classmethod
     def from_pandas(cls, count_df: pd.DataFrame, label_df: pd.DataFrame = None, **params) -> AnnotatedGEM:
         """
-        Construct a `GEM` object from `pandas.DataFrame` objects.
+        Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
+        must share the same sample index.
+
 
         Parameters
         ----------

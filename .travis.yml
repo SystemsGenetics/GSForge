@@ -49,10 +49,9 @@ jobs:
         - pip install .[docs]
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
-        - mkdir doc/Reference_Manual
-        - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-        - nbsite build --what=html --output=builtdocs
+        - mkdir docs/source/API/
+        - sphinx-apidoc --separate --force -o docs/source/API/ ./GSForge
+        - python -m sphinx docs/source/ ../builtdocs/
       deploy:
         - provider: pages
           skip_cleanup: true
@@ -69,10 +68,9 @@ jobs:
         - pip install .[docs]
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
-        - mkdir doc/Reference_Manual
-        - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-        - nbsite build --what=html --output=builtdocs
+        - mkdir docs/source/API/
+        - sphinx-apidoc --separate --force -o docs/source/API/ ./GSForge
+        - python -m sphinx docs/source/ ../builtdocs/
       deploy:
         - provider: pages
           skip_cleanup: true

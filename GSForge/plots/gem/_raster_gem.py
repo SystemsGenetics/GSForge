@@ -14,7 +14,7 @@ from ..abstract_plot_models import InterfacePlottingBase
 class RasterGEM(InterfacePlottingBase):
     # TODO: Document me.
 
-    color_key = param.String(default=None, doc="Color by which to shade the observations.")
+    hue = param.String(default=None, doc="Color by which to shade the observations.")
     cmap = param.Parameter(default=None)
     plot_options = param.Parameter(default=dict(plot_width=800, plot_height=400))
 
@@ -79,11 +79,11 @@ class RasterGEM(InterfacePlottingBase):
 
     def __call__(self):
 
-        if self.color_key is None:
+        if self.hue is None:
             return self.gem_raster(self.x_count_data.values, self.get_default_options())
 
         else:
-            self.param.set_param(annotation_variables=[self.color_key])
+            self.param.set_param(annotation_variables=[self.hue])
             return self.colorized_gem_raster(
                 counts=self.x_count_data.values,
                 labels=self.y_annotation_data.values,
