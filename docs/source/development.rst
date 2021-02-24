@@ -23,8 +23,11 @@ Notebooks
 The example jupyter notebooks are prepared using the ``MyST`` markdown format, which allows the notebooks
 to be saved as plain text, separate from their output.
 
-https://myst-parser.readthedocs.io/en/latest/index.html
+``https://myst-parser.readthedocs.io/en/latest/index.html``
 
+They can be linked to normal ``.ipynb`` files for use via jupyter notebooks or jupyter lab.
+
+https://jupytext.readthedocs.io/en/latest/
 
 Building Documentation
 ======================
@@ -35,5 +38,6 @@ From the top directory of the repository::
     # Build the documentation.
     python -m sphinx docs/source/ ../gsforge_docs/
 
+
 Convert an existing jupyter notebook to an all-text ``MyST`` format::
-    jupytext *.ipynb --to myst
+    jupytext my_file.ipynb --to myst

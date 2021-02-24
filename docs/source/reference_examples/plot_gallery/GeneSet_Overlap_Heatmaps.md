@@ -45,7 +45,7 @@ gsc = gsf.GeneSetCollection.from_folder(
 gsc
 ```
 
-### Viewing GeneSet Overlaps within a GeneSetCollection
+## Viewing GeneSet Overlaps within a GeneSetCollection
 
 ```{code-cell} ipython3
 gsf.plots.collections.WithinCollectionOverlapHeatMap(gsc)

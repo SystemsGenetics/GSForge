@@ -1,9 +1,9 @@
-## About GSForge
+# About GSForge
 
 *GSForge* helps manage and compare gene (feature) selection methods for RNA-Seq data.
 It provides a framework of tools that assist in the collection, management and comparison of feature selection results.
 
-### Why use GSForge?
+## Why use GSForge?
 
 You should consider using `GSForge` when:
 
@@ -18,7 +18,7 @@ And you should seriously consider using `GSForge` if you find yourself in more t
 
 ---
 
-### About the Ficklin Lab
+## About the Ficklin Lab
 
 The Ficklin Lab in the Dept. of Horticulture at Washington State University is a computational dry lab dedicated to the 
 creation of software tools, computational approaches and systems-level models that address basic and applied hypothesis 

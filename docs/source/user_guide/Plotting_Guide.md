@@ -6,9 +6,9 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.10.2
 kernelspec:
-  display_name: Python 3
+  display_name: gsfenv
   language: python
-  name: python3
+  name: gsfenv
 ---
 
 # Plotting Guide
@@ -25,58 +25,54 @@ Plotting functions are delineated by the (primary) data source:
 `GSForge` uses the `Holoviews` package for creating plots.
 `Holoviews` is a common API to create plots using two popular backends, `matplotlib` and `bokeh`.
 
-+++
 
 ***Plotting Guide Setup***
 
-Shared setup for all plotting guides.
+A shared setup for all plotting guides.
 
-```{code-cell} ipython3
+```{code-cell}
 # OS-independent path management.
 from os import environ
 from pathlib import Path
+import numpy as np
 import GSForge as gsf
 import holoviews as hv
-hv.extension('bokeh', 'matplotlib')
+hv.extension('bokeh')
 
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
 HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
 HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "boruta")
+BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "boruta_nf")
 ```
 
-```{code-cell} ipython3
+Load an annotated expression matrix and a collection:
+
+```{code-cell}
 agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
 agem
 ```
 
-```{code-cell} ipython3
----
-pycharm:
-  name: '#%%
-
-    '
----
+```{code-cell}
 gsc = gsf.GeneSetCollection.from_folder(
     gem=agem, target_dir=BOR_COLL_PATH, name="Boruta Results")
 gsc
 ```
 
-Select a backend, or simply only load the one you wish to use.
+Select a backend, or load only the one you wish to use.
 
-```{code-cell} ipython3
+```{code-cell}
 hv.output(backend="matplotlib")
 gsf.plots.gem.GenewiseAggregateScatter(agem, datashade=False, apply_default_opts=False)
 ```
 
-```{code-cell} ipython3
+```{code-cell}
 hv.output(backend="bokeh")
 gsf.plots.gem.GenewiseAggregateScatter(agem, datashade=True)
 ```
 
-### Saving Plots
+## Saving Plots
 
-```python
+```
 hv.save(my_plot.options(toolbar=None),  # This sometimes does not remove the toolbar.
         "my_filename.png")
 ```

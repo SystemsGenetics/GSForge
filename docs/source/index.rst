@@ -8,9 +8,9 @@ Welcome to GSForge's documentation!
 ``GSForge`` provides the following utilities to aid in collating and analyzing feature selection results
 from expression count matrices:
 
-1. Data structures
-2. Membership set selection operators
-3. Plotting functions
+1. Data structures that index expression and annotation in a single file.
+2. A common interface for membership set selection operators.
+3. Plotting functions for comparing expression as well as set intersections.
 
 It aims to provide tools that are species-agnostic, that allow a practicing researcher to more easily collate and
 compare selection results across a variety of methods (from both R and Python).
@@ -71,7 +71,7 @@ Examples are available...
 Installation
 ============
 
-.. include:: user_guide/installation
+.. include:: user_guide/installation.rst
 
 
 .. toctree::
@@ -81,6 +81,6 @@ Installation
     Welcome <self>
     User Guide <user_guide/user_guide>
     Reference Examples <reference_examples/ref_examples_index>
-    Walk-through Examples <walkthroughs/walkthroughs_index>
-    API <API/GSForge>
+    API <API/modules>
+    Development <development>
     About <about>

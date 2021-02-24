@@ -30,8 +30,7 @@ hv.extension('bokeh')
 
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
 HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
-HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "boruta")
+BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "boruta_nf")
 ```
 
 ```{code-cell}
@@ -45,12 +44,12 @@ gsc = gsf.GeneSetCollection.from_folder(
 gsc
 ```
 
-### Creating a Sample-wise Distribution plot
+## Creating a Sample-wise Distribution plot
 
 ```{code-cell}
 gsf.plots.gem.SamplewiseDistributions(
     agem,
-    selected_samples=agem.data.Sample[:25],
+    selected_samples=agem.data.Sample[:5],
     hue_key="treatment",
     count_transform=lambda counts: np.log2(counts.where(counts > 0))
 )

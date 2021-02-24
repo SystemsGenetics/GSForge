@@ -33,7 +33,7 @@ hv.extension('bokeh')
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
 HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
 HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-LIT_DGE_GSC_PATH = OSF_PATH.joinpath("Collections", "literature", "DGE")
+DEG_COLL_PATH = OSF_PATH.joinpath("Collections", "DEG_gene_sets")
 ```
 
 ```{code-cell}
@@ -43,14 +43,14 @@ agem
 
 ```{code-cell}
 deg_gsc = gsf.GeneSetCollection.from_folder(
-    gem=agem, target_dir=LIT_DGE_GSC_PATH, name="DGE Results")
+    gem=agem, target_dir=DEG_COLL_PATH, name="DGE Results")
 deg_gsc
 ```
 
 ***Select a particular result set of interest***
 
 ```{code-cell}
-deg_gs = deg_gsc.gene_sets["DROUGHT_UP"]
+deg_gs = deg_gsc.gene_sets["deseq2_treatment"]
 deg_gs
 ```
 

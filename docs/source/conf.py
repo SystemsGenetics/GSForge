@@ -49,13 +49,11 @@ version = '0.52'
 extensions = [
     "sphinx.ext.napoleon",
     'sphinx.ext.autodoc',
-    # 'recommonmark',
+    'sphinx.ext.autosummary',
     "sphinx_rtd_theme",
-    # 'nbsphinx',
     # 'sphinx_gallery.load_style',
     'sphinx.ext.mathjax',
     "myst_nb",
-    # 'sphinx_copybutton',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -64,16 +62,23 @@ templates_path = ['_templates']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-# exclude_patterns = [
-# ]
+exclude_patterns = [
+    'DGE_examples/*',
+]
 
-# -- nbsphinx configuration ---------------------------------------------------
+# -- sphinx autodoc config ------------------------------------------------
+autodoc_member_order = 'bysource'
+autosummary_generate = True
+execution_timeout = 300
 
-# nbsphinx_allow_errors = True
-# nbsphinx_kernel_name = 'gsfenv'
-# nbsphinx_execute = 'always'
+# -- MyST configuration ---------------------------------------------------
 # jupyter_execute_notebooks = "force"
-# execution_excludepatterns = ['R_integration_guides', 'walkthroughs', 'panel_gallery', 'workflow_guide']
+myst_enable_extensions = [
+    "amsmath",
+    "deflist",
+    "dollarmath",
+]
+
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -87,12 +92,6 @@ html_theme = "sphinx_rtd_theme"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-# _NAV = (
-#     ('Welcome', 'index'),
-#     ('User Guide', 'user_guide/user_guide'),
-#     ('Reference Examples', 'reference_examples/ref_examples_index'),
-#     ('Walk-throughs', 'walkthroughs/walkthroughs_index'),
-#     ('API', 'API/GSForge'),
-#     # ('FAQ', 'FAQ'),
-#     ('About', 'about')
-# )
+html_css_files = [
+    'custom.css',
+]

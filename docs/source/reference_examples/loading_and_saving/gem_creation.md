@@ -14,3 +14,14 @@ kernelspec:
 
 # Creating an Annotated Expression Matrix
 
+Here will be an example...
+
+```{code-cell}
+# OS-independent path management.
+from os import environ
+from pathlib import Path
+import numpy as np
+import GSForge as gsf
+import holoviews as hv
+hv.extension('bokeh')
+```

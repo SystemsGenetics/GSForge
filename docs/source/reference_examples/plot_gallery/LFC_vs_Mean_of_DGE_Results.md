@@ -19,7 +19,7 @@ A common way to visualize the results of a DGE analysis.
 
 A shared setup for all plotting guides.
 
-```{code-cell}
+```{code-cell} ipython3
 # OS-independent path management.
 from os import environ
 from pathlib import Path
@@ -31,41 +31,37 @@ hv.extension('bokeh')
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
 HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
 HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "nf_boruta")
+DEG_COLL_PATH = OSF_PATH.joinpath("Collections", "DEG_gene_sets")
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
 agem
 ```
 
-```{code-cell}
-gsc = gsf.GeneSetCollection.from_folder(
-    gem=agem, target_dir=BOR_COLL_PATH, name="Boruta Results")
-gsc
-```
-
 ***Load Differential Gene Expression Analysis Results into a `GeneSetCollection`***
 
-```{code-cell}
-deg_gsc = gsf.GeneSetCollection.from_folder(gem=agem, target_dir=LIT_DGE_GSC_PATH, name="DEG Results")
+```{code-cell} ipython3
+deg_gsc = gsf.GeneSetCollection.from_folder(gem=agem, target_dir=DEG_COLL_PATH, name="DEG Results")
 deg_gsc
 ```
 
 ***Select a particular result set of interest***
 
-```{code-cell}
-deg_gs = deg_gsc.gene_sets["DROUGHT_UP"]
+```{code-cell} ipython3
+deg_gs = deg_gsc.gene_sets["deseq2_treatment"]
 deg_gs
 ```
 
 ***View the data stored within this GeneSet result***
 
-```{code-cell}
+```{code-cell} ipython3
 deg_gs.data
 ```
 
 ## Plot gene means vs log-fold change
+
+In some cases we can infer the names of the dimensions, otherwise you will need to pass values to: `log_fold_change_var`, `mean_value_var`, `p_value_var`.
 
 ```{code-cell} ipython3
 gsf.plots.results.MeanVsLFC(deg_gs)

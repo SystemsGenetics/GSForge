@@ -71,6 +71,7 @@ setup(
             'sphinx-gallery',
             'sphinx-rtd-theme',
             'jupyterlab',
+            'jupytext',
             'recommonmark',
         ],
         'R_support': [
