@@ -16,7 +16,7 @@ It aims to provide tools that are species-agnostic, that allow a practicing rese
 compare selection results across a variety of methods (from both R and Python).
 ``GSForge`` is not an analysis tool itself, but the documentation provides example implementations.
 
-.. image:: ./_static/rna_seq_generation_highlights.svg
+.. image:: ./static/rna_seq_generation_highlights.svg
 
 Overview
 ========
