@@ -21,6 +21,7 @@ sys.path.insert(0, os.path.abspath('../../GSForge/'))
 sys.path.insert(0, os.path.abspath('.'))
 # Import param docstring tools. You can ignore linting warnings re this import.
 from paramdoc import param_formatter, param_skip
+import sphinx_rtd_theme
 
 
 # -- param docstring setup ---------------------------------------------------
