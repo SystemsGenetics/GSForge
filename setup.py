@@ -73,6 +73,7 @@ setup(
             'jupyterlab',
             'jupytext',
             'recommonmark',
+            'myst-nb',
         ],
         'R_support': [
             'rpy2'
