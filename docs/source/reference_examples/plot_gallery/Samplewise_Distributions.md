@@ -49,7 +49,7 @@ gsc
 ```{code-cell}
 gsf.plots.gem.SamplewiseDistributions(
     agem,
-    selected_samples=agem.data.Sample[:5],
+    sample_subset=agem.data.Sample[:5],
     hue_key="treatment",
     count_transform=lambda counts: np.log2(counts.where(counts > 0))
 )

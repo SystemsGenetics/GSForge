@@ -33,6 +33,7 @@ Building Documentation
 ======================
 
 From the top directory of the repository::
+
     # Construct the API documentation.
     sphinx-apidoc --separate --force -o docs/source/API/ ./GSForge
     # Build the documentation.
@@ -40,4 +41,5 @@ From the top directory of the repository::
 
 
 Convert an existing jupyter notebook to an all-text ``MyST`` format::
+
     jupytext my_file.ipynb --to myst
