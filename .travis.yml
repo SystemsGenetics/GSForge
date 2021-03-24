@@ -56,7 +56,6 @@ jobs:
       before_deploy:
         # Add .nojekyll file and redirect from docroot to the sphinx output dir
         - touch ./builtdocs/.nojekyll
-#        - cp assets/gh-pages-redirect.html html/index.html
       deploy:
         - provider: pages
           skip_cleanup: true
