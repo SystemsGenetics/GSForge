@@ -13,8 +13,6 @@ kernelspec:
 
 # User Guide
 
-## Getting Started
-
 1. Import Data and create an AnnotatedGEM.
     + *Optional* [Visualize GEM](../reference_examples/plot_gallery/GEM_Rasters).
 2. Find or select genes of interest.
@@ -22,16 +20,20 @@ kernelspec:
     + *Optional* [View subset intersections](../reference_examples/plot_gallery/GeneSet_Overlap_Heatmaps). 
 4. Compare GeneSets.
     + Visualize membership overlap.
-   
+
 
 ```{toctree}
 ---
 hidden: true
+titlesonly:
+maxdepth: 1
 ---
 Installation <installation>
-Annotated Expression Matrix Creation <../reference_examples/loading_and_saving/gem_creation>
-Collection Creation <../reference_examples/loading_and_saving/collection_creation>
+Tour <tour>
+Annotated Expression Matrix Creation <gem_creation>
+Set and Collection Creation <set_and_collection_creation>
 Interface Guide <Interface_Guide>
 Plotting Guide <Plotting_Guide>
+R Integration Guide <R_integration>
 Analysis Resources <analysis_resources>
 ```

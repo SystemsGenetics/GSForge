@@ -124,14 +124,17 @@ class UMAP_Interface(Interface):
         return [
             # show_grid may not be functional, see this issue:
             # https://github.com/holoviz/holoviews/issues/3729#issue-447808528
-            hv.opts.Points(s=4, padding=0.05, aspect=1, bgcolor="lightgrey", cmap="glasbey_cool"),
-            hv.opts.RGB(bgcolor="black", padding=0.05, fig_inches=12, xaxis=None, yaxis=None, aspect=1),
+            hv.opts.Points(s=6, padding=0.05, aspect=1, bgcolor="lightgrey", cmap="glasbey_cool"),
+            hv.opts.RGB(bgcolor="black", padding=0.05, xaxis=None, yaxis=None, aspect=1),
             hv.opts.NdOverlay(xaxis=None, yaxis=None, legend_position='right', fig_inches=8, hooks=[hook]),
         ]
 
     def __init__(self, *args, **params):
         logger.info('Creating UMAP Interface...')
         super().__init__(*args, **params)
+
+        if self.hue is not None:
+            self.param.set_param(annotation_variables=[self.hue])
 
         if self.count_variable is None:
             self.param.set_param(**{"count_variable": self.gem.count_array_name})
@@ -143,25 +146,25 @@ class UMAP_Interface(Interface):
 
         self.param["selected_gene_sets"].objects = avail_mappings
 
-        # Infer the variable categories of the supplied annotations.
-        if self.annotation_categories is None:
-            logger.info('No annotations selected, this causes all available annotations to be available by default.')
-            self.param.set_param(annotation_categories=self.gem.infer_variables())
-            self.param.set_param(annotation_variables=self.annotation_categories["all_labels"])
+        # # Infer the variable categories of the supplied annotations.
+        # if self.annotation_categories is None:
+        #     logger.info('No annotations selected, this causes all available annotations to be available by default.')
+        #     self.param.set_param(annotation_categories=self.gem.infer_variables())
+        #     self.param.set_param(annotation_variables=self.annotation_categories["all_labels"])
 
         # Limit the number of neighbors to the number of samples.
         self.param["n_neighbors"].bounds = [1, len(self.gem.data[self.gem.sample_index_name]) - 1]
 
-        logger.info('Setting hue options...')
-        avail_hues = []
-        if self.annotation_categories.get("discrete") is not None:
-            avail_hues += self.annotation_categories.get("discrete")
-        if self.annotation_categories.get("quantile") is not None:
-            avail_hues += self.annotation_categories.get("quantile")
+        # logger.info('Setting hue options...')
+        # avail_hues = []
+        # if self.annotation_categories.get("discrete") is not None:
+        #     avail_hues += self.annotation_categories.get("discrete")
+        # if self.annotation_categories.get("quantile") is not None:
+        #     avail_hues += self.annotation_categories.get("quantile")
 
-        avail_hues = list(set(avail_hues))
-        if avail_hues:
-            self.param["hue"].objects = [None] + sorted(avail_hues)
+        # avail_hues = list(set(avail_hues))
+        # if avail_hues:
+        #     self.param["hue"].objects = [None] + sorted(avail_hues)
 
     def get_transform_kwargs(self, transform=umap.umap_.UMAP):
         """Gets the overlapping arguments of the transform and parameters of this panel class,
@@ -206,21 +209,22 @@ class UMAP_Interface(Interface):
         transform = self.cached_transform(count_array_state, gene_set, transform_state)
         df["x"] = transform[:, 0]
         df["y"] = transform[:, 1]
+        df["Sample"] = self.get_sample_index()
 
         return df
 
     def build_plot(self, df, opts):
         vdims = [col for col in df.columns if not any(col == kdim for kdim in ['x', 'y'])]
 
-        points = hv.Points(df, kdims=["x", "y"], vdims=vdims)
+        points = hv.Points(df, kdims=["x", "y"], vdims=vdims)#.opts(opts)
 
         if hv.Store.current_backend == 'bokeh':
             hover = HoverTool(tooltips=[(name, "@" + f"{name}") for name in vdims])
             points = points.opts(tools=[hover])
 
         if self.hue:
-            # points = points.opts(color=self.hue)
             points = points.groupby([self.hue], container_type=hv.NdOverlay)
+            # points = points.opts(color=hv.Cycle())
 
         return points.opts(opts)
 
@@ -244,6 +248,9 @@ class UMAP_Interface(Interface):
         """A `holoviews.Points` plot of the selected transform."""
         if params:
             self.param.set_param(**params)
+
+        if self.hue is not None:
+            self.param.set_param(annotation_variables=[self.hue])
 
         if self.selected_gene_sets is [None]:
             return pn.pane.HTML('Select Genes and press "Update".')

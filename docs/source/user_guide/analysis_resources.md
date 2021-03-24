@@ -4,7 +4,8 @@ Here we provide links to software used to analyze RNA-seq expression matrices.
 
 ## Resource Collections
 
-...
++ https://github.com/twbattaglia/RNAseq-workflow
++ https://github.com/jdidion/biotools
 
 ## Normalization Methods
 
@@ -38,6 +39,8 @@ Here we provide links to software used to analyze RNA-seq expression matrices.
 + scanpy
 
 ## References
+
+Li WV, Li JJ. Modeling and analysis of RNA-seq data: a review from a statistical perspective. Quant Biol. 2018;6(3):195-209. doi:10.1007/s40484-018-0144-7
 
 [^Costa-Silva_2017]: Costa-Silva J, Domingues D, Lopes FM. RNA-Seq differential expression analysis: An extended review and a software tool. PLoS One. 2017 Dec 21;12(12):e0190152. doi: 10.1371/journal.pone.0190152. PMID: 29267363; PMCID: PMC5739479.
 

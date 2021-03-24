@@ -53,34 +53,34 @@ An interface that provides utility access to an AnnotatedGEM based on provided G
 e.g. GEM subset selection by GeneSet membership, or by some set operation (union, intersection, difference)
 from multiple sets.
 
-2. Set Selection Operators
+
+2. Set Selection Interface
 --------------------------
 
-todo...
+In comparing feature selection results the most basic needs are often set operations.
+e.g., the intersection, union and unique members between one or more sets.
+Often time subsets of the original data are examined based on a set-operation of one or more feature sets.
+
+``GSForge`` provides this functionality through the ``GSForge.Interface`` object,
+and the ``GSForge.get_gem_data`` function.
+
 
 3. Plotting Functions
 ---------------------
 
-todo...
-
-Examples
-========
-
-Examples are available...
-
-Installation
-============
-
-.. include:: user_guide/installation.rst
+``GSForge`` provides a number of plots common to gene expression analysis.
+The ``Interface`` object powers these plotting functions, which allows users to easily plot only subsets of data based
+on set membership.
 
 
 .. toctree::
-    :titlesonly:
-    :maxdepth: 1
+    :hidden:
+    :maxdepth: 2
 
     Welcome <self>
     User Guide <user_guide/user_guide>
     Reference Examples <reference_examples/ref_examples_index>
+    Walkthroughs <walkthroughs/walkthrough_index>
     API <API/modules>
     Development <development>
     About <about>
