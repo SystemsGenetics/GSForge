@@ -76,7 +76,7 @@ jobs:
       deploy:
         - provider: pages
           skip_cleanup: true
-          local_dir: ./builtdocs
+          local_dir: ../builtdocs
           target_branch: gh-pages
           github_token: $GITHUB_TOKEN
           repo: SystemsGenetics/GSForgeDev
