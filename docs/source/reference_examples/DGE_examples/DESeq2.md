@@ -54,6 +54,16 @@ agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
 agem
 ```
 
+```{code-cell} ipython3
+ldf = agem.data[['treatment' ,'time']].to_dataframe()
+ldf['time'] = ldf['time'].str.split(' ', expand=True).iloc[:, 0].astype(int)
+ldf.head()
+```
+
+```{code-cell} ipython3
+
+```
+
 ## Prepare input data for DESeq2
 
 This requires us to drop genes that have counts of zero.

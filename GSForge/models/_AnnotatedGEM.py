@@ -24,6 +24,7 @@ logger = logging.getLogger("GSForge")
 
 # TODO: Add warnings / information output for sample index mis-matches between
 #       the count and annotation variables.
+# TODO: Ensure a default count_variable is correctly set.
 class AnnotatedGEM(param.Parameterized):
     """
     A data class for a gene expression matrix and any associated sample or gene annotations.
@@ -68,6 +69,7 @@ class AnnotatedGEM(param.Parameterized):
             params = self.__annotated_gem_dispatch(*args, **params)
         super().__init__(**params)
         logger.debug('AnnotatedGEM initialization complete.')
+        # TODO: Add check for count_array_name here.
 
     def __repr__(self) -> str:
         """Display a summary of this AnnotatedGEM."""

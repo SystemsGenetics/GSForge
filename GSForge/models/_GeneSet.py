@@ -410,6 +410,7 @@ class GeneSet(param.Parameterized):
         gs_copy.data[gs_copy.support_index_name] = ((gs_copy.gene_index_name,), np.asarray(boolean_array, dtype=bool))
         return gs_copy
 
+    # TODO: Refactor name to remove mention of 'n'? Refactor into multiple functions.
     # TODO: Allow this to take a user-given callable function. Document with an example.
     def get_n_top_genes(self, score_variable: str = None, mode: str = "absolute_largest",
                         within_support: bool = True, **mode_kwargs) -> np.ndarray:
