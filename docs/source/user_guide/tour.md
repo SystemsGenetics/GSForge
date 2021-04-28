@@ -32,7 +32,7 @@ Here we present a brief analysis of a *oryza sativa* cultivar set[1], with the e
 
 1. Create an Annotated Gene Expression Matrix
     + The `AnnotatedGEM` object stores gene expression data alongside sample annotations.
-    + [optional] save normalizations or transforms.
+    + Save normalizations or transforms.
 2. Select genes / features / tags
     + Using an R script: `edgeR`.
     + Using the Boruta algorithm with a random forest model from `sklearn`.
@@ -59,9 +59,14 @@ import patsy
 import GSForge as gsf
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import quantile_transform
+from sklearn import model_selection
+from sklearn import linear_model
+import umap
+import umap.plot
 
 import matplotlib.pyplot as plt
-# import seaborn as sns
+import colorcet as cc
+import seaborn as sns
 import holoviews as hv
 hv.extension('matplotlib')
 
@@ -71,6 +76,20 @@ OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/os
 RAW_COUNT_PATH = OSF_PATH.joinpath("GEMmaker_GEMs", "Osativa_heat_drought_PRJNA301554.GEM.raw.txt")
 HYDRO_LABEL_PATH = OSF_PATH.joinpath("raw_annotation_data", "PRJNA301554.hydroponic.annotations.txt")
 SI_FILE_1_PATH = OSF_PATH.joinpath('GEMmaker_GEMs', 'raw_annotation_data', 'TPC2016-00158-LSBR2_Supplemental_File_1.csv')
+```
+
+```{code-cell} ipython3
+import rpy2.rinterface_lib.callbacks
+import logging
+from rpy2.robjects import pandas2ri
+%load_ext rpy2.ipython
+pandas2ri.activate()
+rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR) # Supresses verbose R output.
+```
+
+```{code-cell} ipython3
+%%R
+library("edgeR")
 ```
 
 ## 1. Create an Annotated Gene Expression Matrix
@@ -99,43 +118,6 @@ Under the hood this is a light-weight wrapper for the `xarray.DataSet` object, w
 agem.data
 ```
 
-### Select Counts and Annotations using `get_gem_data()`
-
-The `AnnotatedGEM` object (and the `GeneSetCollection`, introduced further down) can have data subsets pulled from them easily using the `get_gem_data()` interface.
-
-```{code-cell} ipython3
-counts, labels = gsf.get_gem_data(agem, annotation_variables=['treatment', 'time', 'genotype'])
-labels = labels.to_dataframe()
-# Get time as an inetger.
-labels['time'] = labels['time'].str.split(' ', expand=True).iloc[:, 0].astype(int)
-# Infer missing replicate column.
-rep_dfs = []
-for g, df in labels.groupby(['treatment', 'time', 'genotype']):
-    df['replicate'] = np.arange(1, df.shape[0] + 1)
-    rep_dfs.append(df)
-
-labels = pd.concat(rep_dfs)
-labels.head()
-```
-
-```{code-cell} ipython3
-counts.shape
-```
-
-```{code-cell} ipython3
-import rpy2.rinterface_lib.callbacks
-import logging
-from rpy2.robjects import pandas2ri
-%load_ext rpy2.ipython
-pandas2ri.activate()
-rpy2.rinterface_lib.callbacks.logger.setLevel(logging.ERROR) # Supresses verbose R output.
-```
-
-```{code-cell} ipython3
-%%R
-library("edgeR")
-```
-
 ### Add a Normalized or Transformed Count Matrix
 
 The `AnnotatedGEM` object can hold more than one count matrix, so long as they share the same gene and sample coordinates.
@@ -145,11 +127,36 @@ This is more usefull for transforms that are computationally expensive, or that 
 We can then access a given count matrix by passing `count_variable='NAME'` to `get_gem_data()`.
 
 ```{code-cell} ipython3
+counts, _ = gsf.get_gem_data(agem)
 agem.data['qt_counts'] = xr.DataArray(
     quantile_transform(counts.values, axis=1), 
     coords=counts.coords, 
     name='qt_counts')
-agem.data['qt_counts']
+# agem.data['qt_counts']
+```
+
+### Select Counts and Annotations using `get_gem_data()`
+
+The `AnnotatedGEM` object (and the `GeneSetCollection`, introduced further down) can have data subsets pulled from them easily using the `get_gem_data()` interface.
+
++++
+
+UMAP DESCRIPTION.
+
+```{code-cell} ipython3
+counts, labels = gsf.get_gem_data(agem, annotation_variables=['treatment', 'genotype'])
+mapper = umap.UMAP(densmap=True).fit(counts.values)
+fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+umap.plot.points(mapper, labels=labels['treatment'], background='black', ax=axes[0], color_key_cmap='Set1');
+umap.plot.points(mapper, labels=labels['genotype'], background='black', ax=axes[1], color_key_cmap='Set2');
+```
+
+```{code-cell} ipython3
+counts, labels = gsf.get_gem_data(agem, annotation_variables=['treatment', 'genotype'], count_variable='qt_counts')
+mapper = umap.UMAP(densmap=True).fit(counts.values)
+fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+umap.plot.points(mapper, labels=labels['treatment'], background='black', ax=axes[0], color_key_cmap='Set1');
+umap.plot.points(mapper, labels=labels['genotype'], background='black', ax=axes[1], color_key_cmap='Set2');
 ```
 
 ## 2. Select genes / features / tags
@@ -173,6 +180,17 @@ Here I make some simple contrasts that select for treatment from each of our des
 Newer users may find it easier to use the [`makeContrasts` function](https://www.rdocumentation.org/packages/limma/versions/3.28.14/topics/makeContrasts) provided by the popular `limma` package.
 
 ```{code-cell} ipython3
+counts, labels = gsf.get_gem_data(agem, annotation_variables=['treatment', 'time', 'genotype'])
+labels = labels.to_dataframe()
+# Get time as an inetger.
+labels['time'] = labels['time'].str.split(' ', expand=True).iloc[:, 0].astype(int)
+# Infer missing replicate column.
+rep_dfs = []
+for g, df in labels.groupby(['treatment', 'time', 'genotype']):
+    df['replicate'] = np.arange(1, df.shape[0] + 1)
+    rep_dfs.append(df)
+
+labels = pd.concat(rep_dfs)
 ri_counts = gsf.utils.R_interface.Py_counts_to_R(counts)
 
 forumla_designs = [
@@ -212,7 +230,7 @@ Let's view the simplest model:
 
 ### Select via `edgeR`
 
-Here we present a 'standard' feature selection with `edgeR`. 
+Here we present a 'standard' feature selection with `edgeR`, see the [edgeR Bioconductor](https://bioconductor.org/packages/release/bioc/html/edgeR.html) page for more information.
 
 ```{code-cell} ipython3
 :tags: []
@@ -283,16 +301,14 @@ for result_dfs, formula, contrasts in  zip(results, forumla_designs, contrast_li
 dge_collection
 ```
 
-```{code-cell} ipython3
-# dge_collection["'0 + treatment'__treatment[DROUGHT]"].get_n_top_genes(threshold=2.0, mode="above_absolute_threshold")
-```
-
 ### Random Forest via Boruta Feature Selection
 
-Boruta is
-Random forests..
-sklearn...
-...
+See this [FAQ](https://notabug.org/mbq/Boruta/wiki/FAQ) for details on Boruta.
+
+In brief, boruta lets us use a 'minimal optimal' feature selection model as an 'all relevant' method.
+Random forest models typically work by finding a minimum optimal set of features.
+In our use, we are interested in all features that may be relevant, not the minimum required to train a model.
+`GSForge` provides a warpper which returns `xarray.DataSet` objects suitable for immediate `GeneSet` construction.
 
 ```{code-cell} ipython3
 boruta_gsc = gsf.GeneSetCollection(gem=agem, name='Boruta Results')
@@ -308,15 +324,18 @@ for target in ["treatment", "genotype"]:
         agem,
         estimator=selecting_model,
         annotation_variables=target,
-        max_iter=25)
+        max_iter=100)
     
     boruta_gsc[f"Boruta_{target}"] = gsf.GeneSet(boruta_treatment_ds, name=f"Boruta_{target}")
     
 boruta_gsc
 ```
 
+We can check if boruta still has features to resolve into important or not by examining the 'support_weak' variable.
+In practice one should increase the number of iterations until there are no remaining values to be resolved.
+
 ```{code-cell} ipython3
-boruta_gsc
+boruta_gsc['Boruta_genotype'].data.support_weak.values.sum()
 ```
 
 ### Gene Sets from Literature
@@ -326,13 +345,19 @@ Fortunately the only requirement for a GeneSet to be useful is that has an index
 See [this notebook](../walkthroughs/oryza_sativa/04-GeneSets_from_Literature) for more details.
 
 Here we read in a supporting information file from the EGRIN study by Wilkins *et. al.*, and after a bit of parsing it is converted to a series of `GeneSet` objects.
+This SI table appears to be counts of significant differential expression for time contrasts within each treatment.
+The full model is not (exactly) specified in the paper, but we can infer that it was probably:
+
+$$
+~ 0 + genotype:treatment:C(time):C(replicate)
+$$
+
+Where $C(\text{label})$ indicates treatment as a categorical, rather than scalar variable.
+The union for each set of treatment contrasts was probably then used.
 
 ```{code-cell} ipython3
 si1_df = pd.read_csv(SI_FILE_1_PATH, skiprows=3, index_col=0)
-si1_df.head()
-```
-
-```{code-cell} ipython3
+# Manual index fix.
 mappings = {'ChrSy.fgenesh.gene.37': 'ChrSy.fgenesh.mRNA.37'}
 
 
@@ -395,13 +420,9 @@ For this demonstration we will combine each collection into its own set by takin
 Then we will examine the features selected for all treatments by each method.
 
 ```{code-cell} ipython3
-lit_geneset = gsf.GeneSet.from_GeneSets(*lit_dge_coll.gene_sets.values(), name='literature_union')
-lit_geneset
-```
-
-```{code-cell} ipython3
 union_coll = gsf.GeneSetCollection(gem=agem, name='Combnied Collection')
 union_coll.gene_sets.update(boruta_gsc.gene_sets)
+lit_geneset = gsf.GeneSet.from_GeneSets(*lit_dge_coll.gene_sets.values(), name='literature_union')
 union_coll.gene_sets.update({'literature_union': lit_geneset})
 
 # Here I get the keys for each of the two DGE models we ran above.
@@ -419,6 +440,8 @@ union_coll
 
 ### Visualize Set Overlap
 
+See the [upsetplot documentation](https://upsetplot.readthedocs.io/en/stable/) for more details.
+
 Instead of a Venn diagram we use an 'Upset plot'.
 This allows us to view overlaps of sets larger than three.
 
@@ -426,28 +449,174 @@ This allows us to view overlaps of sets larger than three.
 gsf.plots.collections.UpsetPlotInterface(union_coll)
 ```
 
-## 4. Next Steps
+### Comparing Selection Sets
+
+We can estimate how well a given subset of genes 'describes' a sample (phenotype) label by comparing how well they perform using a given machine learning model.
 
 ```{code-cell} ipython3
-umap_interface = gsf.panels.UMAP_Interface(union_coll, random_state=42)
-layout = umap_interface.view(hue='treatment') + umap_interface.view(hue='genotype')
-layout.opts(fig_size=200)
+:tags: []
+
+results = dict()
+
+for key in list(union_coll.gene_sets.keys()) + ['all']:
+    counts, treatment = gsf.get_gem_data(union_coll, selected_gene_sets=[key], annotation_variables=["treatment"])
+    x_train, x_test, y_train, y_test = model_selection.train_test_split(counts, treatment)
+    # model = RandomForestClassifier(class_weight='balanced', n_estimators=1000, n_jobs=-1, max_depth=6)
+    model = linear_model.Perceptron()
+    model.fit(x_train, y_train) 
+    results[key] = model.score(x_test, y_test)
+    
+
+hv.Bars(results, kdims=["Gene Selection Group"]).opts(
+    xrotation=90, invert_axes=True, ylim=(0, 1.1), ylabel='Score', fig_size=150, 
+    aspect=2, title='Scores vs Treatment Labels')
+```
+
+### Ranking Features within Sets
+
+GSForge provides helper functions to extract genes by a score values.
+Note we get the data from the original dge collection, as those logFC values are intact.
+
+```{code-cell} ipython3
+dge_ds = dge_collection["'0 + treatment:genotype'__treatment[HEAT]"]
+# dge_ds.data
 ```
 
 ```{code-cell} ipython3
-umap_interface = gsf.panels.UMAP_Interface(union_coll, random_state=42, selected_gene_sets=['all'])
-layout = umap_interface.view(hue='treatment') + umap_interface.view(hue='genotype')
-layout.opts(fig_size=200)
+dge_ds.get_top_n_genes("logFC", 10)
 ```
+
+```{code-cell} ipython3
+dge_ds.get_genes_by_threshold(3.0, "logFC")
+```
+
+### Rank Genes with a Random Forest
+
+Random forests and feature ranks.
+Robust enough to function in our case.
+Some values filtered prior to dge analysis...
+
+```{code-cell} ipython3
+union_coll["'0 + treatment:genotype'__treatment[HEAT]"] = dge_collection["'0 + treatment:genotype'__treatment[HEAT]"]
+
+gene_rank_mdl = RandomForestClassifier(class_weight='balanced', n_estimators=1000, n_jobs=-2)
+
+treatment_nFDR = gsf.operations.nFDR(
+    union_coll,
+    selected_gene_sets=["Boruta_treatment", "'0 + treatment:genotype'__treatment[HEAT]"],
+    gene_set_mode="union",
+    annotation_variables=["treatment"],
+    model=gene_rank_mdl,
+    n_iterations=5
+)
+
+treatment_feature_importance = gsf.operations.RankGenesByModel(
+    union_coll,
+    selected_gene_sets=["Boruta_treatment", "'0 + treatment:genotype'__treatment[HEAT]"],
+    gene_set_mode="union",
+    annotation_variables=["treatment"],
+    model=gene_rank_mdl,
+    n_iterations=5
+)
+```
+
+```{code-cell} ipython3
+gene_union = union_coll.union(["Boruta_treatment", "'0 + treatment:genotype'__treatment[HEAT]"])
+
+boruta_support = np.isin(gene_union, union_coll["Boruta_treatment"].gene_support())
+dge_support = np.isin(gene_union, 
+                      union_coll["'0 + treatment:genotype'__treatment[HEAT]"].gene_support())
+
+support = np.zeros_like(gene_union)
+support[boruta_support] = "Boruta"
+support[dge_support] = "DGE"
+support[(boruta_support * dge_support) == True] = "Both"
+
+df = pd.DataFrame({
+    "logFC": dge_ds.data['logFC'].reindex(Gene=gene_union).values,
+    "Gene": gene_union,
+    "mean feature importance": treatment_feature_importance.feature_importance_mean.values,
+    "mean nFDR": treatment_nFDR.nFDR_mean.values,
+    "support source": support,
+}).set_index("Gene")
+
+
+# sns.pairplot(df, hue="support source", markers='.', diag_kind="kde", 
+#              plot_kws=dict(edgecolor=None, alpha=0.25));
+
+fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+sns.scatterplot(data=df, x='mean feature importance', y='mean nFDR', hue='support source',
+                edgecolor=None, alpha=0.5, marker='.', ax=axes[0]);
+sns.scatterplot(data=df, x='mean feature importance', y='logFC', hue='support source',
+                edgecolor=None, alpha=0.5, marker='.', ax=axes[1]);
+```
+
+### UMAP Embeddings of Selections
+
+```{code-cell} ipython3
+counts, labels = gsf.get_gem_data(union_coll, selected_gene_sets=['Boruta_treatment'], count_variable='qt_counts', 
+                                  annotation_variables=['treatment', 'genotype'])
+mapper = umap.UMAP(densmap=True).fit(counts.values)
+fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+umap.plot.points(mapper, labels=labels['treatment'], background='black', ax=axes[0], color_key_cmap='Set1');
+umap.plot.points(mapper, labels=labels['genotype'], background='black', ax=axes[1], color_key_cmap='Set2');
+```
+
+```{code-cell} ipython3
+counts, labels = gsf.get_gem_data(union_coll, selected_gene_sets=['literature_union'], count_variable='qt_counts', 
+                                  annotation_variables=['treatment', 'genotype'])
+mapper = umap.UMAP(densmap=True).fit(counts.values)
+fig, axes = plt.subplots(1, 2, figsize=(20, 10))
+umap.plot.points(mapper, labels=labels['treatment'], background='black', ax=axes[0], color_key_cmap='Set1');
+umap.plot.points(mapper, labels=labels['genotype'], background='black', ax=axes[1], color_key_cmap='Set2');
+```
+
+### Clustermap Selection
+
+```{code-cell} ipython3
+def series_to_colors(series, cmap, categorical=True):
+    keys = series.unique()
+    colors = hv.plotting.util.process_cmap(cmap, len(keys), categorical=categorical)
+    mapper = {k: c for k, c in zip(keys, colors)}
+    return series.map(mapper)
+
+# az_samples = agem.data.sel(Sample=agem.data.genotype == 'Azuenca (AZ; IRGC#328, Japonica)')['Sample'].values
+df, labels = gsf.get_gem_data(union_coll, 
+#                               sample_subset=az_samples, 
+                              annotation_variables=['treatment', 'genotype'],
+                              selected_gene_sets=["Boruta_treatment", 
+                                                  "literature_union"],
+                              gene_set_mode='intersection',
+                              count_transform=lambda counts: np.log2(counts.where(counts > 0)),
+                              output_type="pandas")
+
+
+color_df = pd.DataFrame({
+    "treatment": series_to_colors(labels['treatment'], "Set1"),
+    "genotype": series_to_colors(labels['genotype'], "Set2")
+})
+
+sns.clustermap(df.fillna(0), 
+               metric='cityblock', 
+               row_colors=color_df,
+               row_cluster=False, 
+               dendrogram_ratio=0.1,
+               cmap='jet',
+               figsize=(10, 10));
+```
+
+## 4. Conclusion & Next Steps
+
+Links to other notebooks and resources.
+
++++
 
 ## References
 
 1. Wilkins, O. et al. EGRINs (Environmental gene regulatory influence networks) in rice that function in the response to water deficit, high temperature, and agricultural environments. Plant Cell 28, 2365–2384 (2016).
 
-2. LIMMA
+2. Ritchie, M. E. et al. Limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Res. 43, e47 (2015).
 
-3. UMAP
+3. McInnes, L., Healy, J. & Melville, J. UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction. (2018).
 
-```{code-cell} ipython3
-
-```
+4. Lex, A., Gehlenborg, N., Strobelt, H., Vuillemot, R. & Pfister, H. UpSet: Visualization of Intersecting Sets Europe PMC Funders Group. IEEE Trans Vis Comput Graph 20, 1983–1992 (2014).
