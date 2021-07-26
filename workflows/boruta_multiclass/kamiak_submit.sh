@@ -24,4 +24,4 @@ module load java nextflow singularity
 singularity pull -F --name systemsgenetics-gsforge_workflow-latest.img docker://systemsgenetics/gsforge_workflow:latest
 
 # Run the workflow.
-nextflow run .main.nf -profile test,kamiak
+nextflow run main.nf -profile test,kamiak
