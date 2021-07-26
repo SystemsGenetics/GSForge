@@ -331,7 +331,8 @@ class Interface(param.Parameterized):
             return self.gem.data[self.annotation_variables].sel(
                 {self.gem.sample_index_name: sample_index})[self.annotation_variables[0]].copy(deep=True)
 
-        return self.gem.data[self.annotation_variables].copy(deep=True)
+        return self.gem.data[self.annotation_variables].sel(
+                {self.gem.sample_index_name: sample_index}).copy(deep=True)
 
     # TODO: Should this be a private function?
     #       Users should call gsf.get_gem_data..., or should agem.get_gem_data...
@@ -381,8 +382,8 @@ class Interface(param.Parameterized):
             # It may be faster to call .values and create a new dataframe instead of unstacking.
             logger.info('Returning a tuple of counts and annotations each as a pandas.DataFrame.')
             if self_.y_annotation_data is not None:
-                return self_.x_count_data.to_dataframe().unstack().droplevel(0,
-                                                                             axis=1), self_.y_annotation_data.to_dataframe()
+                return self_.x_count_data.to_dataframe().unstack().droplevel(0, axis=1), \
+                       self_.y_annotation_data.to_dataframe()
             else:
                 return self_.x_count_data.to_dataframe().unstack().droplevel(0, axis=1), self_.y_annotation_data
 

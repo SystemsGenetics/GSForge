@@ -65,6 +65,7 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
     'DGE_examples/*',
+    'tour'
 ]
 
 # -- sphinx autodoc config ------------------------------------------------

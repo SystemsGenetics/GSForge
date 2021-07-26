@@ -21,7 +21,7 @@ Here we provide links to software used to analyze RNA-seq expression matrices.
 + Cuffdiff2 2013
 + DEGseq 2009
 + SAMseq 2013
-+ sleuth 2017
++ sleuth 2017 https://github.com/pachterlab/sleuth
 + limma 2015
 
 
@@ -29,6 +29,7 @@ Here we provide links to software used to analyze RNA-seq expression matrices.
 
 ### Reviews of DGE Methods
 
++ Contrast creation guide
 
 ## Alignment Tools
 

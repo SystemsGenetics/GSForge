@@ -5,6 +5,7 @@ import logging
 from pathlib import Path
 # from textwrap import dedent
 from typing import List, Union, AnyStr, IO, Dict
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -386,6 +387,26 @@ class AnnotatedGEM(param.Parameterized):
                                   count_kwargs=count_kwargs, label_kwargs=label_kwargs,
                                   transpose_counts=transpose_counts, **params)
         return cls(**params)
+
+    # TODO: Document from_geo_id function.
+    @classmethod
+    def from_geo_id(cls, geo_id: str, destination: str = "./") -> AnnotatedGEM:
+        try:
+            import GEOparse
+        except ImportError:
+            warn("AnnotatedGEM.from_geo_id requires GEOparse to be installed.")
+            raise ImportError("AnnotatedGEM.from_geo_id requires GEOparse to be installed.") from None
+
+        soft_object = GEOparse.get_GEO(geo=geo_id, destdir=destination)
+        count_df = soft_object.table.loc[:, soft_object.columns.index]
+        count_df["Gene"] = soft_object.table["ID_REF"]
+        # if count_df["Gene"].dtype != "object":
+            # count_df["Gene"] = "Gene_" + count_df["Gene"].astype("str")
+        count_df = count_df.set_index("Gene")
+        label_df = soft_object.columns
+        dataset = xrarray_gem_from_pandas(count_df, label_df)
+        dataset = dataset.assign_attrs(soft_object.metadata)
+        return cls(data=dataset, name=geo_id)
 
     def save(self, path: Union[str, Path, IO[AnyStr]], **kwargs) -> str:
         """

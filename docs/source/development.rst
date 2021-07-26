@@ -43,3 +43,6 @@ From the top directory of the repository::
 Convert an existing jupyter notebook to an all-text ``MyST`` format::
 
     jupytext my_file.ipynb --to myst
+
+If a notebook should run everytime travis integration is called, ensure the checkpoint files are not commited.
+For notebooks that should not be run (many take too long for travis), ensure the checkpoint file is commited.

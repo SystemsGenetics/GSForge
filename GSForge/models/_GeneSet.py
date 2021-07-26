@@ -599,7 +599,7 @@ class GeneSet(param.Parameterized):
 
         active_name = name if name is not None else self.name
         # Remove any spaces in the active name.
-        active_name = active_name.replace(" ", "_")
+        # active_name = active_name.replace(" ", "_")
         output_path = os.path.join(target_dir, active_name + ".nc")
 
         # Save some parameters that may be unique to this instance.

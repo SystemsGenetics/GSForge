@@ -75,8 +75,8 @@ class GenewiseAggregateScatter(InterfacePlottingBase):
                                            doc="Select from the available axis aggregation functions.",
                                            objects=axis_functions.keys())
 
-    axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds.where(ds > 0))),
-                                     doc="A transform (usually log2) for getting a viewable spread of the results.")
+    # axis_transform = param.Parameter(default=('log 2', lambda ds: np.log2(ds.where(ds > 0))),
+    #                                  doc="A transform (usually log2) for getting a viewable spread of the results.")
     # axis_transform_name = param.String(default='log 2')
 
     @staticmethod
@@ -175,22 +175,14 @@ class GenewiseAggregateScatter(InterfacePlottingBase):
 
     def __call__(self):
         counts = self.x_count_data
-        
-        # Prepare axis labels based on the aggregation and transforms selected.
-        if self.axis_transform:
-            x_axis_name = f'{self.axis_transform[0]} {self.x_axis_selector}'
-            y_axis_name = f'{self.axis_transform[0]} {self.y_axis_selector}'
-        else:
-            x_axis_name = f'{self.x_axis_selector}'
-            y_axis_name = f'{self.y_axis_selector}'
+
+        x_axis_name = f'{self.x_axis_selector}'
+        y_axis_name = f'{self.y_axis_selector}'
 
         data = xr.Dataset({
             x_axis_name: self.axis_functions[self.x_axis_selector](counts),
             y_axis_name: self.axis_functions[self.y_axis_selector](counts),
         })
-
-        if self.axis_transform:
-            data = self.axis_transform[1](data)
         
         options = None
         if self.apply_default_opts is True:

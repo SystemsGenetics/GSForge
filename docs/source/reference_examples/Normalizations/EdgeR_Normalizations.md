@@ -18,7 +18,6 @@ and returning the results back to Python to store and view the results with `GSF
 
 ```{code-cell} ipython3
 import xarray as xr
-
 import GSForge as gsf
 import holoviews as hv
 hv.extension('bokeh')

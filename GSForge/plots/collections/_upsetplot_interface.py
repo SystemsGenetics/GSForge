@@ -15,12 +15,12 @@ class UpsetPlotInterface(InterfacePlottingBase):
     This is needed as passing gene membership dictionaries to UpsetPlot
     does not always provide the correct counts."""
 
-    show_counts = param.Boolean(default=True)
+    # show_counts = param.Boolean(default=True)
     min_overlap_size = param.Integer(default=1)
+    upset_kwargs = param.Dict(default=dict())
 
     @staticmethod
     def build_membership_series(gene_dict, min_size: int = 1):
-        # dd = gene_dict.as_dict()
         keys = list(sorted(gene_dict.keys()))
 
         output = dict()
@@ -40,4 +40,4 @@ class UpsetPlotInterface(InterfacePlottingBase):
     def __call__(self, *args, **kwargs):
         upset_series = self.build_membership_series(self.gene_set_collection.as_dict(keys=self.selected_gene_sets),
                                                     min_size=self.min_overlap_size)
-        return upsetplot.UpSet(upset_series, show_counts=self.show_counts)
+        return upsetplot.UpSet(upset_series, **self.upset_kwargs)

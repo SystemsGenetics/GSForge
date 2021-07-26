@@ -37,39 +37,15 @@ hv.extension('bokeh')
 from os import fspath, environ
 from pathlib import Path
 
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
 DEG_COLL_PATH = OSF_PATH.joinpath("osfstorage", "DEG_gene_sets")
 ```
-
-## Logging Setup
-
-Logging output can be enabled so as to clarify the steps being preformed by `gsforge`.
-This can set for an entire notebook or set on a per-function basis (where supported).
-
-```{code-cell}
-# This cell enables logging for gsforge within this notebook.
-import logging
-import sys
-
-logger = logging.getLogger("GSForge")
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(logging.Formatter('%(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(handler)
-```
-
-In other cases, you can try passing a log level the `verbose` argument.
-The available levels are: `['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']`.
-
-**New users are encouraged to set the log-level to** `'INFO'` **notebook-wide as above.**
-
-+++
 
 ## Load Data
 
 ```{code-cell}
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem 
 ```
 
@@ -141,7 +117,9 @@ counts, label_ds = gsf.get_gem_data(agem, annotation_mask='complete', annotation
 ### Transforming the Count Matrix
 
 Often times a simple transform is required when using a count matrix, e.g. log transforms.
+GSFoge allows users to supply a function to transform the subset of counts returned, this function only operates on the count values returned.
 
 ```{code-cell}
-pass
+counts, label_ds = gsf.get_gem_data(agem, annotation_mask='complete', annotation_variables=['treatment'],
+                                    count_transform=lambda c: np.log(c + 1.0))
 ```

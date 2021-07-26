@@ -17,6 +17,7 @@ class RasterGEM(InterfacePlottingBase):
     hue = param.String(default=None, doc="Color by which to shade the observations.")
     cmap = param.Parameter(default=None)
     plot_options = param.Parameter(default=dict(plot_width=800, plot_height=400))
+    canvas_opts = param.Dict(default=None)
 
     @staticmethod
     def gem_raster(counts, canvas_opts=None):
@@ -88,4 +89,4 @@ class RasterGEM(InterfacePlottingBase):
                 counts=self.x_count_data.values,
                 labels=self.y_annotation_data.values,
                 cmap=self.cmap,
-                canvas_opts=self.cmap)
+                canvas_opts=self.canvas_opts)

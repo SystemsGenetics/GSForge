@@ -33,7 +33,7 @@ class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
                 for (ak, av), (bk, bv) in itertools.permutations(gene_dict.items(), 2)
                 if ak != bk]
         heatmap = hv.HeatMap(data, vdims=overlap_dim)
-        return heatmap #* hv.Labels(heatmap)  # Causes an error with matplotlib.
+        return heatmap * hv.Labels(heatmap)  # Causes an error with matplotlib.
 
     def __call__(self, *args, **params):
         if self.selected_gene_sets == [None]:

@@ -27,8 +27,8 @@ rng = np.random.default_rng(0)
 In this example we have an annotated GEM already constructed:
 
 ```{code-cell} ipython3
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
 ```
 
 ```{code-cell} ipython3
@@ -103,7 +103,7 @@ dge_gs
 dge_gs.data
 ```
 
-## Creating GeneSetCollections
+## Creating and Saving GeneSetCollections
 
 We only need to provided an AnnotatedGEM and a name to create a `GeneSetCollection`.
 Then add `GeneSet` objects like you would entries to a dictionary:
@@ -115,6 +115,10 @@ sample_coll['simulated DGE example'] = set_example
 sample_coll
 ```
 
-To see what you can do with a `GeneSetCollection` see:
-+ the Interface Guide
-+ plotting examples
+GeneSetCollections are saved as a directory, each set saved as a separate netcdf file.
+
+```{code-cell} ipython3
+save = False
+if save == True:
+    sample_coll.save('my_collection')
+```
