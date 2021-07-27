@@ -46,7 +46,7 @@ class RankGenesByModel(CallableInterface):
                  "annotation_variables": labels.name}
 
         data = xr.DataArray(data=model.feature_importances_,
-                            coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]])],
+                            coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]].values)],
                             name="feature_importances",
                             attrs=attrs)
         return data
@@ -63,24 +63,13 @@ class RankGenesByModel(CallableInterface):
             return self.rank_genes_by_model(counts=counts, labels=targets, model=self.model).to_dataset()
 
         else:
-            rankings = np.vstack([self.rank_genes_by_model(counts=counts, labels=targets, model=self.model)
-                                  for _ in range(self.n_iterations)])
-
-            ranking_ds = xr.Dataset(
-                data_vars={
-                    'feature_importance': (
-                        ('model_iteration', counts.coords.dims[1]),  # dimensions
-                        rankings,  # values
-                    ),
-                },
-                coords={
-                    counts.coords.dims[1]: counts[counts.coords.dims[1]].values,
-                    'model_iteration': np.arange(self.n_iterations),
-                },
-            )
-            ranking_ds["feature_importance_mean"] = ranking_ds['feature_importance'].mean(dim="model_iteration")
-            ranking_ds["feature_importance_std"] = ranking_ds['feature_importance'].std(dim="model_iteration")
-
+            # return [self.rank_genes_by_model(counts=counts, labels=targets, model=self.model)
+            #                         for _ in range(self.n_iterations)]
+            ranking_ds = xr.concat([self.rank_genes_by_model(counts=counts, labels=targets, model=self.model)
+                                    for _ in range(self.n_iterations)],
+                                   dim='model_iteration')
+            # ranking_ds["feature_importance_mean"] = ranking_ds['feature_importance'].mean(dim="model_iteration")
+            # ranking_ds["feature_importance_std"] = ranking_ds['feature_importance'].std(dim="model_iteration")
             return ranking_ds
 
 
@@ -117,10 +106,9 @@ class nFDR(CallableInterface):
                  "annotation_variables": labels.name}
 
         nrd_xarray = xr.DataArray(data=null_rank_dist,
-                                  coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]])],
+                                  coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]].values)],
                                   name="nFDR",
                                   attrs=attrs)
-
         return nrd_xarray
 
     def __call__(self, *args, **params):
@@ -132,23 +120,12 @@ class nFDR(CallableInterface):
             return self.nFDR(counts=counts, labels=targets, model=self.model).to_dataset()
 
         else:
-            nfdr_data = np.vstack([self.nFDR(counts=counts, labels=targets, model=self.model)
-                                   for i in range(self.n_iterations)])
+            ranking_ds = xr.concat([self.nFDR(counts=counts, labels=targets, model=self.model)
+                                    for _ in range(self.n_iterations)],
+                                   dim='model_iteration')
 
-            ranking_ds = xr.Dataset(
-                data_vars={
-                    'nFDR': (
-                        ('model_iteration', counts.coords.dims[1]),  # dimensions
-                        nfdr_data,  # values
-                    ),
-                },
-                coords={
-                    counts.coords.dims[1]: counts[counts.coords.dims[1]].values,
-                    'model_iteration': np.arange(self.n_iterations),
-                },
-            )
-            ranking_ds["nFDR_mean"] = ranking_ds['nFDR'].mean(dim="model_iteration")
-            ranking_ds["nFDR_std"] = ranking_ds['nFDR'].std(dim="model_iteration")
+            # ranking_ds["nFDR_mean"] = ranking_ds['nFDR'].mean(dim="model_iteration")
+            # ranking_ds["nFDR_std"] = ranking_ds['nFDR'].std(dim="model_iteration")
 
             return ranking_ds
 
@@ -186,7 +163,7 @@ class mProbes(CallableInterface):
 
         mprobes_xarray = xr.DataArray(
             data=null_rank_dist,
-            coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]])],
+            coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]].values)],
             name="nFDR",
             attrs=attrs)
 
@@ -227,8 +204,8 @@ class mProbes(CallableInterface):
                     'model_iteration': np.arange(self.n_iterations),
                 },
             )
-            ranking_ds["mProbes_mean"] = ranking_ds['mProbes'].mean(dim="model_iteration")
-            ranking_ds["mProbes_std"] = ranking_ds['mProbes'].std(dim="model_iteration")
+            # ranking_ds["mProbes_mean"] = ranking_ds['mProbes'].mean(dim="model_iteration")
+            # ranking_ds["mProbes_std"] = ranking_ds['mProbes'].std(dim="model_iteration")
 
             return ranking_ds
 
