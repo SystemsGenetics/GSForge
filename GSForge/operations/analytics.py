@@ -169,17 +169,6 @@ class mProbes(CallableInterface):
 
         return mprobes_xarray
 
-    # def _mprobes_fdr_to_xarray(self, values):
-    #     attrs = {'Ranking Model': str(self.model),
-    #              "count_variable": self.count_variable,
-    #              "annotation_variables": self.annotation_variables}
-    #     return xr.DataArray(
-    #         data=values,
-    #         coords=[self.get_gene_index()],
-    #         dims=[self.gem.gene_index_name],
-    #         attrs=attrs,
-    #         name="nFDR")
-
     def __call__(self, *args, **params):
 
         counts = self.x_count_data
