@@ -28,14 +28,13 @@ import GSForge as gsf
 import holoviews as hv
 hv.extension('bokeh')
 
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
-HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-DEG_COLL_PATH = OSF_PATH.joinpath("Collections", "DEG_gene_sets")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
+DEG_COLL_PATH = OSF_PATH.joinpath("GeneSetCollections", "DEG_gene_sets")
 ```
 
 ```{code-cell} ipython3
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem
 ```
 
@@ -49,7 +48,7 @@ deg_gsc
 ***Select a particular result set of interest***
 
 ```{code-cell} ipython3
-deg_gs = deg_gsc.gene_sets["deseq2_treatment"]
+deg_gs = deg_gsc.gene_sets["'0 + treatment:genotype'__treatment[HEAT]"]
 deg_gs
 ```
 

@@ -45,14 +45,14 @@ library("edgeR")
 # OS-independent path management.
 from os import fspath, environ
 from pathlib import Path
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
 ```
 
 ***Load an AnnotatedGEM***
 
 ```{code-cell} ipython3
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem
 ```
 

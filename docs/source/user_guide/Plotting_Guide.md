@@ -47,7 +47,7 @@ BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "boruta_nf")
 Load an annotated expression matrix and a collection:
 
 ```{code-cell}
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem
 ```
 

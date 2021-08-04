@@ -32,6 +32,9 @@ class UpsetPlotInterface(InterfacePlottingBase):
                 if intersection_size >= min_size:
                     key = tuple(True if k in key_combo else False for k in keys)
                     output[key] = intersection_size
+        # TODO: Propoer error stuff?
+        if bool(output) == False:
+            return ValueError
 
         idf = pd.DataFrame(output.keys(), columns=keys)
         index = pd.MultiIndex.from_frame(idf)

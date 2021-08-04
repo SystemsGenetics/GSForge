@@ -31,20 +31,19 @@ import GSForge as gsf
 import holoviews as hv
 hv.extension('bokeh')
 
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
-HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "nf_boruta")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
+TOUR_BORUTA = OSF_PATH.joinpath("GeneSetCollections", "tour_boruta")
 ```
 
 ```{code-cell}
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem
 ```
 
 ```{code-cell}
 gsc = gsf.GeneSetCollection.from_folder(
-    gem=agem, target_dir=BOR_COLL_PATH, name="Boruta Results")
+    gem=agem, target_dir=TOUR_BORUTA, name="Boruta Tour Results")
 gsc
 ```
 
@@ -53,10 +52,10 @@ gsc
 **Select Genes of Interest**
 
 There are a few too many genes for us to look at all the genes in our collection.
-Instead we will get the 10 largest (by mean) intensity genes.
+Rather we will get the 10 largest (by mean) intensity genes.
 
 ```{code-cell}
-counts, _ = gsf.get_gem_data(gsc, selected_gene_sets=["treatment"])
+counts, _ = gsf.get_gem_data(gsc, selected_gene_sets=["Boruta_treatment"])
 selected_genes = counts.isel(Gene=np.argsort(counts.mean(dim="Sample").values)[-10:])["Gene"].values
 selected_genes
 ```

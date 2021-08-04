@@ -38,8 +38,6 @@ agem
 
 ## Creating GeneSets
 
-For tool-specific examples please see the [reference examples](../reference_examples/ref_examples_index).
-
 See the API reference of [`GSForge.GeneSet`](../API/GSForge.models) for all availble creation functions, which include:
 + `from_pandas`
 + `from_GeneSets`

@@ -21,7 +21,6 @@ sys.path.insert(0, os.path.abspath('../../GSForge/'))
 sys.path.insert(0, os.path.abspath('.'))
 # Import param docstring tools. You can ignore linting warnings re this import.
 from paramdoc import param_formatter, param_skip
-import sphinx_rtd_theme
 
 
 # -- param docstring setup ---------------------------------------------------
@@ -64,9 +63,14 @@ extensions = [
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
-    'DGE_examples/*',
-    'tour'
+    'in_dev/*',
+    # 'reference_examples/DGE_examples/*',
+    # 'reference_examples/Networks/*',
+    # 'reference_examples/machine_learning/*',
+    # 'walkthroughs/oryza_sativa/*',
+    # 'user_guide/tour.ipynb'
 ]
+nbsphinx_execute = 'auto'
 
 # -- sphinx autodoc config ------------------------------------------------
 autodoc_member_order = 'bysource'

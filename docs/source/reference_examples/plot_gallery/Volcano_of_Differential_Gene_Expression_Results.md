@@ -21,7 +21,7 @@ A common way to visualize the results of a DGE analysis.
 
 Shared setup for all plotting guides.
 
-```{code-cell}
+```{code-cell} ipython3
 # OS-independent path management.
 from os import environ
 from pathlib import Path
@@ -30,18 +30,17 @@ import GSForge as gsf
 import holoviews as hv
 hv.extension('bokeh')
 
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
-HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-DEG_COLL_PATH = OSF_PATH.joinpath("Collections", "DEG_gene_sets")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
+DEG_COLL_PATH = OSF_PATH.joinpath("GeneSetCollections", "DEG_gene_sets")
 ```
 
-```{code-cell}
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+```{code-cell} ipython3
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 deg_gsc = gsf.GeneSetCollection.from_folder(
     gem=agem, target_dir=DEG_COLL_PATH, name="DGE Results")
 deg_gsc
@@ -49,19 +48,23 @@ deg_gsc
 
 ***Select a particular result set of interest***
 
-```{code-cell}
-deg_gs = deg_gsc.gene_sets["deseq2_treatment"]
+```{code-cell} ipython3
+deg_gs = deg_gsc.gene_sets["'0 + treatment:genotype'__treatment[HEAT]"]
 deg_gs
 ```
 
 ***View the data stored within this GeneSet result***
 
-```{code-cell}
+```{code-cell} ipython3
 deg_gs.data
 ```
 
 ## Create a Volcano Plot
 
-```{code-cell}
+```{code-cell} ipython3
 gsf.plots.results.Volcano(deg_gs)
+```
+
+```{code-cell} ipython3
+
 ```

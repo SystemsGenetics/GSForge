@@ -25,8 +25,8 @@ import pandas as pd
 import GSForge as gsf
 
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
-RAW_COUNT_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "rice_heat_drought.GEM.raw.txt")
-LABEL_PATH = OSF_PATH.joinpath("raw_annotation_data", "GEMmaker_GEMs", "PRJNA301554.hydroponic.annotations.txt")
+COUNT_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "rice_heat_drought.GEM.raw.txt")
+LABEL_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "raw_annotation_data", "PRJNA301554.hydroponic.annotations.txt")
 
 # Output path.
 GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
@@ -38,8 +38,8 @@ If your count and annotation files have matching sample indices you can create a
 
 ```{code-cell} ipython3
 agem = gsf.AnnotatedGEM.from_files(
-    count_path=RAW_COUNT_PATH,
-    label_path=HYDRO_LABEL_PATH,
+    count_path=COUNT_PATH,
+    label_path=LABEL_PATH,
     # These are the default arguments passed to from_files,
     # to the individual calls to `pandas.read_csv`.
     count_kwargs=dict(index_col=0, sep="\t"),
@@ -51,10 +51,10 @@ It is not uncommon to have to wrangle sample or gene names to some degree.
 Once complete you may supply the data as a pair of `pandas.Dataframe` or a single `xarray.DataSet` object.
 
 ```{code-cell} ipython3
-count_df = pd.read_csv(RAW_COUNT_PATH, sep="\t", index_col=0)
+count_df = pd.read_csv(COUNT_PATH, sep="\t", index_col=0)
 # Wrangle data here...
 
-label_df = pd.read_csv(HYDRO_LABEL_PATH, index_col=1, sep="\t")
+label_df = pd.read_csv(LABEL_PATH, index_col=1, sep="\t")
 label_df['genotype'] = label_df['genotype'].str.split(" ", expand=True).iloc[:, 0]
 label_df['time'] = label_df['time'].str.split(' ', expand=True).iloc[:, 0].astype(int)
 # Perhaps even more wrangling...

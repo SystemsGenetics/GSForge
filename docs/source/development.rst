@@ -32,6 +32,11 @@ https://jupytext.readthedocs.io/en/latest/
 Building Documentation
 ======================
 
+There are two stages to building the documentation.
+
+    1. Build the API with ``sphinx-apidoc``.
+    2. Build the website and run the notebooks with ``sphinx``.
+
 From the top directory of the repository::
 
     # Construct the API documentation.

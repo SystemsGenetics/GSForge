@@ -30,6 +30,16 @@ You should consider using ``GSForge`` when you have:
 
 You should seriously consider using ``GSForge`` if you find yourself in more than one of the above categories.
 
+The general workflow is then:
+
+1. Import Data and create an AnnotatedGEM.
+    + *Optional* [Visualize GEM](../reference_examples/plot_gallery/GEM_Rasters).
+2. Find or select genes of interest.
+3. Create a GeneSetCollection.
+    + *Optional* [View subset intersections](../reference_examples/plot_gallery/GeneSet_Overlap_Heatmaps).
+4. Compare GeneSets.
+    + Visualize membership overlap.
+
 
 1. Data Structures
 ------------------
@@ -75,13 +85,32 @@ on set membership.
 
 
 .. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :caption: User Guide / Tutorial:
+
+    Installation <user_guide/installation>
+    Tour <user_guide/tour>
+    Annotated Expression Matrix Creation <user_guide/gem_creation>
+    Set and Collection Creation <user_guide/set_and_collection_creation>
+    Interface Guide <user_guide/Interface_Guide>
+    Plotting Guide <user_guide/Plotting_Guide>
+    R Integration Guide <user_guide/R_integration>
+    Analysis Resources <user_guide/analysis_resources>
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+   :caption: Examples and Walkthroughs:
+
+    Reference Plots <reference_examples/plot_gallery/ref_plots>
+    Normalization Examples <reference_examples/Normalizations/norm_index>
+    Oryza sativa <walkthroughs/oryza_sativa/oryza_sativa_index>
+
+.. toctree::
     :hidden:
     :maxdepth: 2
+    :caption: API
 
-    Welcome <self>
-    User Guide <user_guide/user_guide>
-    Reference Examples <reference_examples/ref_examples_index>
-    Walkthroughs <walkthroughs/walkthrough_index>
     API <API/modules>
     Development <development>
-    About <about>

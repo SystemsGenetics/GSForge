@@ -34,20 +34,19 @@ import GSForge as gsf
 import holoviews as hv
 hv.extension('bokeh')
 
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage")).expanduser()
-HYDRO_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_raw.nc")
-HYDRO_NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_normed.nc")
-BOR_COLL_PATH = OSF_PATH.joinpath("Collections", "nf_boruta")
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
+TOUR_BORUTA = OSF_PATH.joinpath("GeneSetCollections", "tour_boruta")
 ```
 
 ```{code-cell}
-agem = gsf.AnnotatedGEM(HYDRO_GEM_PATH)
+agem = gsf.AnnotatedGEM(GEM_PATH)
 agem
 ```
 
 ```{code-cell}
 gsc = gsf.GeneSetCollection.from_folder(
-    gem=agem, target_dir=BOR_COLL_PATH, name="Boruta Results")
+    gem=agem, target_dir=TOUR_BORUTA, name="Boruta Results")
 gsc
 ```
 
@@ -60,5 +59,5 @@ gsf.plots.gem.RasterGEM(agem)
 Selecting a `GeneSet` from a collection provides a raster of just those supported genes.
 
 ```{code-cell}
-gsf.plots.gem.RasterGEM(gsc, selected_gene_sets=["genotype"], hue="genotype")
+gsf.plots.gem.RasterGEM(gsc, selected_gene_sets=["Boruta_treatment"], hue="genotype")
 ```

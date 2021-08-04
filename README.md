@@ -14,6 +14,7 @@ For more information, examples and API reference consult the complete [documenta
 
 ```bash
 git clone https://github.com/SystemsGenetics/GSForge.git
+git clone -b dev https://github.com/SystemsGenetics/GSForge.git
 ```
 
 ***Install via local pip:***

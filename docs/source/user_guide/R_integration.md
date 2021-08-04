@@ -27,20 +27,20 @@ pandas2ri.activate()
 # R Integration
 
 ```{code-cell}
-%%R
-suppressMessages({
-  library("sleuth")
-})
+#%%R
+#suppressMessages({
+#  library("sleuth")
+#})
+```
 
-
-```code-cell}
-%%R
-counts, labels = gsf.get_gem_data(agem, annotation_variables=['treatment', 'time', 'genotype'])
-labels = labels.to_dataframe()
-ri_counts = gsf.utils.R_interface.Py_counts_to_R(counts)
+```{code-cell}
+#%%R
+#counts, labels = gsf.get_gem_data(agem, annotation_variables=['treatment', 'time', 'genotype'])
+#labels = labels.to_dataframe()
+#ri_counts = gsf.utils.R_interface.Py_counts_to_R(counts)
 ```
 
 
-```code-cell}
-%%R -i ri_counts -i dmatrix_list -i contrast_list -o results -o keep
+```{code-cell}
+#%%R -i ri_counts -i dmatrix_list -i contrast_list -o results -o keep
 ```
