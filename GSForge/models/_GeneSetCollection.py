@@ -255,6 +255,9 @@ class GeneSetCollection(param.Parameterized):
         -------
 
         """
+        if isinstance(keys, np.ndarray):
+            keys = keys.tolist()
+
         logger.debug(f'Parsing keys: {keys}, excluding: {exclude}')
 
         # Use all keys in the collection if none are provided.

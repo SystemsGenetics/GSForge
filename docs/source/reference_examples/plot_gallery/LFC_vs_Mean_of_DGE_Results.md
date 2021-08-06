@@ -29,8 +29,8 @@ import holoviews as hv
 hv.extension('bokeh')
 
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
-GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
-DEG_COLL_PATH = OSF_PATH.joinpath("GeneSetCollections", "DEG_gene_sets")
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hisat2_raw.nc")
+TOUR_DGE = OSF_PATH.joinpath("GeneSetCollections", "tour_DGE")
 ```
 
 ```{code-cell} ipython3
@@ -41,7 +41,7 @@ agem
 ***Load Differential Gene Expression Analysis Results into a `GeneSetCollection`***
 
 ```{code-cell} ipython3
-deg_gsc = gsf.GeneSetCollection.from_folder(gem=agem, target_dir=DEG_COLL_PATH, name="DEG Results")
+deg_gsc = gsf.GeneSetCollection.from_folder(gem=agem, target_dir=TOUR_DGE, name="DEG Results")
 deg_gsc
 ```
 

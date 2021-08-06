@@ -29,12 +29,12 @@ import holoviews as hv
 hv.extension('bokeh')
 
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
-GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
+NORMED_GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hydro_hisat2_normed.nc")
 TOUR_BORUTA = OSF_PATH.joinpath("GeneSetCollections", "tour_boruta")
 ```
 
 ```{code-cell}
-agem = gsf.AnnotatedGEM(GEM_PATH)
+agem = gsf.AnnotatedGEM(NORMED_GEM_PATH)
 agem
 ```
 

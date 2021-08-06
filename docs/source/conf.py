@@ -38,8 +38,8 @@ copyright = '2021, Tyler Biggs, Stephen Ficklin'
 author = 'Tyler Biggs, Stephen Ficklin'
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.5beta2'
-version = '0.52'
+release = 'v0.6beta'
+version = '0.6'
 
 # -- General configuration ---------------------------------------------------
 
@@ -64,18 +64,14 @@ extensions = [
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = [
     'in_dev/*',
-    # 'reference_examples/DGE_examples/*',
-    # 'reference_examples/Networks/*',
-    # 'reference_examples/machine_learning/*',
-    # 'walkthroughs/oryza_sativa/*',
-    # 'user_guide/tour.ipynb'
 ]
 nbsphinx_execute = 'auto'
+nbsphinx_timeout = 900
 
 # -- sphinx autodoc config ------------------------------------------------
 autodoc_member_order = 'bysource'
 autosummary_generate = True
-execution_timeout = 300
+execution_timeout = 900
 
 # -- MyST configuration ---------------------------------------------------
 # jupyter_execute_notebooks = "force"

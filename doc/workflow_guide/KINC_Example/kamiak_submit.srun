@@ -1,9 +1,0 @@
-#!/bin/sh
-#SBATCH --partition=ficklin
-#SBATCH --account=ficklin
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --gres=gpu:tesla:1
-#SBATCH --time=10:00
-#SBATCH --job-name=01-import-emx
-#SBATCH --output=logs/%x.log

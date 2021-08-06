@@ -8,13 +8,13 @@ Notes and instructions on updating and contributing to GSForge.
 Travis CI Integration
 =====================
 
-``GSForge`` is maintained via travis ci integration.
-Upon pushing a tagged commit (that matches the regex string in travis.yml file) to the master branch,
-travis will build and update the documents, then update the pip, docker and conda repositories.
+``GSForge`` is maintained via travis ci integration. Upon pushing a tagged commit (that matches the regex string
+in travis.yml file) to the master branch, travis will build and update the documents, then update the pip, docker
+and conda repositories.
 
-The same deployment flow can be triggered under development, and occurs when either an
-tag that matches the development regex, or when ``travis_dev`` is in a commit message.
-This development run deploys documentation to https://systemsgenetics.github.io/GSForgeDev/index.html.
+The same deployment flow can be triggered under development, and occurs when either an tag that matches the
+development regex, or when ``travis_dev`` is in a commit message. This development run deploys documentation to
+https://systemsgenetics.github.io/GSForgeDev/index.html.
 
 
 Notebooks
@@ -37,6 +37,29 @@ There are two stages to building the documentation.
     1. Build the API with ``sphinx-apidoc``.
     2. Build the website and run the notebooks with ``sphinx``.
 
+Most reference examples are executed during the travis continuous integration build process, while the walkthroughs
+and some of the notebooks take too long to run, and must be executed locally. This is enforced by saving files that
+should be run every time as markdown files ``.md`` to be processed as notebooks automatically by MyST. All jupyter
+notebooks should be run prior to updating the main branch.
+
+https://myst-parser.readthedocs.io/en/latest/index.html
+
+..
+    jupyter nbconvert --to notebook --execute --inplace docs/source/reference_examples/**/*.ipynb
+    jupyter nbconvert --to notebook --execute --inplace docs/source/user_guide/*.ipynb
+    jupyter nbconvert --to notebook --execute --inplace docs/source/walkthroughs/**/*.ipynb
+
+
+We can run the travis process locally, see here: https://stackoverflow.com/a/49019950
+
+..
+    BUILDID="build-$RANDOM"
+    INSTANCE="travisci/ci-sardonyx"
+
+    docker run --name "build-local" -dit "travisci/ci-sardonyx" /sbin/init
+    docker exec -it $BUILDID bash -l
+
+
 From the top directory of the repository::
 
     # Construct the API documentation.
@@ -51,3 +74,9 @@ Convert an existing jupyter notebook to an all-text ``MyST`` format::
 
 If a notebook should run everytime travis integration is called, ensure the checkpoint files are not commited.
 For notebooks that should not be run (many take too long for travis), ensure the checkpoint file is commited.
+
+
+OSF Data Repository
+===================
+
+

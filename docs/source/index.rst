@@ -98,19 +98,25 @@ on set membership.
     R Integration Guide <user_guide/R_integration>
     Analysis Resources <user_guide/analysis_resources>
 
+
 .. toctree::
-   :titlesonly:
-   :maxdepth: 1
-   :caption: Examples and Walkthroughs:
+   :maxdepth: 2
+   :caption: Reference Examples:
 
     Reference Plots <reference_examples/plot_gallery/ref_plots>
     Normalization Examples <reference_examples/Normalizations/norm_index>
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Walkthroughs:
     Oryza sativa <walkthroughs/oryza_sativa/oryza_sativa_index>
+
 
 .. toctree::
     :hidden:
     :maxdepth: 2
-    :caption: API
+    :caption: API Reference:
 
     API <API/modules>
     Development <development>

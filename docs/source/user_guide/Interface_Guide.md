@@ -38,8 +38,8 @@ from os import fspath, environ
 from pathlib import Path
 
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
-GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
-DEG_COLL_PATH = OSF_PATH.joinpath("osfstorage", "DEG_gene_sets")
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hisat2_raw.nc")
+TOUR_DGE = OSF_PATH.joinpath("GeneSetCollections", "DEG_gene_sets")
 ```
 
 ## Load Data

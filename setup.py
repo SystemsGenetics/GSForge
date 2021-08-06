@@ -74,6 +74,7 @@ setup(
             'jupytext',
             'recommonmark',
             'myst-nb',
+            'jupyter-cache[cli]',
         ],
         'R_support': [
             'rpy2'

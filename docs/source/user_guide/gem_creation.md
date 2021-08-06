@@ -29,7 +29,7 @@ COUNT_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "rice_heat_drought.GEM.raw.txt")
 LABEL_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "raw_annotation_data", "PRJNA301554.hydroponic.annotations.txt")
 
 # Output path.
-GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_raw.nc")
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hisat2_raw.nc")
 ```
 
 ## From Text Files
