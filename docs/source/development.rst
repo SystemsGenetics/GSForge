@@ -2,7 +2,18 @@
 Development
 ===========
 
+.. note::
+    Under construction.
+
 Notes and instructions on updating and contributing to GSForge.
+
+
+Documentation
+=============
+
+
+
+
 
 
 Travis CI Integration
@@ -48,6 +59,8 @@ https://myst-parser.readthedocs.io/en/latest/index.html
     jupyter nbconvert --to notebook --execute --inplace docs/source/reference_examples/**/*.ipynb
     jupyter nbconvert --to notebook --execute --inplace docs/source/user_guide/*.ipynb
     jupyter nbconvert --to notebook --execute --inplace docs/source/walkthroughs/**/*.ipynb
+
+    jupytext notebook.ipynb --to myst
 
 
 We can run the travis process locally, see here: https://stackoverflow.com/a/49019950
