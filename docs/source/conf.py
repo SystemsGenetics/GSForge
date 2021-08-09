@@ -78,8 +78,7 @@ myst_enable_extensions = [
     "dollarmath",
 ]
 
-# jupyter_cache = "docs/.jupyter_cache/"
-jupyter_execute_notebooks = "force"
+jupyter_execute_notebooks = "off"
 execution_timeout = 1500
 
 
