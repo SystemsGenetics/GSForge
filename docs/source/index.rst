@@ -113,7 +113,6 @@ on set membership.
    :maxdepth: 1
    :caption: User Guide / Tutorial:
 
-    Installation <user_guide/installation>
     Tour <user_guide/tour>
     Annotated Expression Matrix Creation <user_guide/gem_creation>
     Set and Collection Creation <user_guide/set_and_collection_creation>
