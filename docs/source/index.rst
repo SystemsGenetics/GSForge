@@ -19,6 +19,32 @@ itself, but the documentation provides example implementations.
 .. image:: ./static/rna_seq_generation_highlights.svg
 
 
+Installation
+============
+
+
+``GSForge`` works with Python 3.7+.
+It is currently only tested on Linux.
+
+
+Install via pip
+---------------
+
+::
+
+    pip install GSForge
+
+Install via Github source
+-------------------------
+
+Clone the repository::
+
+    git clone git@github.com:SystemsGenetics/GSForge.git
+
+Then install locally via pip::
+
+    pip install ./GSForge
+
 Overview
 ========
 
