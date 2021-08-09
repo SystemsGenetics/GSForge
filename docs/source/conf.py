@@ -65,8 +65,7 @@ extensions = [
 # exclude_patterns = [
 #     'in_dev/*',
 # ]
-# nbsphinx_execute = 'never'
-# nbsphinx_timeout = 900
+
 
 # -- sphinx autodoc config ------------------------------------------------
 autodoc_member_order = 'bysource'
@@ -79,7 +78,7 @@ myst_enable_extensions = [
     "dollarmath",
 ]
 
-# jupyter_cache = "docs/.jupyter_cache/"
+jupyter_cache = "docs/.jupyter_cache/"
 jupyter_execute_notebooks = "force"
 execution_timeout = 1500
 

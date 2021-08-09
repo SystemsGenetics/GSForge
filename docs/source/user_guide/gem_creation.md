@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 import GSForge as gsf
 
-OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/osfstorage/oryza_sativa")).expanduser()
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/")).expanduser().joinpath("osfstorage", "oryza_sativa")
 COUNT_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "rice_heat_drought.GEM.raw.txt")
 LABEL_PATH = OSF_PATH.joinpath("GEMmakerGEMs", "raw_annotation_data", "PRJNA301554.hydroponic.annotations.txt")
 
