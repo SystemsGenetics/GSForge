@@ -79,10 +79,9 @@ myst_enable_extensions = [
     "dollarmath",
 ]
 
-jupyter_cache = "docs/.jupyter_cache/"
-jupyter_execute_notebooks = "cache"
-# execution_excludepatterns = ['tour', 'oryza_sativa/*']
-execution_timeout = 900
+# jupyter_cache = "docs/.jupyter_cache/"
+jupyter_execute_notebooks = "force"
+execution_timeout = 1500
 
 
 # -- Options for HTML output -------------------------------------------------

@@ -18,6 +18,8 @@ A number of tools are required to build the package components and documentation
 * `nbconvert <https://domain.invalid/>`
 * `paramdoc <https://domain.invalid/>`
 * `MyST <https://domain.invalid/>`
+* jupyter book?
+* jupyter-cache
 * `Github pages <https://domain.invalid/>`
 * `Docker <https://domain.invalid/>`
 * `DockerHub <https://domain.invalid/>`
