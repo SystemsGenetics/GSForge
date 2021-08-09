@@ -62,24 +62,27 @@ extensions = [
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = [
-    'in_dev/*',
-]
-nbsphinx_execute = 'auto'
-nbsphinx_timeout = 900
+# exclude_patterns = [
+#     'in_dev/*',
+# ]
+# nbsphinx_execute = 'never'
+# nbsphinx_timeout = 900
 
 # -- sphinx autodoc config ------------------------------------------------
 autodoc_member_order = 'bysource'
 autosummary_generate = True
-execution_timeout = 900
 
 # -- MyST configuration ---------------------------------------------------
-# jupyter_execute_notebooks = "force"
 myst_enable_extensions = [
     "amsmath",
     "deflist",
     "dollarmath",
 ]
+
+jupyter_cache = "docs/.jupyter_cache/"
+jupyter_execute_notebooks = "cache"
+# execution_excludepatterns = ['tour', 'oryza_sativa/*']
+execution_timeout = 900
 
 
 # -- Options for HTML output -------------------------------------------------

@@ -5,40 +5,40 @@ Welcome to GSForge's documentation!
 .. note::
     This is a pre-release version of ``GSForge``, and some features and function names may not yet be stable.
 
-``GSForge`` provides the following utilities to aid in collating and analyzing feature selection results
-from expression count matrices:
+``GSForge`` provides the following utilities to aid in collating and analyzing feature selection results from
+expression count matrices:
 
 1. Data structures that index expression and annotation in a single file.
 2. A common interface for membership set selection operators.
 3. Plotting functions for comparing expression as well as set intersections.
 
 It aims to provide tools that are species-agnostic, that allow a practicing researcher to more easily collate and
-compare selection results across a variety of methods (from both R and Python).
-``GSForge`` is not an analysis tool itself, but the documentation provides example implementations.
+compare selection results across a variety of methods (from both R and Python). ``GSForge`` is not an analysis tool
+itself, but the documentation provides example implementations.
 
 .. image:: ./static/rna_seq_generation_highlights.svg
+
 
 Overview
 ========
 
 You should consider using ``GSForge`` when you have:
 
-+ More than one feature selection method.
-+ Many parameter sets to compare using one (or more) feature selection methods.
-+ More than one normalization to explore.
-+ You have a feature selection method that is non-deterministic.
+* More than one feature selection method.
+* Many parameter sets to compare using one (or more) feature selection methods.
+* More than one normalization to explore.
+* You have a feature selection method that is non-deterministic.
 
 You should seriously consider using ``GSForge`` if you find yourself in more than one of the above categories.
-
 The general workflow is then:
 
-1. Import Data and create an AnnotatedGEM.
-    + *Optional* [Visualize GEM](../reference_examples/plot_gallery/GEM_Rasters).
+1. Import Data and create an :ref:`AnnotatedGEM<Creating an Annotated Expression Matrix>`.
+    * *Optional* [Visualize GEM](../reference_examples/plot_gallery/GEM_Rasters).
 2. Find or select genes of interest.
 3. Create a GeneSetCollection.
-    + *Optional* [View subset intersections](../reference_examples/plot_gallery/GeneSet_Overlap_Heatmaps).
+    * *Optional* [View subset intersections](../reference_examples/plot_gallery/GeneSet_Overlap_Heatmaps).
 4. Compare GeneSets.
-    + Visualize membership overlap.
+    * Visualize membership overlap.
 
 
 1. Data Structures
