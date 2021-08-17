@@ -15,8 +15,8 @@ from setuptools import setup, find_packages
 
 # These are the packages used by the classes in ''GSForge.models''.
 requirements = """
-numpy>=1.17
-pandas>=1.0
+numpy
+pandas
 xarray
 param
 """.split()
@@ -71,10 +71,10 @@ setup(
             'sphinx-gallery',
             'sphinx-rtd-theme',
             'jupyterlab',
-            'jupytext',
+            # 'jupytext',
             'recommonmark',
             'myst-nb',
-            'jupyter-cache[cli]',
+            # 'jupyter-cache[cli]',
         ],
         'R_support': [
             'rpy2'

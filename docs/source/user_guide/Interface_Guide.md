@@ -13,13 +13,13 @@ kernelspec:
 
 # Interface Guide
 
-This notebook describes interactions with the `Interface` object of GSForge, the primary way in which users access count and annotation data.
+Set operations, intersections, unions and differences and combinations thereof answer many of the most basic questions.
+Moreover, we often desires to examine subsets of the original GEM based a selection determined by some set operation.
+The ``Interface`` provided by ``GSForge`` provides a uniform API access to both the ``AnnotatedGEM`` and the
+``GeneSetCollection`` objects for retrieving count values and sample annotations.
 
-The `Interface` class is a common application interface (API) for interacting with `AnnotatedGEM` and `GeneSetCollection` objects.
 
-## Notebook Setup
-
-### Python Imports
+***Notebook setup***
 
 ```{code-cell}
 import numpy as np
@@ -28,11 +28,7 @@ import xarray as xr
 import GSForge as gsf
 import holoviews as hv
 hv.extension('bokeh')
-```
 
-### Data Path Management
-
-```{code-cell} ipython3
 # OS-independent path management.
 from os import fspath, environ
 from pathlib import Path
@@ -55,7 +51,7 @@ agem.data
 
 ## Selecting Data using the Interface
 
-Selecting data through the interface is done via the `get_gem_data` function.
+Select data through the interface via the `get_gem_data` function.
 
 The simplest possible call to this function returns the zero filled count matrix within a two-item tuple.
 
@@ -73,7 +69,8 @@ When `annotation_variables` are not provided, the second item is the `None` sing
 empty_labels == None
 ```
 
-This is for the sake of consistency in handling the number of expected output objects when `annotation_variables` are provided:
+This is for the sake of consistency in handling the number of expected output objects when `annotation_variables` 
+are provided:
 
 ```{code-cell}
 counts, label_ds = gsf.get_gem_data(agem, annotation_variables=['treatment'])
@@ -87,7 +84,7 @@ label_ds
 
 ### Masking or Dropping Samples or Genes
 
-It is often desired that the returned count values be returned in one of three 'forms' with respect to NaN or zero values:
+Count values can be returned in one of three 'forms' with respect to NaN or zero values:
 + zero counts 'masked' as `NaN`.
 + zero counts 'dropped' gene-wise.
 + zero counts 'complete', or included within the matrix, this is the default selection.
@@ -105,8 +102,8 @@ counts.shape
 ```
 
 For samples there are only two options:
-+ Samples with a missing annotation are 'dropped',
-+ or the 'complete' set of samples is used.
++ Samples with a missing annotation are 'dropped'.
++ Use the 'complete' set of samples.
 
 This only has an effect when used with `annotation_variables`.
 
@@ -116,8 +113,8 @@ counts, label_ds = gsf.get_gem_data(agem, annotation_mask='complete', annotation
 
 ### Transforming the Count Matrix
 
-Often times a simple transform is required when using a count matrix, e.g. log transforms.
-GSFoge allows users to supply a function to transform the subset of counts returned, this function only operates on the count values returned.
+A transform can be applied when selecting data, such as a log transform. ``GSFoge`` allows users to supply a function 
+to transform the subset of counts returned, this function only operates on the count values returned.
 
 ```{code-cell}
 counts, label_ds = gsf.get_gem_data(agem, annotation_mask='complete', annotation_variables=['treatment'],

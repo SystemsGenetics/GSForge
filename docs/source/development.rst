@@ -1,15 +1,42 @@
-===========
-Development
-===========
-
-.. note::
-    Under construction.
-
-Notes and instructions on updating and contributing to GSForge.
+=============================
+Documentation and Development
+=============================
 
 
-Documentation
-=============
+Building the Docs
+=================
+
+The recommended way to build the docs is through a docker image, which is managed with ``docker-compose``::
+
+    # optional, if you built previously:
+    docker-compose rm -f
+    # Create and run the documentation service:
+    docker-compose -f docker-compose.yml up --build documentation
+    # build the documentation service
+    docker-compose -f docker-compose.yml build documentation
+    # Create the documentation.
+    docker-compose run --rm documentation
+
+This runs the ``CMD`` of the ``systemsgenetics/gsforge_documentation`` Docker file which:
+
+    1. Builds the API with ``sphinx-apidoc``.
+    2. Builds the website and run the notebooks with ``sphinx``.
+
+Most reference examples are executed during the travis continuous integration build process, while the walkthroughs
+and some of the notebooks take too long to run, and must be executed locally. This is enforced by saving files that
+should be run every time as markdown files ``.md`` to be processed as notebooks automatically by MyST. All jupyter
+notebooks should be run prior to updating the main branch.
+
+Notebooks can be executed from the command line via::
+
+    # Execute a single notebook.
+    jupyter nbconvert --to notebook --execute --inplace docs/source/user_guide/tour.ipynb
+    # Execute multiple notebooks.
+    jupyter nbconvert --to notebook --execute --inplace docs/source/walkthroughs/oryza_sativa/*.ipynb
+
+
+Resources
+---------
 
 A number of tools are required to build the package components and documentation:
 
@@ -18,8 +45,6 @@ A number of tools are required to build the package components and documentation
 * `nbconvert <https://domain.invalid/>`
 * `paramdoc <https://domain.invalid/>`
 * `MyST <https://domain.invalid/>`
-* jupyter book?
-* jupyter-cache
 * `Github pages <https://domain.invalid/>`
 * `Docker <https://domain.invalid/>`
 * `DockerHub <https://domain.invalid/>`
@@ -40,66 +65,6 @@ travis will build and update the documents, then update the pip, docker and cond
 * a commit tag that matches the development regex, or when ``travis_dev`` is in a commit message.
 
 This development run deploys documentation to  https://systemsgenetics.github.io/GSForgeDev/index.html.
-
-
-Notebooks
-=========
-
-The example jupyter notebooks are prepared using the ``MyST`` markdown format, which allows the notebooks
-to be saved as plain text, separate from their output.
-
-``https://myst-parser.readthedocs.io/en/latest/index.html``
-
-They can be linked to normal ``.ipynb`` files for use via jupyter notebooks or jupyter lab.
-
-https://jupytext.readthedocs.io/en/latest/
-
-Building Documentation
-======================
-
-There are two stages to building the documentation.
-
-    1. Build the API with ``sphinx-apidoc``.
-    2. Build the website and run the notebooks with ``sphinx``.
-
-Most reference examples are executed during the travis continuous integration build process, while the walkthroughs
-and some of the notebooks take too long to run, and must be executed locally. This is enforced by saving files that
-should be run every time as markdown files ``.md`` to be processed as notebooks automatically by MyST. All jupyter
-notebooks should be run prior to updating the main branch.
-
-https://myst-parser.readthedocs.io/en/latest/index.html
-
-..
-    jupyter nbconvert --to notebook --execute --inplace docs/source/user_guide/tour.ipynb
-    jupyter nbconvert --to notebook --execute --inplace docs/source/walkthroughs/oryza_sativa/*.ipynb
-
-    jupytext notebook.ipynb --to myst
-
-
-We can run the travis process locally, see here: https://stackoverflow.com/a/49019950
-
-..
-    BUILDID="build-$RANDOM"
-    INSTANCE="travisci/ci-sardonyx"
-
-    docker run --name "build-local" -dit "travisci/ci-sardonyx" /sbin/init
-    docker exec -it $BUILDID bash -l
-
-
-From the top directory of the repository::
-
-    # Construct the API documentation.
-    sphinx-apidoc --separate --force -o docs/source/API/ ./GSForge
-    # Build the documentation.
-    python -m sphinx docs/source/ ../gsforge_docs/
-
-
-Convert an existing jupyter notebook to an all-text ``MyST`` format::
-
-    jupytext my_file.ipynb --to myst
-
-If a notebook should run everytime travis integration is called, ensure the checkpoint files are not commited.
-For notebooks that should not be run (many take too long for travis), ensure the checkpoint file is commited.
 
 
 OSF Data Repository

@@ -24,7 +24,14 @@ rng = np.random.default_rng(0)
 
 # Creating Feature Sets and Collections
 
-In this example we have an annotated GEM already constructed:
+A ``GeneSet`` is one of the three core data structures provided by ``GSForge``,  it stores the result of a selection
+method so long as those results can be indexed by gene. Any number of measures can be stored, but the ``support``
+attribute is a special boolean array that indicates 'selection' by a given ``GeneSet``.
+
+A ``GeneSetCollection`` is the final core data structure, it stores one ``AnnotatedGEM`` and any number of ``GeneSet``
+objects.
+
+In this example we have an ``AnnotatedGEM`` already constructed:
 
 ```{code-cell} ipython3
 OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/")).expanduser().joinpath("osfstorage", "oryza_sativa")
@@ -39,6 +46,7 @@ agem
 ## Creating GeneSets
 
 See the API reference of [`GSForge.GeneSet`](../API/GSForge.models) for all availble creation functions, which include:
+
 + `from_pandas`
 + `from_GeneSets`
 + `from_bool_array`

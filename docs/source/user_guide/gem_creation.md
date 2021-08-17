@@ -13,6 +13,13 @@ kernelspec:
 
 # Creating an Annotated Expression Matrix
 
+An ``AnnotatedGEM`` is one of the three core data structures provided by ``GSForge``, it contains:
++ a gene expression matrices (GEM), with named coordinates for genes and samples.
++ sample annotations / descriptors.
++ gene annotation / descriptors.
+
+More than one transform of the GEM can be stored, so long as it shares the same coordinates.
+
 Here we demonstrate the most common ways to load expression data into `GSForge`.
 
 ***Notebook setup***

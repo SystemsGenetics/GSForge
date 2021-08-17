@@ -1,6 +1,16 @@
-version: '3.3'
+version: '3.9'
 
 services:
+  documentation:
+    image: systemsgenetics/gsforge_documentation:${GSFORGE_IMAGE_TAG:-dev}
+    environment:
+      - GSFORGE_DEMO_DATA=/GSForge_demo_data
+    volumes:
+      - ${HOME}/GSForge_demo_data:/GSForge_demo_data
+    build:
+      context: .
+      dockerfile: './docker/documentation/Dockerfile'
+
   interactive:
     image: systemsgenetics/gsforge_interactive:${GSFORGE_IMAGE_TAG:-dev}
     build:

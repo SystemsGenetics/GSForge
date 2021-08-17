@@ -7,10 +7,6 @@ Here we provide links to software used to analyze RNA-seq expression matrices.
 + https://github.com/twbattaglia/RNAseq-workflow
 + https://github.com/jdidion/biotools
 
-## Normalization Methods
-
-...
-
 ## Differential Expression Analysis Tools
 
 + +voom

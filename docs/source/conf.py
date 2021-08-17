@@ -78,7 +78,7 @@ myst_enable_extensions = [
     "dollarmath",
 ]
 
-jupyter_execute_notebooks = "off"
+jupyter_execute_notebooks = "auto"
 execution_timeout = 1500
 
 

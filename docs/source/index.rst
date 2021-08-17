@@ -3,7 +3,7 @@ Welcome to GSForge's documentation!
 ===================================
 
 .. note::
-    This is a pre-release version of ``GSForge``, and some features and function names may not yet be stable.
+    This is a pre-release version of ``GSForge``, and some function names may not be stable.
 
 ``GSForge`` provides the following utilities to aid in collating and analyzing feature selection results from
 expression count matrices:
@@ -22,9 +22,7 @@ itself, but the documentation provides example implementations.
 Installation
 ============
 
-
-``GSForge`` works with Python 3.7+.
-It is currently only tested on Linux.
+``GSForge`` works with Python 3.7+. It is currently only tested on Linux.
 
 
 Install via pip
@@ -60,52 +58,9 @@ You should seriously consider using ``GSForge`` if you find yourself in more tha
 The general workflow is then:
 
 1. Import Data and create an :ref:`AnnotatedGEM<user_guide/gem_creation>`.
-2. Find or select genes of interest.
-3. Create a GeneSetCollection.
-4. Compare GeneSets.
-
-
-1. Data Structures
-------------------
-
-The core structural components ``GSForge`` provides are:
-
-**AnnotatedGEM**
-A data object that contains:
-gene expression matrix with named coordinates for genes and samples.
-Sample annotations / descriptors.
-Can store more than one transform of the GEM (e.g. raw counts and TPM normalized counts).
-
-**GeneSet**
-A list of gene names, as well as any desired metadata or numerical analysis.
-Examples of data or analysis that fit within this model include:
-differential gene expression,
-machine learning feature selections,
-and literature sets.
-
-**GeneSetCollection**
-An interface that provides utility access to an AnnotatedGEM based on provided GeneSets.
-e.g. GEM subset selection by GeneSet membership, or by some set operation (union, intersection, difference)
-from multiple sets.
-
-
-2. Set Selection Interface
---------------------------
-
-In comparing feature selection results the most basic needs are often set operations.
-e.g., the intersection, union and unique members between one or more sets.
-Often time subsets of the original data are examined based on a set-operation of one or more feature sets.
-
-``GSForge`` provides this functionality through the ``GSForge.Interface`` object,
-and the ``GSForge.get_gem_data`` function.
-
-
-3. Plotting Functions
----------------------
-
-``GSForge`` provides a number of plots common to gene expression analysis.
-The ``Interface`` object powers these plotting functions, which allows users to easily plot only subsets of data based
-on set membership.
+2. Find or select genes of interest and store the results in a :ref:`Gene Set<user_guide/gem_creation>`.
+3. Collate both the AnnotatedGEM and the sets of interest in a :ref:`GeneSetCollection<user_guide/set_and_collection_creation>`.
+4. Use the :ref:`Interface<user_guide/Interface_Guide>` to access and compare sets.
 
 
 .. toctree::
@@ -113,6 +68,7 @@ on set membership.
    :maxdepth: 1
    :caption: User Guide / Tutorial:
 
+    Introduction <self>
     Tour <user_guide/tour>
     Annotated Expression Matrix Creation <user_guide/gem_creation>
     Set and Collection Creation <user_guide/set_and_collection_creation>
