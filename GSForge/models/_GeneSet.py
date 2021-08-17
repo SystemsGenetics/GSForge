@@ -39,7 +39,7 @@ class GeneSet(param.Parameterized):
 
     .. code-block:: python
 
-        my_geneset.gene_support()
+        my_geneset.get_support()
 
 
     **Set the support with a list or array of genes:**
@@ -81,7 +81,7 @@ class GeneSet(param.Parameterized):
         """
         Display a summary of this GeneSet.
         """
-        support_size = self.gene_support().shape[0]
+        support_size = self.get_support().shape[0]
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"    Supported Genes:  {support_size}"]
@@ -114,7 +114,7 @@ class GeneSet(param.Parameterized):
         gene_index = functools.reduce(np.union1d, [gs.gene_index.values for gs in gene_sets])
 
         # Construct the new support array based on the mode selected.
-        gene_support = mode_fn([gs.gene_support() for gs in gene_sets])
+        gene_support = mode_fn([gs.get_support() for gs in gene_sets])
 
         # Construct the new xarray.Dataset object.
         data = xr.Dataset(
@@ -340,7 +340,7 @@ class GeneSet(param.Parameterized):
         """
         return self.data[self.gene_index_name].copy()
 
-    def gene_support(self) -> np.ndarray:
+    def get_support(self) -> np.ndarray:
         """
         Returns the list of genes 'supported in this GeneSet.
 
@@ -368,7 +368,7 @@ class GeneSet(param.Parameterized):
         """
         if self.support_index_name not in self.data:
             return False
-        if self.gene_support().shape[0] > 0:
+        if self.get_support().shape[0] > 0:
             return True
         return False
 
@@ -419,7 +419,7 @@ class GeneSet(param.Parameterized):
             within_support: bool = True,
             absolute: bool = True) -> np.ndarray:
 
-        scores = self.data.sel({self.gene_index_name: self.gene_support()})[score_variable] \
+        scores = self.data.sel({self.gene_index_name: self.get_support()})[score_variable] \
             if within_support \
             else self.data[score_variable]
 
@@ -445,7 +445,7 @@ class GeneSet(param.Parameterized):
             within_support: bool = True,
             absolute: bool = True) -> np.ndarray:
 
-        scores = self.data.sel({self.gene_index_name: self.gene_support()})[score_variable] \
+        scores = self.data.sel({self.gene_index_name: self.get_support()})[score_variable] \
             if within_support \
             else self.data[score_variable]
 
@@ -537,7 +537,7 @@ class GeneSet(param.Parameterized):
     #     if score_name is None:
     #         raise ValueError("A score variable could not be automatically identified, please specify one.")
     #
-    #     data = self.data.sel({self.gene_index_name: self.gene_support()})[score_name] \
+    #     data = self.data.sel({self.gene_index_name: self.get_support()})[score_name] \
     #         if within_support \
     #         else self.data[score_name]
     #
@@ -553,7 +553,7 @@ class GeneSet(param.Parameterized):
     def to_dataframe(self, only_supported: bool = True) -> pd.DataFrame:
         """
         Convert this GeneSet.data attribute to a ``pandas.DataFrame``. This restricts the data
-        returned to include only those genes that are returned by ``GeneSet.gene_support()``.
+        returned to include only those genes that are returned by ``GeneSet.get_support()``.
 
         Parameters
         ----------
@@ -564,7 +564,7 @@ class GeneSet(param.Parameterized):
         -------
             A ``pandas.DataFrame`` of this ``GeneSet.data`` attribute.
         """
-        selection = self.gene_support() if only_supported else self.gene_index
+        selection = self.get_support() if only_supported else self.gene_index
         return self.data.sel(Gene=selection).to_dataframe()
 
     # TODO: Consider overwrite protection?

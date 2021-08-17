@@ -86,8 +86,6 @@ class Interface(param.Parameterized):
     A transform that will be run on the `x_data` that is supplied by this Interface. 
     The transform runs on the subset of the matrix that has been selected."""))
 
-    #     verbose = param.Boolean(default=False)
-
     @singledispatchmethod
     def _interface_dispatch(*args, **params):
         raise TypeError(f"Source of type: {type(args[0])} not supported.")
@@ -216,12 +214,11 @@ class Interface(param.Parameterized):
         return selected_samples
 
     @property
-    def selection_indexes(self) -> dict:
+    def get_selection_indices(self) -> dict:
         """Returns the currently selected indexes as a dictionary."""
         return {self.gem.gene_index_name: self.get_gene_index(),
                 self.gem.sample_index_name: self.get_sample_index()}
 
-    # TODO: Consider adding a copy option.
     @property
     def x_count_data(self) -> Union[xr.DataArray, None]:
         """
@@ -244,9 +241,9 @@ class Interface(param.Parameterized):
         }
 
         mask_modes = {
-            "complete": lambda counts: counts.fillna(0),
-            "masked": lambda counts: counts.where(counts > 0.0),
-            "dropped": lambda counts: counts.where(counts > 0.0).dropna(dim=self.gem.gene_index_name),
+            "complete": lambda c: c.fillna(0),
+            "masked": lambda c: c.where(c > 0.0),
+            "dropped": lambda c: c.where(c > 0.0).dropna(dim=self.gem.gene_index_name),
         }
 
         # Ensure the correct count array is selected.
@@ -325,7 +322,6 @@ class Interface(param.Parameterized):
 
         logger.info(f'The following annotations where selected: {self.annotation_variables}.')
         sample_index = self.get_sample_index()
-        # subset = self.gem.data.sel({self.gem.sample_index_name: sample_index})
         # If only one label has been selected, return this as an xarray.DataArray.
         if len(self.annotation_variables) == 1:
             return self.gem.data[self.annotation_variables].sel(
@@ -342,16 +338,7 @@ class Interface(param.Parameterized):
         """
         Returns count [and annotation] data based on the current parameters.
 
-        Allows selection of the type and grouping of the output.
-
-        Parameters
-        ----------
-        single_object
-        output_type
-
-        Returns
-        -------
-
+        Users should call gsf.get_gem_data
         """
 
         if params:

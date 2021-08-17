@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-# from textwrap import dedent
 from typing import List, Union, AnyStr, IO, Dict
 from warnings import warn
 
@@ -16,7 +15,6 @@ from GSForge._singledispatchmethod import singledispatchmethod
 from ._utils import (
     infer_xarray_variables,
     xrarray_gem_from_pandas,
-    # load_count_df,
     load_label_df,
 )
 
@@ -31,7 +29,7 @@ class AnnotatedGEM(param.Parameterized):
     A data class for a gene expression matrix and any associated sample or gene annotations.
 
     This model holds the count expression matrix, and any associated labels
-    or annotations as an ``xarray.Dataset`` object under the ``.data`` attribute.
+    or annotations as an ``xarray.DataSet`` object under the ``.data`` attribute.
     By default this dataset will be expected to have its indexes named "Gene"
     and "Sample", although there are parameters to override those arrays and
     index names used.
@@ -42,7 +40,6 @@ class AnnotatedGEM(param.Parameterized):
     needed annotations. This ``xarray.Dataset`` object is expected to have a count 
     array named 'counts', that has coordinates ('Gene', 'Sample').""")
 
-    # TODO: Consider name change to 'selected_count_array'.
     count_array_name = param.String(default="counts", doc="""\
     This parameter controls which variable from the ``xarray.Dataset`` should be
     considered to be the 'count' variable.
@@ -77,8 +74,6 @@ class AnnotatedGEM(param.Parameterized):
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
         summary += [f"Selected GEM Variable: '{self.count_array_name}'"]
-        # TODO: This summary call should directly access the xarray object, and should not depend
-        #       On the configuration of the GEM!
         summary += [f"    {self.gene_index_name}   {self.data[self.gene_index_name].shape[0]}"]
         summary += [f"    {self.sample_index_name} {self.data[self.sample_index_name].shape[0]}"]
         return "\n".join(summary)
@@ -149,8 +144,6 @@ class AnnotatedGEM(param.Parameterized):
         if skip is None:
             skip = self.count_array_names + [self.sample_index_name, self.gene_index_name]
 
-        sample_dim = {self.sample_index_name}
-        # gene_annots = [var for var in self.data.data_vars if set(self.data[var].dims) != sample_dim]
         gene_annots = [var for var in self.data.data_vars if self.gene_index_name in set(self.data[var].dims)]
         if gene_annots:
             skip += gene_annots
@@ -241,7 +234,6 @@ class AnnotatedGEM(param.Parameterized):
         Reads in a GEM pandas.DataFrame and an optional annotation DataFrame. These
         must share the same sample index.
 
-
         Parameters
         ----------
         count_df : pd.DataFrame
@@ -266,8 +258,8 @@ class AnnotatedGEM(param.Parameterized):
     def xrarray_gem_from_pandas(count_df: pd.DataFrame,
                                 label_df: pd.DataFrame = None,
                                 transpose_counts: bool = True) -> xr.Dataset:
-        """Stitch together a gene expression and annotation DataFrames into
-        a single ``xarray.Dataset`` object.
+        """
+        Stitch together a gene expression and annotation DataFrames into a single ``xarray.Dataset`` object.
 
         Parameters
         ----------
@@ -324,13 +316,11 @@ class AnnotatedGEM(param.Parameterized):
         
         if count_kwargs is None:
             count_kwargs = dict(index_col=0)
-            # logger.debug('Count index automatically assigned to the first column.')
 
         # Expand and resolve the given paths, ensures tilde '~' and environment variables are handled.
         count_path = str(Path(count_path).expanduser().resolve())
         logger.debug(f'Count path resolved to: {count_path}.')
 
-        # count_df = load_count_df(count_path=count_path, **count_kwargs)
         count_df = pd.read_csv(count_path, **count_kwargs)
         
         if label_path:
@@ -400,8 +390,6 @@ class AnnotatedGEM(param.Parameterized):
         soft_object = GEOparse.get_GEO(geo=geo_id, destdir=destination)
         count_df = soft_object.table.loc[:, soft_object.columns.index]
         count_df["Gene"] = soft_object.table["ID_REF"]
-        # if count_df["Gene"].dtype != "object":
-            # count_df["Gene"] = "Gene_" + count_df["Gene"].astype("str")
         count_df = count_df.set_index("Gene")
         label_df = soft_object.columns
         dataset = xrarray_gem_from_pandas(count_df, label_df)

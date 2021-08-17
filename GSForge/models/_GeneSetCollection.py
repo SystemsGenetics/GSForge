@@ -22,13 +22,11 @@ from .._singledispatchmethod import singledispatchmethod
 logger = logging.getLogger("GSForge")
 
 
-# TODO: Add warning if .from_folder() or other creation function is empty.A{P
+# TODO: Add warning if .from_folder() or other creation function is empty.
 class GeneSetDictionary(UserDict):
     """
     A dictionary with hooks to update support arrays.
     """
-
-    # TODO: Redo the saving and loading functions so that we can use one netcdf file ( with groups).
     # TODO: Add warnings if provided genes are not found within the given GEM index.
 
     @singledispatchmethod
@@ -70,7 +68,7 @@ class GeneSetDictionary(UserDict):
         # if gene_set.data.Gene.shape
         # TODO: Add a check so this only runs if the incoming geneset has a larger gene-index
         #   than the existing one. or perhaps through an error or warning instead.
-        # updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
+        # updated_support_index = np.isin(self.parent_index, gene_set.get_support(), assume_unique=True)
         # gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
         self.data[key] = gene_set
 
@@ -80,21 +78,7 @@ class GeneSetCollection(param.Parameterized):
     An interface class which contains an AnnotatedGEM and a dictionary of GeneSet objects.
     """
 
-    ###############################################################################################
-    # PARAMETERS
-    # See the param documentation.
-    # https://param.holoviz.org/index.html
-    ###############################################################################################
-
-    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=True, doc="""\
-    A GSForge.AnnotatedGEM object.""")
-
-    # gene_sets = param.Dict(doc=dedent("""\
-    # A dictionary of `{key: GSForge.GeneSet}`."""))
-
-    ###############################################################################################
-    # PRIVATE FUNCTIONS
-    ###############################################################################################
+    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=True, doc="A GSForge.AnnotatedGEM object.")
 
     def __init__(self, **params):
         logger.debug('Initializing a new gsforge.GeneSetCollection object...')
@@ -117,7 +101,7 @@ class GeneSetCollection(param.Parameterized):
         Summarize this GeneSetCollection, returns a dictionary of ``{gene_set_name: support_length}``.
         This is used to generate display used in the ``__repr__`` function.
         """
-        counts = {key: len(gs.gene_support()) for key, gs in self.gene_sets.items()}
+        counts = {key: len(gs.get_support()) for key, gs in self.gene_sets.items()}
         counts = {key: counts[key] for key in sorted(counts, key=counts.get, reverse=True)}
         return counts
 
@@ -135,10 +119,6 @@ class GeneSetCollection(param.Parameterized):
             summary += [f"    ... and {len(gene_summary) - 5} more."]
         return "\n".join(summary)
 
-    ###############################################################################################
-    # PUBLIC FUNCTIONS
-    ###############################################################################################
-
     def get_support(self, key: str) -> np.ndarray:
         """
         Get the support array for a given key.
@@ -152,7 +132,7 @@ class GeneSetCollection(param.Parameterized):
         -------
         np.ndarray : An array of the genes that make up the support of this ``GeneSet``.
         """
-        return self.gene_sets[key].gene_support()
+        return self.gene_sets[key].get_support()
 
     def gene_sets_to_dataframes(self, keys: List[str] = None, only_supported: bool = True) -> Dict[str, pd.DataFrame]:
         """
@@ -239,22 +219,10 @@ class GeneSetCollection(param.Parameterized):
             for set_name, df in data_frames.items():
                 df.to_excel(writer, sheet_name=set_name)
 
-    # @methodtools.lru_cache()
     def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
-        return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
+        return copy.deepcopy({key: self.gene_sets[key].get_support() for key in keys})
 
-    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple[AnyStr]:
-        """
-        Takes a set of keys to be incldued, and a set of keys to be excluded.
-        Parameters
-        ----------
-        keys
-        exclude
-
-        Returns
-        -------
-
-        """
+    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple:
         if isinstance(keys, np.ndarray):
             keys = keys.tolist()
 
@@ -307,7 +275,6 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._as_dict(sorted_keys)
 
-    # @methodtools.lru_cache()
     def _intersection(self, keys: Tuple[AnyStr]) -> np.ndarray:
         gene_set_dict = self._as_dict(keys)
         return reduce(np.intersect1d, gene_set_dict.values())
@@ -331,7 +298,6 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._intersection(sorted_keys)
 
-    # @methodtools.lru_cache()
     def _union(self, keys: Tuple[AnyStr]) -> np.ndarray:
         gene_set_dict = self._as_dict(keys)
         return reduce(np.union1d, gene_set_dict.values())
@@ -355,14 +321,12 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._union(sorted_keys)
 
-    # @methodtools.lru_cache()
     def _difference(self, primary_key: str, other_keys: FrozenSet[str], mode: str) -> np.ndarray:
         modes = {'union': self.union, 'intersection': self.intersection}
         other_set = modes[mode](other_keys)
-        primary_set = self.gene_sets[primary_key].gene_support()
+        primary_set = self.gene_sets[primary_key].get_support()
         return np.setdiff1d(primary_set, other_set)
 
-    # def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
     def difference(self, primary_key: str, other_keys: List[str] = None, mode: str = 'union') -> np.ndarray:
         """
         Finds the genes within `primary_key` that are not within the `mode` of the sets
@@ -471,7 +435,7 @@ class GeneSetCollection(param.Parameterized):
 
         Returns
         -------
-        dict : A dictionary of ``{GeneSet.Name, GeneSet.name): GeneSets.gene_support() intersection}``.
+        dict : A dictionary of ``{GeneSet.Name, GeneSet.name): GeneSets.get_support() intersection}``.
         """
         gene_set_dict = self.as_dict(keys, exclude)
 
@@ -584,9 +548,6 @@ class GeneSetCollection(param.Parameterized):
 
         return processed_spec
 
-    ###############################################################################################
-    # CONSTRUCTOR FUNCTIONS
-    ###############################################################################################
     @classmethod
     def from_specification(cls, source_collection, specification=None, name="processed_specification"):
 
@@ -688,4 +649,4 @@ class GeneSetCollection(param.Parameterized):
 
         for key in keys:
             save_path = self.gene_sets[key].save_as_netcdf(target_dir)
-            # print(save_path)
+            yield save_path
