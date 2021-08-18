@@ -79,6 +79,7 @@ myst_enable_extensions = [
 ]
 
 jupyter_execute_notebooks = "auto"
+execution_excludepatterns = ['oryza_sativa/*', 'tour']
 execution_timeout = 1500
 
 

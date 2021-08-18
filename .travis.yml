@@ -46,7 +46,7 @@ jobs:
       install:
         - sudo apt-get install graphviz
         - pip install osfclient
-        - pip install .[docs]
+        - pip install .[docs,R_support]
         - ipython kernel install --name "gsfenv" --user
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
@@ -69,7 +69,7 @@ jobs:
       install:
         - sudo apt-get install graphviz
         - pip install osfclient
-        - pip install .[docs]
+        - pip install .[docs,R_support]
         - ipython kernel install --name "gsfenv" --user
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"

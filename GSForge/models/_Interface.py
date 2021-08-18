@@ -59,7 +59,6 @@ class Interface(param.Parameterized):
                                           doc="The name of the count matrix used.",
                                           objects=[None], check_on_set=False)
 
-    # TODO: Change to an object selector?
     annotation_variables = param.List(doc=dedent("""\
     The name of the active annotation variable(s). These are the annotation columns that will
     be control the subset returned by ``y_annotation_data``."""), precedence=-1.0, default=[None])
@@ -330,10 +329,6 @@ class Interface(param.Parameterized):
         return self.gem.data[self.annotation_variables].sel(
                 {self.gem.sample_index_name: sample_index}).copy(deep=True)
 
-    # TODO: Should this be a private function?
-    #       Users should call gsf.get_gem_data..., or should agem.get_gem_data...
-    # For now make private.
-    # Internal use should make use of x_ and y_ data.
     def get_gem_data(self, single_object=False, output_type='xarray', **params):
         """
         Returns count [and annotation] data based on the current parameters.

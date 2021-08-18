@@ -22,6 +22,3 @@ git clone -b dev https://github.com/SystemsGenetics/GSForge.git
 pip install ./GSForge/
 ```
 
-## Examples
-
-Link here.
