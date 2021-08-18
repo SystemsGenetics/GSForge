@@ -14,7 +14,7 @@ import xarray as xr
 
 __all__ = [
     "Py_counts_to_R",
-    "R_counts_to_Py_counts",
+    "R_counts_to_Py",
     "Py_labels_to_R",
 ]
 
@@ -45,7 +45,7 @@ def Py_counts_to_R(counts: xr.DataArray):
     return count_df
 
 
-def R_counts_to_Py_counts(r_count_array, original_count_array):
+def R_counts_to_Py(r_count_array, original_count_array):
     """
     Prepares a ``numpy`` array (count matrix) for use in ``GSForge``.
 

@@ -1,17 +1,18 @@
 import holoviews as hv
 import itertools
 import param
+import numpy as np
 
-from ...models import GeneSetCollection, Interface
-from ..utils import AbstractPlottingOperation
+from ..abstract_plot_models import InterfacePlottingBase
 
 
-class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
+# TODO: FIX ME. Ignores selected_gene_sets argument.
+class WithinCollectionOverlapHeatMap(InterfacePlottingBase):
     mode = param.ObjectSelector(default="overlap", objects=["overlap", "percent"])
 
     @staticmethod
     def bokeh_opts():
-        return hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[], colorbar=True)
+        return hv.opts.HeatMap(xrotation=45, width=450, height=450, labelled=[])
 
     @staticmethod
     def matplotlib_opts():
@@ -19,27 +20,31 @@ class WithinCollectionOverlapHeatMap(Interface, AbstractPlottingOperation):
 
     @staticmethod
     def within_collection_overlap(gene_dict, mode="overlap"):
-        modes = {"overlap": lambda va, vb: len(set.intersection(set(va), set(vb))),
-                 "percent": lambda va, vb: len(set.intersection(set(va), set(vb))) / len(set(va))}
-
+        modes = {"overlap": lambda va, vb: np.intersect1d(va, vb).shape[0],
+                 "percent": lambda va, vb: np.intersect1d(va, vb).shape[0] / va.shape[0]}
         mode_formaters = {"overlap": lambda x: f"{x}",
                           "percent": lambda x: f"{x:.0%}"}
 
         if mode not in modes.keys():
             raise ValueError(f"{mode} is not a valid mode. Select from {list(modes.keys())}.)")
 
-        mode_func = modes[mode]
         overlap_dim = hv.Dimension(f"Overlap {mode}", value_format=mode_formaters[mode])
-        data = [(ak, bk, mode_func(av, bv))
+        data = [(f'{ak}:{len(av)}', f'{bk}:{len(bv)}', modes[mode](av, bv))
                 for (ak, av), (bk, bv) in itertools.permutations(gene_dict.items(), 2)
                 if ak != bk]
         heatmap = hv.HeatMap(data, vdims=overlap_dim)
-        return heatmap * hv.Labels(heatmap)
+        return heatmap * hv.Labels(heatmap)  # Causes an error with matplotlib.
 
-    def process(self):
-        gene_dict = self.gene_set_collection.as_dict(self.selected_gene_sets)
-        return self.within_collection_overlap(gene_dict, mode=self.mode)
+    def __call__(self, *args, **params):
+        if self.selected_gene_sets == [None]:
+            gene_dict = self.gene_set_collection.as_dict(self.selected_gene_sets)
+        else:
+            gene_dict = self.gene_set_collection.as_dict()
 
+        plot = self.within_collection_overlap(gene_dict, mode=self.mode)
+        if self.apply_default_opts is True:
+            plot = plot.opts(self.get_default_options())
+        return plot
 
 # TODO: Re-implement below.
 # class BetweenCollectionOverlap(AbstractPlottingOperation):

@@ -5,7 +5,7 @@ import param
 
 import holoviews as hv
 
-from ..utils import ResultPlottingOperation
+from ..abstract_plot_models import ResultPlottingOperation
 
 
 class MeanVsLFC(ResultPlottingOperation):
@@ -136,7 +136,10 @@ class MeanVsLFC(ResultPlottingOperation):
 
         return layout
 
-    def process(self):
+    def __call__(self, *args, **params):
         kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.mean_vs_lfc),
                   **self.get_param_process_overlap_kwargs(self.mean_vs_lfc)}
-        return self.mean_vs_lfc(**kwargs)
+        plot = self.mean_vs_lfc(**kwargs)
+        if self.apply_default_opts is True:
+            plot = plot.opts(self.get_default_options())
+        return plot

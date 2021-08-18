@@ -4,6 +4,7 @@ import copy
 import functools
 import json
 import os
+import operator
 from pathlib import Path
 from textwrap import dedent
 from typing import Union, AnyStr, IO
@@ -38,7 +39,7 @@ class GeneSet(param.Parameterized):
 
     .. code-block:: python
 
-        my_geneset.gene_support()
+        my_geneset.get_support()
 
 
     **Set the support with a list or array of genes:**
@@ -80,12 +81,10 @@ class GeneSet(param.Parameterized):
         """
         Display a summary of this GeneSet.
         """
-        support_size = self.gene_support().shape[0]
-        percent_support = support_size / self.data['Gene'].shape[0]
+        support_size = self.get_support().shape[0]
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [f"Name: {self.name}"]
-        summary += [
-            f"    Supported Genes:  {support_size}, {percent_support:.2%} of {self.data[self.gene_index_name].shape[0]}"]
+        summary += [f"    Supported Genes:  {support_size}"]
         return "\n".join(summary)
 
     @__geneset_dispatch.register(xr.Dataset)
@@ -115,7 +114,7 @@ class GeneSet(param.Parameterized):
         gene_index = functools.reduce(np.union1d, [gs.gene_index.values for gs in gene_sets])
 
         # Construct the new support array based on the mode selected.
-        gene_support = mode_fn([gs.gene_support() for gs in gene_sets])
+        gene_support = mode_fn([gs.get_support() for gs in gene_sets])
 
         # Construct the new xarray.Dataset object.
         data = xr.Dataset(
@@ -159,10 +158,6 @@ class GeneSet(param.Parameterized):
             data = data.assign_attrs(attrs)
 
         return {"data": data, **params}
-
-    ###############################################################################################
-    # CONSTRUCTOR FUNCTIONS
-    ###############################################################################################
 
     @classmethod
     def from_pandas(cls, dataframe: pd.DataFrame, genes: np.ndarray = None, attrs=None, **params):
@@ -341,7 +336,7 @@ class GeneSet(param.Parameterized):
         """
         return self.data[self.gene_index_name].copy()
 
-    def gene_support(self) -> np.ndarray:
+    def get_support(self) -> np.ndarray:
         """
         Returns the list of genes 'supported in this GeneSet.
 
@@ -369,7 +364,7 @@ class GeneSet(param.Parameterized):
         """
         if self.support_index_name not in self.data:
             return False
-        if self.gene_support().shape[0] > 0:
+        if self.get_support().shape[0] > 0:
             return True
         return False
 
@@ -412,104 +407,54 @@ class GeneSet(param.Parameterized):
         gs_copy.data[gs_copy.support_index_name] = ((gs_copy.gene_index_name,), np.asarray(boolean_array, dtype=bool))
         return gs_copy
 
-    # TODO: Allow this to take a user-given callable function. Document with an example.
-    def get_n_top_genes(self, score_variable: str = None, mode: str = "absolute_largest",
-                        within_support: bool = True, **mode_kwargs) -> np.ndarray:
-        """
-        Get the top n genes as an array, selected via `mode` by using `score_variable` from the GeneSet.data variables.
+    def get_genes_by_threshold(
+            self,
+            threshold,
+            score_variable: str,
+            comparison: str = "ge",
+            within_support: bool = True,
+            absolute: bool = True) -> np.ndarray:
 
-        Parameters
-        ----------
-        score_variable :
-            The name of the score variable to use. If this is not given some common score variable names are
-            used, and the first found is used.
+        scores = self.data.sel({self.gene_index_name: self.get_support()})[score_variable] \
+            if within_support \
+            else self.data[score_variable]
 
-        mode : str
-            The mode by which to calculate how genes are ranked.
-
-            **Available modes**:
-
-            `absolute_largest`
-                Returns the n absolute largest values per the `score_variable` variable.
-                Useful for selecting the absolute largest log-fold-change, regardless of the sign.
-
-        within_support : bool
-            Whether to limit the genes returned to those within the "support" of this GeneSet. Defaults to True.
-
-        mode_kwargs : dict
-            Remaining keyword arguments are passed to the 'mode' function.
-
-        Returns
-        -------
-            np.ndarray : An array of n, top-ranked, genes.
-        """
-
-        # TODO: Comment mode functions and their arguments clearly. Include how to write such a function.
-        # TODO: Use only scores with real values in these functions to prevent RuntimeWarnings.
-        # TODO: Consider moving these functions to utilities?
-        def _abs_largest(scores: xr.DataArray, **kwargs):
-            nn = kwargs["n"]
-            top_idx = np.argsort(np.abs(scores.values))[::-1][:nn]
-            return scores.isel({self.gene_index_name: top_idx})[self.gene_index_name].values.copy()
-
-        def _above_threshold(scores: xr.DataArray, **kwargs):
-            threshold = kwargs["threshold"]
-            return scores.isel({self.gene_index_name: scores.values > threshold})[self.gene_index_name].values.copy()
-
-        def _below_threshold(scores: xr.DataArray, **kwargs):
-            threshold = kwargs["threshold"]
-            return scores.isel({self.gene_index_name: scores.values < threshold})[self.gene_index_name].values.copy()
-
-        def _above_absolute_threshold(scores: xr.DataArray, **kwargs):
-            threshold = kwargs["threshold"]
-            return scores.isel({self.gene_index_name: np.abs(scores.values) > threshold})[
-                self.gene_index_name].values.copy()
-
-        modes = {
-            "absolute_largest": _abs_largest,
-            "above_threshold": _above_threshold,
-            "below_threshold": _below_threshold,
-            "above_absolute_threshold": _above_absolute_threshold,
+        comparators = {
+            "lt": operator.gt,
+            "le": operator.le,
+            "gt": operator.gt,
+            "ge": operator.ge,
         }
 
-        def _scan_for_score_variable(target=score_variable):
-            score_variables = [
-                "score",
-                "logFC",  # from EdgeR.
-                "log2FoldChange",  # from DESeq2.
-                "pvalue",  # from DESeq2.
-            ]
-            if target is not None:  # An explicit variable has been given.
-                return target
-            else:
-                for name in score_variables:
-                    for var_name in list(self.data.variables.keys()):
-                        if name == var_name:
-                            print(f"Automatically found a score variable, {name}. Ensure this the desired variable.")
-                            return name
+        comp_func = comparators[comparison]
 
-        score_name = _scan_for_score_variable()
+        index_sel = comp_func(np.abs(scores.values), threshold) \
+            if absolute is True \
+            else comp_func(scores.values, threshold)
 
-        if score_name is None:
-            raise ValueError("A score variable could not be automatically identified, please specify one.")
+        return scores.isel({self.gene_index_name: index_sel})[self.gene_index_name].values.copy()
 
-        data = self.data.sel({self.gene_index_name: self.gene_support()})[score_name] \
+    def get_top_n_genes(
+            self,
+            score_variable: str,
+            n: int = 1000,
+            within_support: bool = True,
+            absolute: bool = True) -> np.ndarray:
+
+        scores = self.data.sel({self.gene_index_name: self.get_support()})[score_variable] \
             if within_support \
-            else self.data[score_name]
+            else self.data[score_variable]
 
-        data = data.dropna(dim=self.gene_index_name)
+        top_n_idx = np.argsort(np.abs(scores.values))[::-1][:n] \
+            if absolute is True  \
+            else np.argsort(scores.values)[::-1][:n]
 
-        # Assign the selected mode function.
-        selected_mode = modes.get(mode)
-        if selected_mode is None:
-            raise ValueError(f"Given mode selection: {mode} is not a valid mode. Choose from:\n{modes.keys()}")
-
-        return selected_mode(data, **mode_kwargs)
+        return scores.isel({self.gene_index_name: top_n_idx})[self.gene_index_name].values.copy()
 
     def to_dataframe(self, only_supported: bool = True) -> pd.DataFrame:
         """
         Convert this GeneSet.data attribute to a ``pandas.DataFrame``. This restricts the data
-        returned to include only those genes that are returned by ``GeneSet.gene_support()``.
+        returned to include only those genes that are returned by ``GeneSet.get_support()``.
 
         Parameters
         ----------
@@ -520,7 +465,7 @@ class GeneSet(param.Parameterized):
         -------
             A ``pandas.DataFrame`` of this ``GeneSet.data`` attribute.
         """
-        selection = self.gene_support() if only_supported else self.gene_index
+        selection = self.get_support() if only_supported else self.gene_index
         return self.data.sel(Gene=selection).to_dataframe()
 
     # TODO: Consider overwrite protection?
@@ -555,11 +500,11 @@ class GeneSet(param.Parameterized):
 
         active_name = name if name is not None else self.name
         # Remove any spaces in the active name.
-        active_name = active_name.replace(" ", "_")
+        # active_name = active_name.replace(" ", "_")
         output_path = os.path.join(target_dir, active_name + ".nc")
 
         # Save some parameters that may be unique to this instance.
-        params_to_save = {key: value for key, value in self.get_param_values()
+        params_to_save = {key: value for key, value in self.param.get_param_values()
                           if isinstance(value, str)}
         params_str = json.dumps(params_to_save)
         self.data.attrs.update({"__GSForge.GeneSet.params": params_str})

@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import functools
 import itertools
+import logging
 import os
 from collections import defaultdict, UserDict
 from functools import reduce
@@ -18,11 +19,15 @@ from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from .._singledispatchmethod import singledispatchmethod
 
+logger = logging.getLogger("GSForge")
 
+
+# TODO: Add warning if .from_folder() or other creation function is empty.
 class GeneSetDictionary(UserDict):
     """
     A dictionary with hooks to update support arrays.
     """
+    # TODO: Add warnings if provided genes are not found within the given GEM index.
 
     @singledispatchmethod
     def __dispatch(*args, **params):
@@ -39,9 +44,10 @@ class GeneSetDictionary(UserDict):
         for name, gs in source.items():
             self.__setitem__(name, gs)
 
-    def __init__(self, parent_index, source=None):
+    def __init__(self, parent_index=None, source=None):
         super().__init__()  # Gives us a dictionary as a .data attribute.
-        self.parent_index = parent_index
+        if parent_index is not None:
+            self.parent_index = parent_index
         if source:
             self.__dispatch(source)
 
@@ -50,15 +56,20 @@ class GeneSetDictionary(UserDict):
 
     def __setitem__(self, key, gene_set):
         """Ensures that the support array references the correct index, given by parent_index."""
+        # if gene_set.name != key:
+        #     gene_set.param.set_param(name=key)
         # TODO: Add a check for a support array.
         #       If no support array is found and the shape is less than the complete index, use the
         #       provided index as an implicit support index.
         # Ensure all provided genes are within the parent index.
-        gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
+        # gene_set.data = gene_set.data.reindex({"Gene": self.parent_index})
         # Raise an error if this is not the case?
         # Update the geneset data index.
-        updated_support_index = np.isin(self.parent_index, gene_set.gene_support(), assume_unique=True)
-        gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
+        # if gene_set.data.Gene.shape
+        # TODO: Add a check so this only runs if the incoming geneset has a larger gene-index
+        #   than the existing one. or perhaps through an error or warning instead.
+        # updated_support_index = np.isin(self.parent_index, gene_set.get_support(), assume_unique=True)
+        # gene_set.data[gene_set.support_index_name] = ((gene_set.gene_index_name,), updated_support_index)
         self.data[key] = gene_set
 
 
@@ -67,28 +78,17 @@ class GeneSetCollection(param.Parameterized):
     An interface class which contains an AnnotatedGEM and a dictionary of GeneSet objects.
     """
 
-    ###############################################################################################
-    # PARAMETERS
-    # See the param documentation.
-    # https://param.holoviz.org/index.html
-    ###############################################################################################
-
-    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=False, doc="""\
-    A GSForge.AnnotatedGEM object.""")
-
-    # gene_sets = param.Dict(doc=dedent("""\
-    # A dictionary of `{key: GSForge.GeneSet}`."""))
-
-    ###############################################################################################
-    # PRIVATE FUNCTIONS
-    ###############################################################################################
+    gem = param.ClassSelector(class_=AnnotatedGEM, allow_None=True, doc="A GSForge.AnnotatedGEM object.")
 
     def __init__(self, **params):
+        logger.debug('Initializing a new gsforge.GeneSetCollection object...')
         gene_sets = None
         if 'gene_sets' in params:
             gene_sets = params.pop('gene_sets')
         super().__init__(**params)
-        self.gene_sets = GeneSetDictionary(parent_index=self.gem.gene_index, source=gene_sets)
+        parent_index = self.gem.gene_index if self.gem else None
+        self.gene_sets = GeneSetDictionary(parent_index=parent_index, source=gene_sets)
+        logger.debug('GeneSetCollection initialization complete.')
 
     def __getitem__(self, item):
         return self.gene_sets[item]
@@ -101,22 +101,23 @@ class GeneSetCollection(param.Parameterized):
         Summarize this GeneSetCollection, returns a dictionary of ``{gene_set_name: support_length}``.
         This is used to generate display used in the ``__repr__`` function.
         """
-        counts = {key: len(gs.gene_support()) for key, gs in self.gene_sets.items()}
+        counts = {key: len(gs.get_support()) for key, gs in self.gene_sets.items()}
         counts = {key: counts[key] for key in sorted(counts, key=counts.get, reverse=True)}
         return counts
 
     def __repr__(self) -> str:
+        """
+        Construct a user-friendly representation of this GeneSetCollection.
+        """
         summary = [f"<GSForge.{type(self).__name__}>"]
         summary += [self.name]
-        # summary += [indent(self.gem.name, "    ")]
         gene_set_info = self.summarize_gene_sets()
         summary += [f"GeneSets ({len(gene_set_info)} total): Support Count"]
-        summary += [f"    {k}: {v}" for k, v in itertools.islice(self.summarize_gene_sets().items(), 10)]
+        gene_summary = self.summarize_gene_sets()
+        summary += [f"    {k}: {v}" for k, v in itertools.islice(self.summarize_gene_sets().items(), 5)]
+        if len(gene_summary) > 5:
+            summary += [f"    ... and {len(gene_summary) - 5} more."]
         return "\n".join(summary)
-
-    ###############################################################################################
-    # PUBLIC FUNCTIONS
-    ###############################################################################################
 
     def get_support(self, key: str) -> np.ndarray:
         """
@@ -131,37 +132,7 @@ class GeneSetCollection(param.Parameterized):
         -------
         np.ndarray : An array of the genes that make up the support of this ``GeneSet``.
         """
-        return self.gene_sets[key].gene_support()
-
-    def save(self, target_dir: str, keys: List[str] = None) -> None:
-        """
-        Save  this collection to ``target_dir``. Each GeneSet will be saved as a separate
-        .netcdf file within this directory.
-
-        Parameters
-        ----------
-        target_dir : str
-            The path to which GeneSet ``xarray.Dataset`` .netcdf files will be written.
-
-        keys : List[str]
-            The list of GeneSet keys that should be saved. If this is not provided, all
-            GeneSet objects are saved.
-
-        Returns
-        -------
-        None
-        """
-        # Save all the gene sets in this collection in the target_dir path.
-        if keys is None:
-            keys = self.gene_sets.keys()
-
-        # Create any needed intermediate directories.
-        if not os.path.exists(target_dir):
-            os.makedirs(target_dir)
-
-        for key in keys:
-            save_path = self.gene_sets[key].save_as_netcdf(target_dir)
-            print(save_path)
+        return self.gene_sets[key].get_support()
 
     def gene_sets_to_dataframes(self, keys: List[str] = None, only_supported: bool = True) -> Dict[str, pd.DataFrame]:
         """
@@ -248,13 +219,21 @@ class GeneSetCollection(param.Parameterized):
             for set_name, df in data_frames.items():
                 df.to_excel(writer, sheet_name=set_name)
 
-    # @methodtools.lru_cache()
     def _as_dict(self, keys: Tuple[AnyStr]) -> Dict[str, np.ndarray]:
-        return copy.deepcopy({key: self.gene_sets[key].gene_support() for key in keys})
+        return copy.deepcopy({key: self.gene_sets[key].get_support() for key in keys})
 
-    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple[AnyStr]:
+    def _parse_keys(self, keys: List[str] = None, exclude: List[str] = None) -> Tuple:
+        if isinstance(keys, np.ndarray):
+            keys = keys.tolist()
+
+        logger.debug(f'Parsing keys: {keys}, excluding: {exclude}')
+
         # Use all keys in the collection if none are provided.
-        keys = list(self.gene_sets.keys()) if keys is None else list(keys)
+        if keys == [None] or keys is None:
+            # keys = list(self.gene_sets.keys()) if keys is None else list(keys)
+            keys = list(self.gene_sets.keys())
+        else:
+            keys = list(keys)
         exclude = [] if exclude is None else exclude
 
         # Ensure all keys provided are actually within the collection.
@@ -267,6 +246,8 @@ class GeneSetCollection(param.Parameterized):
 
         # Sort the remaining keys and pass them as a 'hash-able' tuple to the cached function.
         sorted_keys = tuple(sorted(keys))
+        logger.debug(f'Parsed to:  {sorted_keys}')
+
         return sorted_keys
 
     def as_dict(self, keys: List[str] = None, exclude: List[str] = None,
@@ -294,7 +275,6 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._as_dict(sorted_keys)
 
-    # @methodtools.lru_cache()
     def _intersection(self, keys: Tuple[AnyStr]) -> np.ndarray:
         gene_set_dict = self._as_dict(keys)
         return reduce(np.intersect1d, gene_set_dict.values())
@@ -318,7 +298,6 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._intersection(sorted_keys)
 
-    # @methodtools.lru_cache()
     def _union(self, keys: Tuple[AnyStr]) -> np.ndarray:
         gene_set_dict = self._as_dict(keys)
         return reduce(np.union1d, gene_set_dict.values())
@@ -342,14 +321,12 @@ class GeneSetCollection(param.Parameterized):
         sorted_keys = self._parse_keys(keys, exclude)
         return self._union(sorted_keys)
 
-    # @methodtools.lru_cache()
     def _difference(self, primary_key: str, other_keys: FrozenSet[str], mode: str) -> np.ndarray:
         modes = {'union': self.union, 'intersection': self.intersection}
         other_set = modes[mode](other_keys)
-        primary_set = self.gene_sets[primary_key].gene_support()
+        primary_set = self.gene_sets[primary_key].get_support()
         return np.setdiff1d(primary_set, other_set)
 
-    # def difference(self, keys: List[str] = None, exclude: List[str] = None) -> np.ndarray:
     def difference(self, primary_key: str, other_keys: List[str] = None, mode: str = 'union') -> np.ndarray:
         """
         Finds the genes within `primary_key` that are not within the `mode` of the sets
@@ -387,7 +364,7 @@ class GeneSetCollection(param.Parameterized):
         return self._difference(primary_key, other_keys_set, mode)
 
     def joint_difference(self, primary_keys: List[str], other_keys: List[str] = None,
-                         primary_join_mode: str = 'intersection',
+                         primary_join_mode: str = 'union',
                          others_join_mode: str = 'union'):
         """
 
@@ -458,7 +435,7 @@ class GeneSetCollection(param.Parameterized):
 
         Returns
         -------
-        dict : A dictionary of ``{GeneSet.Name, GeneSet.name): GeneSets.gene_support() intersection}``.
+        dict : A dictionary of ``{GeneSet.Name, GeneSet.name): GeneSets.get_support() intersection}``.
         """
         gene_set_dict = self.as_dict(keys, exclude)
 
@@ -565,15 +542,12 @@ class GeneSetCollection(param.Parameterized):
         for key, function in function_map.copy().items():
             if specification.get(key):
                 for entry in specification.get(key):
-                    name = entry.pop('name')
-                    # print(entry)
-                    processed_spec[name] = function(**entry)
+                    entry_kwargs = {k: v for k, v in entry.items() if k != 'name'}
+                    name = entry.get('name')
+                    processed_spec[name] = function(**entry_kwargs)
 
         return processed_spec
 
-    ###############################################################################################
-    # CONSTRUCTOR FUNCTIONS
-    ###############################################################################################
     @classmethod
     def from_specification(cls, source_collection, specification=None, name="processed_specification"):
 
@@ -646,3 +620,33 @@ class GeneSetCollection(param.Parameterized):
             gene_sets[name] = new_gene_set
 
         return cls(gem=gem, gene_sets=gene_sets, **params)
+
+    def save(self, target_dir: str, keys: List[str] = None) -> None:
+        """
+        Save  this collection to ``target_dir``. Each GeneSet will be saved as a separate
+        .netcdf file within this directory.
+
+        Parameters
+        ----------
+        target_dir : str
+            The path to which GeneSet ``xarray.Dataset`` .netcdf files will be written.
+
+        keys : List[str]
+            The list of GeneSet keys that should be saved. If this is not provided, all
+            GeneSet objects are saved.
+
+        Returns
+        -------
+        None
+        """
+        # Save all the gene sets in this collection in the target_dir path.
+        if keys is None:
+            keys = self.gene_sets.keys()
+
+        # Create any needed intermediate directories.
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+
+        for key in keys:
+            save_path = self.gene_sets[key].save_as_netcdf(target_dir)
+            yield save_path
