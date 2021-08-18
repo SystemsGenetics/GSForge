@@ -1,0 +1,55 @@
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.10.2
+kernelspec:
+  display_name: gsfenv
+  language: python
+  name: gsfenv
+---
+
+# GeneSet Overlap Heatmap
+
+Here we use a heatmap to visualize the overlap between gene sets within a single collection.
+
+***Plotting Guide Setup***
+
+A shared setup for all plotting guides.
+
+```{code-cell} ipython3
+# OS-independent path management.
+from os import environ
+from pathlib import Path
+import numpy as np
+import GSForge as gsf
+import holoviews as hv
+hv.extension('bokeh')
+
+OSF_PATH = Path(environ.get("GSFORGE_DEMO_DATA", default="~/GSForge_demo_data/")).expanduser().joinpath("osfstorage", "oryza_sativa")
+GEM_PATH = OSF_PATH.joinpath("AnnotatedGEMs", "oryza_sativa_hisat2_raw.nc")
+LIT_DGE_GSC_PATH = OSF_PATH.joinpath("GeneSetCollections", "literature", "DGE")
+```
+
+```{code-cell} ipython3
+agem = gsf.AnnotatedGEM(GEM_PATH)
+agem
+```
+
+```{code-cell} ipython3
+gsc = gsf.GeneSetCollection.from_folder(
+    gem=agem, target_dir=LIT_DGE_GSC_PATH, name="DGE Results")
+gsc
+```
+
+## Viewing GeneSet Overlaps within a GeneSetCollection
+
+```{code-cell} ipython3
+gsf.plots.collections.WithinCollectionOverlapHeatMap(gsc)
+```
+
+```{code-cell} ipython3
+
+```

@@ -4,7 +4,7 @@ import xarray as xr
 import param
 import holoviews as hv
 
-from ..utils import ResultPlottingOperation
+from ..abstract_plot_models import ResultPlottingOperation
 
 
 # TODO: Add a catch for when there are no genes found within the cutoffs.
@@ -135,7 +135,11 @@ class Volcano(ResultPlottingOperation):
 
         return layout.opts(title=f'Volcano with p-value: {p_value_cutoff}, LFC: {log_fold_change_cutoff}')
 
-    def process(self):
+    def __call__(self, *args, **params):
         kwargs = {**self.infer_kwarg_defaults_from_data(self.source, self.volcano),
                   **self.get_param_process_overlap_kwargs(self.volcano)}
-        return self.volcano(**kwargs)
+
+        plot = self.volcano(**kwargs)
+        if self.apply_default_opts is True:
+            plot = plot.opts(self.get_default_options())
+        return plot

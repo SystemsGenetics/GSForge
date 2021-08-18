@@ -5,13 +5,15 @@ import holoviews as hv
 import pandas as pd
 import param
 
-from ..utils import AbstractPlottingOperation
 from ...models import Interface
+# from ..abstract_plot_models import AbstractPlottingOperation
+from ..abstract_plot_models import InterfacePlottingBase
 
 logger = logging.getLogger(__name__)
 
 
-class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
+# TODO: Add option to catogorize by geneset membership?
+class GeneVsCountsScatter(InterfacePlottingBase):
     """
     Display the counts of a small selection of genes on a scatter plot (genes vs counts).
 
@@ -68,6 +70,7 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     @staticmethod
     def bokeh_opts():
         return hv.opts.Scatter(jitter=0.2, width=800, height=500,
+                               size=1,
                                legend_position="right",
                                xrotation=90, padding=0.1,
                                backend="bokeh")
@@ -76,8 +79,9 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
     def matplotlib_opts():
         return hv.opts.Scatter(fig_size=250, aspect=1.8, xrotation=90, padding=0.1, backend="matplotlib")
 
-    def process(self):
-        self.set_param(annotation_variables=[self.hue])
+    def __call__(self, *args, **params):
+        self.param.set_param(annotation_variables=[self.hue])
+
         if self.get_gene_index().shape[0] > self.soft_max:
             genes_selected = self.get_gene_index().shape[0]
             raise ValueError(f"Selected number of genes: {genes_selected} is likely too much."
@@ -90,4 +94,6 @@ class GeneVsCountsScatter(Interface, AbstractPlottingOperation):
                                        gene_dim=self.gene_index_name,
                                        sample_dim=self.sample_index_name,
                                        count_dim=self.count_variable)
+        if self.apply_default_opts is True:
+            layout = layout.opts(self.get_default_options())
         return layout

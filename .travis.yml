@@ -9,7 +9,7 @@ addons:
       - libnetcdf-dev
 
 env:
-  - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data"
+  - GSFORGE_DEMO_DATA="${HOME}/GSForge_demo_data/"
 
 
 language: python
@@ -47,16 +47,19 @@ jobs:
         - sudo apt-get install graphviz
         - pip install osfclient
         - pip install .[docs]
+        - ipython kernel install --name "gsfenv" --user
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
-        - mkdir doc/Reference_Manual
-        - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-        - nbsite build --what=html --output=builtdocs
+        - mkdir docs/source/API/
+        - sphinx-apidoc --separate --force -o docs/source/API/ ./GSForge
+        - python -m sphinx docs/source/ ../builtdocs/
+      before_deploy:
+        # Add .nojekyll file and redirect from docroot to the sphinx output dir
+        - touch ../builtdocs/.nojekyll
       deploy:
         - provider: pages
           skip_cleanup: true
-          local_dir: ./builtdocs
+          local_dir: ../builtdocs
           target_branch: gh-pages
           github_token: $GITHUB_TOKEN
           on:
@@ -67,16 +70,19 @@ jobs:
         - sudo apt-get install graphviz
         - pip install osfclient
         - pip install .[docs]
+        - ipython kernel install --name "gsfenv" --user
       script:
         - osf -p rbhfz clone "$GSFORGE_DEMO_DATA"
-        - mkdir doc/Reference_Manual
-        - nbsite_generate_modules.py GSForge -d ./doc/Reference_Manual -n GSForge
-        - nbsite generate-rst --org SystemsGenetics --project-name GSForge
-        - nbsite build --what=html --output=builtdocs
+        - mkdir docs/source/API/
+        - sphinx-apidoc --separate --force -o docs/source/API/ ./GSForge
+        - python -m sphinx docs/source/ ../builtdocs/
+      before_deploy:
+        # Add .nojekyll file and redirect from docroot to the sphinx output dir
+        - touch ../builtdocs/.nojekyll
       deploy:
         - provider: pages
           skip_cleanup: true
-          local_dir: ./builtdocs
+          local_dir: ../builtdocs
           target_branch: gh-pages
           github_token: $GITHUB_TOKEN
           repo: SystemsGenetics/GSForgeDev

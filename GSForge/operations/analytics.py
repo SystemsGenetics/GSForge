@@ -8,7 +8,7 @@ import param
 import xarray as xr
 from sklearn.base import clone
 
-from ..models import Interface
+from ..models import CallableInterface
 from ..utils._operations import shuffle_along_axis, null_rank_distribution
 
 __all__ = [
@@ -18,7 +18,7 @@ __all__ = [
 ]
 
 
-class RankGenesByModel(Interface, param.ParameterizedFunction):
+class RankGenesByModel(CallableInterface):
     """
     Given some machine learning model, runs `n_iterations` and returns a summary of the ranking results.
 
@@ -36,42 +36,44 @@ class RankGenesByModel(Interface, param.ParameterizedFunction):
     model = param.Parameter()
     n_iterations = param.Integer(default=1)
 
-    def __call__(self, *args, **params):
-        super().__init__(*args, **params)
-
-        if len(self.annotation_variables) > 1:
-            raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
-        if self.n_iterations == 1:
-            return self._rank_genes_by_model().to_dataset()
-        else:
-            rankings = [self._rank_genes_by_model() for _ in range(self.n_iterations)]
-            ranking_ds = xr.concat(rankings, "feature_importance_iter")
-            ranking_ds["feature_importance_iter"] = (["feature_importance_iter", ], np.arange(self.n_iterations))
-            ranking_ds["feature_importance_mean"] = ([self.gem.gene_index_name],
-                                                     ranking_ds.mean(dim="feature_importance_iter"))
-            ranking_ds["feature_importance_std"] = ([self.gem.gene_index_name],
-                                                    ranking_ds.std(dim="feature_importance_iter"))
-            return ranking_ds.to_dataset()
-
-    def _rank_genes_by_model(self):
-        x_data = self.x_count_data
-        y_data = self.y_annotation_data
-
-        model = self.model.fit(x_data, y_data)
-
+    @staticmethod
+    def rank_genes_by_model(counts: xr.DataArray,
+                            labels: xr.DataArray,
+                            model) -> xr.DataArray:
+        model = model.fit(counts.values, labels.values)
         attrs = {'Ranking Model': str(model),
-                 "count_variable": self.count_variable,
-                 "annotation_variables": self.annotation_variables}
+                 "count_variable": counts.name,
+                 "annotation_variables": labels.name}
 
         data = xr.DataArray(data=model.feature_importances_,
-                            coords=[self.get_gene_index()],
-                            dims=[self.gem.gene_index_name],
+                            coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]].values)],
                             name="feature_importances",
                             attrs=attrs)
         return data
 
+    def __call__(self, *args, **params):
 
-class nFDR(Interface, param.ParameterizedFunction):
+        if len(self.annotation_variables) > 1:
+            raise ValueError(f"This operation only accepts a single entry for `annotation_variables`.")
+
+        counts = self.x_count_data
+        targets = self.y_annotation_data
+
+        if self.n_iterations == 1:
+            return self.rank_genes_by_model(counts=counts, labels=targets, model=self.model).to_dataset()
+
+        else:
+            # return [self.rank_genes_by_model(counts=counts, labels=targets, model=self.model)
+            #                         for _ in range(self.n_iterations)]
+            ranking_ds = xr.concat([self.rank_genes_by_model(counts=counts, labels=targets, model=self.model)
+                                    for _ in range(self.n_iterations)],
+                                   dim='model_iteration')
+            # ranking_ds["feature_importance_mean"] = ranking_ds['feature_importance'].mean(dim="model_iteration")
+            # ranking_ds["feature_importance_std"] = ranking_ds['feature_importance'].std(dim="model_iteration")
+            return ranking_ds
+
+
+class nFDR(CallableInterface):
     """
     nFDR (False Discovery Rate) [method_compare]_.
 
@@ -88,51 +90,47 @@ class nFDR(Interface, param.ParameterizedFunction):
     n_iterations = param.Integer(default=1)
 
     @staticmethod
-    def nFDR(x_data, y_data, model):
-        y_shadowed = np.random.permutation(y_data)
+    def nFDR(counts: xr.DataArray,
+             labels: xr.DataArray,
+             model) -> xr.DataArray:
 
-        real_model = clone(model).fit(x_data, y_data)
-        shadow_model = clone(model).fit(x_data, y_shadowed)
+        y_shadowed = np.random.permutation(labels.values)
 
-        real_scores = real_model.feature_importances_
-        shadow_scores = shadow_model.feature_importances_
+        real_model = clone(model).fit(counts.values, labels.values)
+        shadow_model = clone(model).fit(counts.values, y_shadowed)
 
-        null_rank_dist = null_rank_distribution(real_scores, shadow_scores)
-        return null_rank_dist
+        null_rank_dist = null_rank_distribution(real_model.feature_importances_,
+                                                shadow_model.feature_importances_)
+        attrs = {'Ranking Model': str(model),
+                 "count_variable": counts.coords.dims[1],
+                 "annotation_variables": labels.name}
 
-    def _nFDR_to_xarray(self, nFRD_values):
-        attrs = {'Ranking Model': str(self.model),
-                 "count_variable": self.count_variable,
-                 "annotation_variables": self.annotation_variables}
-        return xr.DataArray(
-            data=nFRD_values,
-            coords=[self.get_gene_index()],
-            dims=[self.gem.gene_index_name],
-            attrs=attrs,
-            name="nFDR")
+        nrd_xarray = xr.DataArray(data=null_rank_dist,
+                                  coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]].values)],
+                                  name="nFDR",
+                                  attrs=attrs)
+        return nrd_xarray
 
     def __call__(self, *args, **params):
-        super().__init__(*args, **params)
 
-        x_data = self.x_count_data.values
-        y_data = self.y_annotation_data.values
+        counts = self.x_count_data
+        targets = self.y_annotation_data
 
         if self.n_iterations == 1:
-            nrd_values = self.nFDR(x_data, y_data, self.model)
-            return self._nFDR_to_xarray(nrd_values)
+            return self.nFDR(counts=counts, labels=targets, model=self.model).to_dataset()
 
         else:
-            fdrs = [self.nFDR(x_data, y_data, self.model) for i in range(self.n_iterations)]
-            fdrs = [self._nFDR_to_xarray(values) for values in fdrs]
-            fdr_ds = xr.concat(fdrs, "nFDR_iter")
-            fdr_ds.name = "nFDR"
-            fdr_ds["nFDR_iter"] = (["nFDR_iter", ], np.arange(self.n_iterations))
-            fdr_ds["nFDR_mean"] = ([self.gem.gene_index_name], fdr_ds.mean(dim="nFDR_iter"))
-            fdr_ds["nFDR_std"] = ([self.gem.gene_index_name], fdr_ds.std(dim="nFDR_iter"))
-            return fdr_ds.to_dataset()
+            ranking_ds = xr.concat([self.nFDR(counts=counts, labels=targets, model=self.model)
+                                    for _ in range(self.n_iterations)],
+                                   dim='model_iteration')
+
+            # ranking_ds["nFDR_mean"] = ranking_ds['nFDR'].mean(dim="model_iteration")
+            # ranking_ds["nFDR_std"] = ranking_ds['nFDR'].std(dim="model_iteration")
+
+            return ranking_ds
 
 
-class mProbes(Interface, param.ParameterizedFunction):
+class mProbes(CallableInterface):
     """
     mProbes [method_compare]_ works by randomly permuting the feature values in the supplied data.
     e.g. count values are shuffled within each samples feature (gene) array.
@@ -148,40 +146,69 @@ class mProbes(Interface, param.ParameterizedFunction):
     n_iterations = param.Integer(default=1)
 
     @staticmethod
-    def mProbes(x_data, y_data, model):
-        shadowed_array = shuffle_along_axis(x_data, 1)
-        x_shadowed = np.hstack((x_data, shadowed_array))
-        model = model.fit(x_shadowed, y_data)
-        ranks = model.feature_importances_
-        real, shadow = ranks.reshape((2, x_data.shape[1]))
-        null_rank_dist = null_rank_distribution(real, shadow)
-        return null_rank_dist
+    def mProbes(counts: xr.DataArray,
+                labels: xr.DataArray,
+                model) -> xr.DataArray:
 
-    def _mprobes_fdr_to_xarray(self, values):
-        attrs = {'Ranking Model': str(self.model),
-                 "count_variable": self.count_variable,
-                 "annotation_variables": self.annotation_variables}
-        return xr.DataArray(
-            data=values,
-            coords=[self.get_gene_index()],
-            dims=[self.gem.gene_index_name],
-            attrs=attrs,
-            name="nFDR")
+        shadowed_array = shuffle_along_axis(counts.values, 1)
+        x_shadowed = np.hstack((counts.values, shadowed_array))
+        model = model.fit(x_shadowed, labels.values)
+        ranks = model.feature_importances_
+        real, shadow = ranks.reshape((2, counts.values.shape[1]))
+        null_rank_dist = null_rank_distribution(real, shadow)
+
+        attrs = {'Ranking Model': str(model),
+                 "count_variable": counts.coords.dims[1],
+                 "annotation_variables": labels.name}
+
+        mprobes_xarray = xr.DataArray(
+            data=null_rank_dist,
+            coords=[(counts.coords.dims[1], counts.coords[counts.coords.dims[1]].values)],
+            name="nFDR",
+            attrs=attrs)
+
+        return mprobes_xarray
 
     def __call__(self, *args, **params):
-        super().__init__(*args, **params)
 
-        x_data = self.x_count_data.values
-        y_data = self.y_annotation_data.values
+        counts = self.x_count_data
+        targets = self.y_annotation_data
 
         if self.n_iterations == 1:
-            return self._mprobes_fdr_to_xarray(self.mProbes(x_data, y_data, self.model))
+            return self.nFDR(counts=counts, labels=targets, model=self.model).to_dataset()
+
         else:
-            fdrs = [self.mProbes(x_data, y_data, self.model) for i in range(self.n_iterations)]
-            fdrs = [self._mprobes_fdr_to_xarray(values) for values in fdrs]
-            ranking_ds = xr.concat(fdrs, "mProbes_iter")
-            ranking_ds.name = "mProbes NRD"
-            ranking_ds["mProbes_iter"] = (["mProbes_iter", ], np.arange(self.n_iterations))
-            ranking_ds["mProbes_mean"] = ([self.gem.gene_index_name], ranking_ds.mean(dim="mProbes_iter"))
-            ranking_ds["mProbes_std"] = ([self.gem.gene_index_name], ranking_ds.std(dim="mProbes_iter"))
-            return ranking_ds.to_dataset()
+            mprobes_data = np.vstack([self.mProbes(counts=counts, labels=targets, model=self.model)
+                                      for i in range(self.n_iterations)])
+
+            ranking_ds = xr.Dataset(
+                data_vars={
+                    'mProbes': (
+                        ('model_iteration', counts.coords.dims[1]),  # dimensions
+                        mprobes_data,  # values
+                    ),
+                },
+                coords={
+                    counts.coords.dims[1]: counts[counts.coords.dims[1]].values,
+                    'model_iteration': np.arange(self.n_iterations),
+                },
+            )
+            # ranking_ds["mProbes_mean"] = ranking_ds['mProbes'].mean(dim="model_iteration")
+            # ranking_ds["mProbes_std"] = ranking_ds['mProbes'].std(dim="model_iteration")
+
+            return ranking_ds
+
+        # x_data = self.x_count_data.values
+        # y_data = self.y_annotation_data.values
+        #
+        # if self.n_iterations == 1:
+        #     return self._mprobes_fdr_to_xarray(self.mProbes(x_data, y_data, self.model))
+        # else:
+        #     fdrs = [self.mProbes(x_data, y_data, self.model) for i in range(self.n_iterations)]
+        #     fdrs = [self._mprobes_fdr_to_xarray(values) for values in fdrs]
+        #     ranking_ds = xr.concat(fdrs, "mProbes_iter")
+        #     ranking_ds.name = "mProbes NRD"
+        #     ranking_ds["mProbes_iter"] = (["mProbes_iter", ], np.arange(self.n_iterations))
+        #     ranking_ds["mProbes_mean"] = ([self.gem.gene_index_name], ranking_ds.mean(dim="mProbes_iter"))
+        #     ranking_ds["mProbes_std"] = ([self.gem.gene_index_name], ranking_ds.std(dim="mProbes_iter"))
+        #     return ranking_ds.to_dataset()

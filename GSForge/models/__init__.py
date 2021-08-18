@@ -25,37 +25,11 @@ These core data classes are constructed with a limited set of packages:
 - ``param``
 
 This allows the creation of container images without interactive visualization libraries.
-
-Interface Data Classes
-----------------------
-
-The interface classes provide patterns of data access and common
-transformations that researchers may need from the core data classes. They are:
-
-**GeneSetCollection**
-    The work-horse of the *GSForge* package. This object contains an
-    *AnnotatedGEM* and a python dictionary of {name: GeneSet} objects.
-    This class contains functions for comparing and analyzing *GeneSet*,
-    as well as tools to pass of *GeneSet*-derived subsets to other functions.
-
-**Interface**
-    The *Interface* object provides a common API to interacting with *AnnotatedGEM*
-    or *GeneSetCollection*. It provides functions that facilitate pulling gene
-    or sample subsets and access to any transforms of the count matrix.
-
-Order of operations applied for GSForge index selection.
-
-.. image:: ../../doc/_static/GSForge_index_selection.svg
-  :width: 400
-  :align: center
-  :alt: GSForge Index Selection
-
 """
-
 from ._AnnotatedGEM import AnnotatedGEM
 from ._GeneSet import GeneSet
 from ._GeneSetCollection import GeneSetCollection
-from ._Interface import Interface
+from ._Interface import Interface, CallableInterface
 
 
 __all__ = [
@@ -63,4 +37,5 @@ __all__ = [
     "GeneSet",
     "GeneSetCollection",
     "Interface",
+    "CallableInterface",
 ]

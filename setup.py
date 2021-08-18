@@ -15,9 +15,9 @@ from setuptools import setup, find_packages
 
 # These are the packages used by the classes in ''GSForge.models''.
 requirements = """
-numpy>=1.17
-pandas>=1.0
-xarray
+numpy>=1.17.3
+pandas>=1.3
+xarray>=0.12.3
 param
 """.split()
 
@@ -29,7 +29,6 @@ datashader
 h5py
 holoviews
 matplotlib
-jupyterlab
 graphviz
 methodtools
 netcdf4
@@ -39,6 +38,9 @@ scipy
 seaborn
 statsmodels
 umap_learn
+pynndescent
+selenium
+upsetplot
 """.split()
 
 
@@ -63,10 +65,16 @@ setup(
     install_requires=requirements,
     extras_require={
         'docs': [
-            'nbsite',
+            'sphinx',
             'nbsphinx',
             'selenium',
-            'sphinx_ioam_theme',
+            'sphinx-gallery',
+            'sphinx-rtd-theme',
+            'jupyterlab',
+            # 'jupytext',
+            'recommonmark',
+            'myst-nb',
+            # 'jupyter-cache[cli]',
         ],
         'R_support': [
             'rpy2'

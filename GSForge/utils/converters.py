@@ -9,15 +9,15 @@ import pandas as pd
 from ..models._GeneSetCollection import GeneSetCollection
 
 
-def dict_to_funce_df(coll_dict):
-    modules = [pd.DataFrame({'genes': values, 'module': name})
-               for name, values in coll_dict.items()]
-    return pd.concat(modules, ignore_index=True)
-
-
-
-def parse_specification(specification: dict = None):
-    pass
+# def dict_to_funce_df(coll_dict):
+#     modules = [pd.DataFrame({'genes': values, 'module': name})
+#                for name, values in coll_dict.items()]
+#     return pd.concat(modules, ignore_index=True)
+#
+#
+#
+# def parse_specification(specification: dict = None):
+#     pass
 
 
 def gene_set_collection_to_support_dataframe(collection: GeneSetCollection, specification: dict = None) -> pd.DataFrame:

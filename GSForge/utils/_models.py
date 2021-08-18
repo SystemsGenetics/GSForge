@@ -1,7 +1,9 @@
 import json
 import inspect
 
+# noinspection PyProtectedMember
 from ..models._GeneSet import GeneSet
+# noinspection PyProtectedMember
 from ..models._GeneSetCollection import GeneSetCollection
 
 __all__ = [

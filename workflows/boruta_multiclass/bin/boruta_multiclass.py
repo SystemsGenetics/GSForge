@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """Handles a single run of Boruta_Py feature selection.
 
 This script is designed to be run with Nextflow, since each run requires
@@ -20,9 +17,6 @@ Testing with nextflow:
 nextflow run boruta_multiclass.nf
 ```
 
-# TODO:
-+ Get lgb models working.
-
 """
 
 import os
@@ -35,17 +29,14 @@ from GSForge.models._AnnotatedGEM import AnnotatedGEM  # To avoid the __init__ r
 from GSForge.operations.prospectors import BorutaProspector
 
 from sklearn.ensemble import RandomForestClassifier
-# import lightgbm as lgb
 
 
 MODELS = {
     "RandomForestClassifier": RandomForestClassifier,
-    # "LGBMClassifier": lgb.LGBMClassifier,
 }
 
 MODEL_DEFAULTS = {
     "RandomForestClassifier": '{"class_weight": "balanced", "max_depth": 3, "n_jobs: -1}',
-    # "LGBMClassifier": 'null',
 }
 
 
