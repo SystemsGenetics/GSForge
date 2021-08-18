@@ -15,9 +15,9 @@ from setuptools import setup, find_packages
 
 # These are the packages used by the classes in ''GSForge.models''.
 requirements = """
-numpy
-pandas
-xarray
+numpy>=1.17.3
+pandas>=1.3
+xarray>=0.12.3
 param
 """.split()
 
