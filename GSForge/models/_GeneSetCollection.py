@@ -649,4 +649,4 @@ class GeneSetCollection(param.Parameterized):
 
         for key in keys:
             save_path = self.gene_sets[key].save_as_netcdf(target_dir)
-            yield save_path
+            print(save_path)

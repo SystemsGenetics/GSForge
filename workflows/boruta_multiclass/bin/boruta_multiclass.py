@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """Handles a single run of Boruta_Py feature selection.
 
 This script is designed to be run with Nextflow, since each run requires
