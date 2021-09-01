@@ -87,7 +87,7 @@ jobs:
           github_token: $GITHUB_TOKEN
           repo: SystemsGenetics/GSForgeDev
           on:
-            all_branches: true
+            branch: NOT branch = master
 
     - stage: build_dockerfiles
       env:
