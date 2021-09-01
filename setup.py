@@ -54,7 +54,7 @@ if not env_install_hook:
 
 setup(
     name='GSForge',
-    version='v0.5beta1',
+    version='v1.0.2',
     packages=find_packages(),
     url='https://systemsgenetics.github.io/GSForge/',
     license='LICENSE.txt',
