@@ -31,11 +31,11 @@ stages:
     if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
 
   - name: website_release
-    if: tag =~ ^v(\d+|\.)+[^a-z]+\d+$ OR tag = website
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
   - name: pip_package
-    if: tag =~ ^v(\d+|\.)+[^a-z]+\d+$
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: build_dockerfiles
-    if: tag =~ ^v(\d+|\.)+[^a-z]+\d+$
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
 
 
 
