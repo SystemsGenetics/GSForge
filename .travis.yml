@@ -24,14 +24,14 @@ services:
 
 stages:
   - name: website_dev
-    if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
+    if: commit_message =~ travis_dev
   - name: pip_dev_package
-    if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
+    if: commit_message =~ travis_dev
   - name: build_dev_dockerfiles
-    if: (tag =~ ^v(\d+|\.)+[a-z]+\d*$) OR (commit_message =~ travis_dev)
+    if: commit_message =~ travis_dev
 
   - name: website_release
-    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$ OR tag = website
+    if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: pip_package
     if: tag =~ ^v(\d+|\.)+[^a-z]\d+$
   - name: build_dockerfiles
